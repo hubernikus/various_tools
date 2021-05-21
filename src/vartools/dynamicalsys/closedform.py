@@ -43,7 +43,6 @@ import numpy as np
 def allow_max_velocity(original_function=None):
     ''' Decorator to allow to limit the velocity to a maximum. '''
     def wrapper(*args, max_vel=None, **kwargs):
-        print(f'{max_vel=}')
         if max_vel is None:
             return original_function(*args, **kwargs)
         else:

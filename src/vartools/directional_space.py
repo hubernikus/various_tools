@@ -13,61 +13,70 @@ import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
 
-def get_angle_space(directions, null_direction, null_matrix=None, normalize=True, OrthogonalBasisMatrix=None):
-    """
-    Get angle space transformation
-    """
-    dim = np.array(directions).shape[0]
-    
-    if len(directions.shape)==1:
-        num_dirs = None
-        directions = directions.reshape(dim, 1)
-    else:
-        num_dirs = directions.shape[1]
-        
-    directions = np.copy(directions)
+# TODO: speed up learning through cpp / c (?)
 
-    if normalize:
-        norm_dir = np.linalg.norm(directions, axis=0)
-        ind_nonzero = (norm_dir>0)
-        directions[:, ind_nonzero] = directions[:, ind_nonzero]/np.tile(norm_dir[ind_nonzero], (dim, 1))
+def get_angle_space_of_array(directions, positions, func_vel_default):
+    """ Get the angle space for a whole array. """
+    dim = positions.shape[0]
+    num_samples = positions.shape[1]
+    # breakpoint()
 
+    direction_space = np.zeros((dim-1, num_samples))
+    for ii in range(num_samples):
+        vel_default = func_vel_default(positions[:, ii])
+        direction_space[:, ii] = get_angle_space(directions[:, ii], null_direction=vel_default)
+
+    return direction_space
+
+
+def get_angle_space(direction, null_direction, null_matrix=None, normalize=None, OrthogonalBasisMatrix=None):
+    """ Get the direction transformed to the angle space with respect to the 'null' direction
+    """
     if OrthogonalBasisMatrix is not None:
         warnings.warn("OrthogonalBasisMatrix is depreciated, use 'null_matrix' instead.")
         null_matrix = OrthogonalBasisMatrix
-        
+    if normalize is not None:
+        warnings.warn("The use of normalized is depreciated.")
+
+    if len(direction.shape) > 1:
+        raise ValueError("No array of direction accepted anymore")
+    
+    norm_dir = np.linalg.norm(direction)
+    if not norm_dir:    
+        return np.zeros(direction.shape[0] - 1)
+    direction = direction / norm_dir
+
     if null_matrix is None:
         null_matrix = get_orthogonal_basis(null_direction)
 
-    directions_referenceSpace = np.zeros(np.shape(directions))
-    for ii in range(np.array(directions).shape[1]):
-        directions_referenceSpace[:,ii] = null_matrix.T.dot( directions[:,ii])
+    direction_referenceSpace = null_matrix.T.dot(direction)
+    direction_directionSpace = direction_referenceSpace[1:]
+    # No zero-check since non-trivial through previous one.
+    direction_directionSpace = direction_directionSpace / np.linalg.norm(direction_directionSpace)
 
-    # directions_referenceSpace = np.zeros(np.shape(directions))
-    # for ii in range(np.array(directions).shape[1]):
-        # directions_referenceSpace[:,ii] = null_matrix.T.dot( directions[:,ii])
+    # Make sure to catch numerical error of cosinus calculation
+    cos_direction = direction_referenceSpace[0]
+    cos_direction = max(cos_direction, -1.0)
+    cos_direction = min(cos_direction, 1.0)
 
-    directions_directionSpace = directions_referenceSpace[1:, :]
+    direction_directionSpace = direction_directionSpace * np.arccos(cos_direction)
 
-    norm_dirSpace = np.linalg.norm(directions_directionSpace, axis=0)
-    ind_nonzero = (norm_dirSpace > 0)
+    return direction_directionSpace
 
-    directions_directionSpace[:,ind_nonzero] = (directions_directionSpace[:, ind_nonzero] /  np.tile(norm_dirSpace[ind_nonzero], (dim-1, 1)))
 
-    cos_directions = directions_referenceSpace[0,:]
-    if np.sum(cos_directions > 1) or np.sum(cos_directions < -1):
-        cos_directions = np.min(np.vstack((cos_directions, np.ones(directions.shape[1]))), axis=0)
-        cos_directions = np.max(np.vstack((cos_directions, -np.ones(directions.shape[1]))), axis=0)
-        warnings.warn("Cosinus value out of bound.")
+def get_angle_space_inverse_of_array(vecs_angle_space, positions, func_vel_default):
+    """ Get the angle space for a whole array. """
+    # breakpoint()
+    dim = positions.shape[0]
+    num_samples = positions.shape[1]
 
-    directions_directionSpace *= np.tile(np.arccos(cos_directions), (dim-1, 1))
-
-    # directions_directionSpace *= (-1) # in 2D for convention 
-
-    if num_dirs is None:
-        directions_directionSpace = np.reshape(directions_directionSpace, (dim-1))
+    directions = np.zeros((dim, num_samples))
+    
+    for ii in range(num_samples):
+        vel_default = func_vel_default(positions[:, ii])
+        directions[:, ii] = get_angle_space_inverse(vecs_angle_space[:, ii], null_direction=vel_default)
         
-    return directions_directionSpace
+    return directions
 
 
 def get_angle_space_inverse(dir_angle_space, null_direction, null_matrix=None, NullMatrix=None):
@@ -167,3 +176,61 @@ def get_directional_weighted_sum(null_direction, directions, weights, total_weig
         direction_weightedSum = null_matrix[:,0]
 
     return direction_weightedSum
+
+
+def get_angle_space_array_old(directions, null_direction, null_matrix=None, normalize=True, OrthogonalBasisMatrix=None):
+    """ Get the directions transformed to the angle space with respect 
+    """
+    # TODO: is this still needed or rather depreciated (?)
+    dim = np.array(directions).shape[0]
+    
+    if len(directions.shape)==1:
+        num_dirs = None
+        directions = directions.reshape(dim, 1)
+    else:
+        num_dirs = directions.shape[1]
+        
+    directions = np.copy(directions)
+
+    if normalize:
+        norm_dir = np.linalg.norm(directions, axis=0)
+        ind_nonzero = (norm_dir>0)
+        directions[:, ind_nonzero] = directions[:, ind_nonzero]/np.tile(norm_dir[ind_nonzero], (dim, 1))
+
+    if OrthogonalBasisMatrix is not None:
+        warnings.warn("OrthogonalBasisMatrix is depreciated, use 'null_matrix' instead.")
+        null_matrix = OrthogonalBasisMatrix
+        
+    if null_matrix is None:
+        null_matrix = get_orthogonal_basis(null_direction)
+
+    directions_referenceSpace = np.zeros(np.shape(directions))
+    for ii in range(np.array(directions).shape[1]):
+        directions_referenceSpace[:,ii] = null_matrix.T.dot( directions[:,ii])
+
+    # directions_referenceSpace = np.zeros(np.shape(directions))
+    # for ii in range(np.array(directions).shape[1]):
+        # directions_referenceSpace[:,ii] = null_matrix.T.dot( directions[:,ii])
+
+    directions_directionSpace = directions_referenceSpace[1:, :]
+
+    norm_dirSpace = np.linalg.norm(directions_directionSpace, axis=0)
+    ind_nonzero = (norm_dirSpace > 0)
+
+    directions_directionSpace[:,ind_nonzero] = (directions_directionSpace[:, ind_nonzero] /  np.tile(norm_dirSpace[ind_nonzero], (dim-1, 1)))
+
+    cos_directions = directions_referenceSpace[0,:]
+    if np.sum(cos_directions > 1) or np.sum(cos_directions < -1):
+        cos_directions = np.min(np.vstack((cos_directions, np.ones(directions.shape[1]))), axis=0)
+        cos_directions = np.max(np.vstack((cos_directions, -np.ones(directions.shape[1]))), axis=0)
+        warnings.warn("Cosinus value out of bound.")
+
+    directions_directionSpace *= np.tile(np.arccos(cos_directions), (dim-1, 1))
+
+    # directions_directionSpace *= (-1) # in 2D for convention 
+
+    if num_dirs is None:
+        directions_directionSpace = np.reshape(directions_directionSpace, (dim-1))
+        
+    return directions_directionSpace
+
