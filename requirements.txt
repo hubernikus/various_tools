@@ -1,6 +1,7 @@
 # Requirement
 # python=3.9
-ipython
+ipython   # for testing --- remove later
 numpy
+matplotlib    # for testing --- remove later
 
 
