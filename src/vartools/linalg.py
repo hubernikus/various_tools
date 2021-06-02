@@ -5,8 +5,18 @@ Different linear algebraig helper function (mainly) based on numpy
 from functools import lru_cache
 import numpy as np
 
+
+def is_positive_definite(x):
+    """ Check if input matrix x is positive definite and return True/False."""
+    return np.all(np.linalg.eigvals(x) > 0)
+
+def is_negative_definite(x):
+    """ Check if input matrix x is positive definite and return True/False."""
+    return np.all(np.linalg.eigvals(x) < 0)
+
+
 # @lru_cache(maxsize=10)
-# TODO: expand cache for this
+# TODO: expand cache for this [numpy-arrays]
 def get_orthogonal_basis(vector, normalize=True):
     """
     Get Orthonormal basis matrxi for an dimensional input vector.
@@ -44,9 +54,8 @@ def get_orthogonal_basis(vector, normalize=True):
             
         basis_matrix[:, 2] = np.cross(basis_matrix[:, 0], basis_matrix[:, 1])
         
-        norm_vec = np.linalg.norm(basis_matrix[:, 2])
-        if norm_vec:
-            basis_matrix[:, 2] = basis_matrix[:, 2] / norm_vec
+        norm_vec = np.linalg.norm(basis_matrix[:, 2]) if norm_vec:
+        basis_matrix[:, 2] = basis_matrix[:, 2] / norm_vec
         
     elif dim > 3: # TODO: general basis for d>3
         basis_matrix[:, 0] = vector
