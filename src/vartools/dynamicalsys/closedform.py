@@ -67,7 +67,6 @@ def evaluate_linear_dynamical_system(position, A_matrix=None, center_position=No
         A_matrix = np.eye(position.shape[0]) * (-1)
 
     if center_position is not None:
-        breakpoint()
         if b is not None:
             raise ValueError("center_pos AND baseline default arguments has been used." +
                              "Only one of them possible.")

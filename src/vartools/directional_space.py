@@ -93,8 +93,10 @@ def get_angle_space_inverse(dir_angle_space, null_direction, null_matrix=None, N
 
     norm_directionSpace = np.linalg.norm(dir_angle_space)
     if norm_directionSpace:
-        directions = null_matrix.dot(np.hstack((np.cos(norm_directionSpace), np.sin(norm_directionSpace) * dir_angle_space / norm_directionSpace)))
-        
+        directions = null_matrix.dot(
+            np.hstack((np.cos(norm_directionSpace),
+                       np.sin(norm_directionSpace) * dir_angle_space / norm_directionSpace))
+            )
     else:
         directions = null_matrix[:, 0]
 
