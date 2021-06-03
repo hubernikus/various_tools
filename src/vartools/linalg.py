@@ -54,8 +54,9 @@ def get_orthogonal_basis(vector, normalize=True):
             
         basis_matrix[:, 2] = np.cross(basis_matrix[:, 0], basis_matrix[:, 1])
         
-        norm_vec = np.linalg.norm(basis_matrix[:, 2]) if norm_vec:
-        basis_matrix[:, 2] = basis_matrix[:, 2] / norm_vec
+        norm_vec = np.linalg.norm(basis_matrix[:, 2])
+        if norm_vec:
+            basis_matrix[:, 2] = basis_matrix[:, 2] / norm_vec
         
     elif dim > 3: # TODO: general basis for d>3
         basis_matrix[:, 0] = vector
