@@ -128,8 +128,9 @@ def ds_quadratic_axis_convergence(position, center_position=None, main_axis=None
     if main_axis is not None:
         # TODO
         raise NotImplementedError()
-    
-    velocity = position[1:]**conv_pow
+
+    velocity = np.copy(-position)
+    velocity[1:] = np.copysign(velocity[1:]**conv_pow, velocity[1:])
     return velocity
 
     
