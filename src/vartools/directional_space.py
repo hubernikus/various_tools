@@ -13,7 +13,7 @@ import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
 
-# TODO: speed up learning through cpp / c (?)
+# TODO: speed up learning through cpp / c / cython(!?)
 
 def get_angle_space_of_array(directions, positions, func_vel_default):
     """ Get the angle space for a whole array. """
@@ -103,19 +103,21 @@ def get_angle_space_inverse(dir_angle_space, null_direction, null_matrix=None, N
     return directions
 
 
-def get_directional_weighted_sum(null_direction, directions, weights, total_weight=1, normalize=True, normalize_reference=True):
-    """
-    Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
+def get_directional_weighted_sum(null_direction, directions, weights,
+                                 total_weight=1, normalize=True, normalize_reference=True):
+    """ Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
 
-    # INPUT
+    Parameters
+    ----------
     null_direction: basis direction for the angle-frame
     directions: the directions which the weighted sum is taken from
     weights: used for weighted sum
     total_weight: [<=1] 
-    normalize: 
+    normalize: variable of type Bool to decide if variables should be normalized
 
-    # OUTPUT 
-    
+    Return
+    ------
+    summed_velocity: The weighted sum transformed back to the initial space
     """
     ind_nonzero = (weights>0) # non-negative
 

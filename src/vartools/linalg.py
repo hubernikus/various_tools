@@ -14,9 +14,9 @@ def is_negative_definite(x):
     """ Check if input matrix x is positive definite and return True/False."""
     return np.all(np.linalg.eigvals(x) < 0)
 
-
 # @lru_cache(maxsize=10)
 # TODO: expand cache for this [numpy-arrays]
+# TODO: OR make cython
 def get_orthogonal_basis(vector, normalize=True):
     """
     Get Orthonormal basis matrxi for an dimensional input vector.
