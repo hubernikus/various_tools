@@ -55,6 +55,11 @@ def allow_max_velocity(original_function=None):
     return wrapper
 
 
+def parallel_ds(position, direction):
+    """ Constant dynamical system in one direction. """
+    return direction
+
+
 @allow_max_velocity
 def evaluate_linear_dynamical_system(position, A_matrix=None, center_position=None, b=None):
     """ Linear Dyanmical system of the form
@@ -110,3 +115,25 @@ def evaluate_stable_circle_dynamical_system(position, radius, center_position=No
     velocity_circular = velocity_circular / np.linalg.norm(velocity_circular)
 
     return velocity_linear*factor_linearsys + velocity_circular
+
+@allow_max_velocity
+def ds_quadratic_axis_convergence(position, center_position=None, main_axis=None, conv_pow=2):
+    """ Dynamical system wich convergence faster towards x-axis. """
+    # TODO: add additional paramters
+    
+    if center_position is not None:
+        position = position - center_position
+
+    if main_axis is not None:
+        # TODO
+        raise NotImplementedError()
+
+    velocity = np.copy(-position)
+    velocity[1:] = np.copysign(velocity[1:]**conv_pow, velocity[1:])
+    return velocity
+
+    
+
+    
+    
+    
