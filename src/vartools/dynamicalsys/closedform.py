@@ -117,7 +117,8 @@ def evaluate_stable_circle_dynamical_system(position, radius, center_position=No
     return velocity_linear*factor_linearsys + velocity_circular
 
 @allow_max_velocity
-def ds_quadratic_axis_convergence(position, center_position=None, main_axis=None, conv_pow=2):
+def ds_quadratic_axis_convergence(position, center_position=None, main_axis=None,
+                                  conv_pow=2, stretching_factor=1):
     """ Dynamical system wich convergence faster towards x-axis. """
     # TODO: add additional paramters
     
@@ -128,12 +129,6 @@ def ds_quadratic_axis_convergence(position, center_position=None, main_axis=None
         # TODO
         raise NotImplementedError()
 
-    velocity = np.copy(-position)
+    velocity = (-1)*stretching_factor*position
     velocity[1:] = np.copysign(velocity[1:]**conv_pow, velocity[1:])
     return velocity
-
-    
-
-    
-    
-    
