@@ -33,7 +33,7 @@ class TestSum(unittest.TestCase):
                     self.assertTrue(vec[:, jj].dot(vec[:, kk]) < margin)
 
     def test_bijectional_space_2D(self):
-        ''' Test that forward&inverse directional space is ennaluating.''' 
+        """ Test that forward&inverse directional space is ennaluating.""" 
         n_repetitions = 100
         dim = 2
         for ii in range(n_repetitions):

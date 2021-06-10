@@ -1,5 +1,4 @@
-"""
-Dynamical Systems with a closed-form description.
+""" Dynamical Systems with a closed-form description.
 """
 
 import functools
