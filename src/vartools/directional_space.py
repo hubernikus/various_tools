@@ -16,7 +16,7 @@ from vartools.linalg import get_orthogonal_basis
 
 # TODO: speed up learning through cpp / c / cython(!?)
 def directional_convergence_summing(
-    convergence_vector, reference_vector,  weight, nonlinear_velocity,
+    convergence_vector, reference_vector, weight, nonlinear_velocity=None,
     null_direction=None, null_matrix=None):
     """ Rotatiting / modulating a vector by using directional space.
 
@@ -62,27 +62,34 @@ def directional_convergence_summing(
 
     # Only negative direction due to expected negative A (?!)
     fac_tang_conv = (-BB + np.sqrt(DD)) / (2*AA)
-    if fac_tang_conv > 0:
-        # If both negative, no change needed
-        dir_tangent = dir_reference + fac_tang_conv*delta_dir_conv
 
-        # Weight to ensure that:
-        # weight=1 => w_conv=1  AND norm_dir_conv=0 => w_conv=0
-        w_conv = weight**2 * norm_dir_conv / (1 + norm_dir_conv - weight)
-        # weight = weight**2*dist0 / (1 + weight - dist0)
+    dir_tangent = dir_reference + fac_tang_conv*delta_dir_conv
+    norm_tangent_dist = np.linalg.norm(dir_tangent - dir_reference)
+    # Weight to ensure that:
+    # weight=1 => w_conv=1  AND norm_dir_conv=0 => w_conv=0
+    weight_deviation = norm_dir_conv / norm_tangent_dist
     
-        dir_conv_rotated = w_conv*dir_tangent + (1-w_conv)*dir_reference
-
+    if weight_deviation < 1:
+        # If both negative, no change needed
+        pow_weight = 1.0
+        pow_deviation = 0.1
+        # w_conv = weight**pow_weight * weight_deviation**pow_deviation
+        w_conv = weight**pow_weight * weight_deviation**pow_deviation
+        # weight = weight**2*dist0 / (1 + weight - dist0)
+        dir_conv_rotated = w_conv*dir_tangent + (1-w_conv)*dir_convergence
+        
     else:
         dir_conv_rotated = dir_reference
 
-    
-    print('weight', weight)
-    print('w_conv', w_conv)
+
+    # if True:
     if False:
+        print('weight', weight)
+        print('weight_deviation', weight_deviation)
+        print('w_conv', w_conv)
         # TODO: Remove after DEBUG
         import matplotlib.pyplot as plt
-        plt.close('all')
+        # plt.close('all')
         plt.figure()
         plt.plot([-pi, pi], [0, 0], '--', color='k')
         plt.plot(0, 0, 'k.', label='normal / tangent')
