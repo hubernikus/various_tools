@@ -2,39 +2,132 @@
 Directional Space function to use
 Helper function for directional & angle evaluations
 """
-
-__author__ = "Lukas Huber"
-__date__ = "2021-05-21"
-__email__ = "lukas.huber@epfl.ch"
+# Author: LukasHuber
+# Date: 2021-05-18
+# Email: lukas.huber@epfl.ch
 
 import warnings
+from math import pi
 
 import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
 
+
 # TODO: speed up learning through cpp / c / cython(!?)
+def directional_convergence_summing(
+    convergence_vector, reference_vector,  weight, nonlinear_velocity,
+    null_direction=None, null_matrix=None):
+    """ Rotatiting / modulating a vector by using directional space.
+
+    Paramters
+    ---------
+    convergence_vector: a array of floats of size (dimension,)
+    reference_vector: a array of floats of size (dimension,)
+    weight: float in the range [0, 1] which gives influence on how important vector 2 is.
+    nonlinear_velocity: (optional) the vector-field which converges 
+
+    Return
+    ------
+    converging_velocity: Weighted summing in direction-space to 'emulate' the modulation.
+    """
+    if null_matrix is None:
+        null_matrix = get_orthogonal_basis(null_direction)
+    
+    dir_reference = get_angle_space(reference_vector, null_matrix=null_matrix)
+    dir_convergence = get_angle_space(convergence_vector, null_matrix=null_matrix)
+
+    # Do the math in the angle space
+    delta_dir_conv = dir_convergence - dir_reference
+    norm_dir_conv = np.linalg.norm(delta_dir_conv)
+    if not norm_dir_conv: # Zero value
+        if nonlinear_velocity is None:
+            return convergence_vector
+        else:
+            return nonlinear_velocity
+
+    # Find intersection a with radius of pi/2
+    tangent_radius = pi/2.0
+
+    # Binomial Formula to solve for x in:
+    # || dir_reference + x * (delta_dir_conv) || = pi/2
+    AA = np.sum(delta_dir_conv**2) 
+    BB = 2 * np.dot(delta_dir_conv, dir_reference)
+    CC = np.sum(dir_reference**2) - tangent_radius**2
+    DD = BB**2 - 4*AA*CC
+
+    # Check different 
+    if DD < 0:
+        raise ValueError("Negative Determinant. No intersection.")
+
+    # Only negative direction due to expected negative A (?!)
+    fac_tang_conv = (-BB + np.sqrt(DD)) / (2*AA)
+    if fac_tang_conv > 0:
+        # If both negative, no change needed
+        dir_tangent = dir_reference + fac_tang_conv*delta_dir_conv
+
+        # Weight to ensure that:
+        # weight=1 => w_conv=1  AND norm_dir_conv=0 => w_conv=0
+        w_conv = weight**2 * norm_dir_conv / (1 + norm_dir_conv - weight)
+        # weight = weight**2*dist0 / (1 + weight - dist0)
+    
+        dir_conv_rotated = w_conv*dir_tangent + (1-w_conv)*dir_reference
+
+    else:
+        dir_conv_rotated = dir_reference
+
+    
+    print('weight', weight)
+    print('w_conv', w_conv)
+    if False:
+        # TODO: Remove after DEBUG
+        import matplotlib.pyplot as plt
+        plt.close('all')
+        plt.figure()
+        plt.plot([-pi, pi], [0, 0], '--', color='k')
+        plt.plot(0, 0, 'k.', label='normal / tangent')
+        plt.plot(-pi/2.0, 0, 'k.')
+        plt.plot(+pi/2.0, 0, 'k.')
+        
+        plt.plot(dir_reference[0], 0, 'ro', label="ref")
+        plt.plot(dir_convergence[0], 0, 'bo', label="converg")
+        plt.plot(dir_conv_rotated[0], 0, 'go', label="rotated")
+        plt.plot(dir_tangent[0], 0, 'o', color='magenta', label="tangent")
+        plt.legend()
+        plt.show()
+        breakpoint()
+        
+    if nonlinear_velocity is None:
+        return get_angle_space_inverse(dir_conv_rotated, null_matrix=null_matrix)
+    
+    else:
+        # TODO: only do until pi/2, not full circle [i.e. circle cutting]
+        dir_nonlinearvelocity = get_angle_space(nonlinear_velocity, null_matrix=null_matrix)
+
+        dir_nonlinear_rotated = weight*dir_conv_rotated + (1-weight)*dir_nonlinearvelocity
+        return get_angle_space_inverse(dir_nonlinear_rotated, null_matrix=null_matrix)
+    
 
 def get_angle_space_of_array(directions, positions, func_vel_default):
     """ Get the angle space for a whole array. """
     dim = positions.shape[0]
     num_samples = positions.shape[1]
-    # breakpoint()
 
     direction_space = np.zeros((dim-1, num_samples))
     for ii in range(num_samples):
+        # Nominal Velocity / Null direction is evaluated each time
         vel_default = func_vel_default(positions[:, ii])
         direction_space[:, ii] = get_angle_space(directions[:, ii], null_direction=vel_default)
 
     return direction_space
 
 
-def get_angle_space(direction, null_direction, null_matrix=None, normalize=None, OrthogonalBasisMatrix=None):
-    """ Get the direction transformed to the angle space with respect to the 'null' direction
-    """
+def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=None,
+                    OrthogonalBasisMatrix=None):
+    """ Get the direction transformed to the angle space with respect to the 'null' direction."""
     if OrthogonalBasisMatrix is not None:
-        warnings.warn("OrthogonalBasisMatrix is depreciated, use 'null_matrix' instead.")
-        null_matrix = OrthogonalBasisMatrix
+        raise TypeError("OrthogonalBasisMatrix is depreciated, use 'null_matrix' instead.")
+    
     if normalize is not None:
         warnings.warn("The use of normalized is depreciated.")
 
@@ -79,7 +172,7 @@ def get_angle_space_inverse_of_array(vecs_angle_space, positions, func_vel_defau
     return directions
 
 
-def get_angle_space_inverse(dir_angle_space, null_direction, null_matrix=None, NullMatrix=None):
+def get_angle_space_inverse(dir_angle_space, null_direction=None, null_matrix=None, NullMatrix=None):
     """
     Inverse angle space transformation
     """

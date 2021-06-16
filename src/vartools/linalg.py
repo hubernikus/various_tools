@@ -18,9 +18,7 @@ def is_negative_definite(x):
 # TODO: expand cache for this [numpy-arrays]
 # TODO: OR make cython
 def get_orthogonal_basis(vector, normalize=True):
-    """
-    Get Orthonormal basis matrxi for an dimensional input vector.
-    """
+    """ Get Orthonormal basis matrxi for an dimensional input vector. """
     if isinstance(vector, np.ndarray):
         pass
     elif isinstance(vector, list):
@@ -73,6 +71,5 @@ def get_orthogonal_basis(vector, normalize=True):
 
         # raise ValueError("Not implemented for d>3")
         # warnings.warn("Implement higher dimensionality than d={}".format(dim))
-        
     return basis_matrix
 

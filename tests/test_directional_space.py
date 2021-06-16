@@ -1,9 +1,9 @@
 #!/USSR/bin/python3.9
 """ Test the directional space. """
+# Author: LukasHuber
+# Date: 2021-05-18
+# Email: lukas.huber@epfl.ch
 
-__author__ = "LukasHuber"
-__date__ = "2021-05-18"
-__email__ = "lukas.huber@epfl.ch"
 
 import unittest
 import copy
@@ -14,7 +14,9 @@ from vartools.linalg import get_orthogonal_basis
 
 from vartools.directional_space import get_angle_space
 from vartools.directional_space import get_angle_space_inverse
+from vartools.directional_space import convergence_summing
 # from vartools.directional_space import get_directional_weighted_sum # TODO: test it too...
+
 
 class TestSum(unittest.TestCase):
     def test_orthonormality_matrix(self):
@@ -52,6 +54,8 @@ class TestSum(unittest.TestCase):
 
             self.assertTrue(all(np.isclose(vec_init / np.linalg.norm(vec_init), vec_init_rec)))
 
+    # def test_directional_convergence_forcing(self):
+        # """ Based on Reference direction & normal decomposition force the convergence. """
 
 if __name__ == '__main__':
     unittest.main()
