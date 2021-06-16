@@ -65,28 +65,25 @@ def directional_convergence_summing(
 
     dir_tangent = dir_reference + fac_tang_conv*delta_dir_conv
     norm_tangent_dist = np.linalg.norm(dir_tangent - dir_reference)
+    
     # Weight to ensure that:
     # weight=1 => w_conv=1  AND norm_dir_conv=0 => w_conv=0
     weight_deviation = norm_dir_conv / norm_tangent_dist
-    
-    if weight_deviation < 1:
+
+    # TODO: allow 'tail-effect' after obstacle
+    # Allow finding of 'closest' 
+
+    if 0 < weight_deviation < 1:
         # If both negative, no change needed
-        pow_weight = 1.0
-        pow_deviation = 0.1
-        # w_conv = weight**pow_weight * weight_deviation**pow_deviation
-        w_conv = weight**pow_weight * weight_deviation**pow_deviation
-        # weight = weight**2*dist0 / (1 + weight - dist0)
+        power_factor = 5.0
+        w_conv = weight**(1./(weight_deviation*power_factor))
         dir_conv_rotated = w_conv*dir_tangent + (1-w_conv)*dir_convergence
         
     else:
-        dir_conv_rotated = dir_reference
+        dir_conv_rotated = dir_convergence
 
-
-    # if True:
     if False:
-        print('weight', weight)
-        print('weight_deviation', weight_deviation)
-        print('w_conv', w_conv)
+    # if True:
         # TODO: Remove after DEBUG
         import matplotlib.pyplot as plt
         # plt.close('all')
