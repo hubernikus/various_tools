@@ -106,7 +106,16 @@ def directional_convergence_summing(
     
     else:
         # TODO: only do until pi/2, not full circle [i.e. circle cutting]
+        # TODO: expand for more general nonlinear velocities
         dir_nonlinearvelocity = get_angle_space(nonlinear_velocity, null_matrix=null_matrix)
+
+        if np.linalg.norm(dir_nonlinearvelocity - dir_convergence) > pi:
+            # If it is larger than pi, we assume that it was rotated in the 'wrong direction'
+            # i.e. find the same one, which is 2*pi in the other direction.
+            norm_nonlinear = np.linalg.norm(dir_nonlinearvelocity)
+            dirdir_nonlinear = dir_nonlinearvelocity / norm_nonlinear
+            
+            dir_nonlinearvelocity = (norm_nonlinear-2*pi) * dirdir_nonlinear
 
         dir_nonlinear_rotated = weight*dir_conv_rotated + (1-weight)*dir_nonlinearvelocity
         return get_angle_space_inverse(dir_nonlinear_rotated, null_matrix=null_matrix)
@@ -334,4 +343,3 @@ def get_angle_space_array_old(directions, null_direction, null_matrix=None, norm
         directions_directionSpace = np.reshape(directions_directionSpace, (dim-1))
         
     return directions_directionSpace
-

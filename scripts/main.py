@@ -22,6 +22,7 @@ def test_linear_ds_3d_vectorfield(A_matrix=None, b_offset=None):
     x, y, z = np.meshgrid(np.arange(-0.8, 1, 0.2),
                           np.arange(-0.8, 1, 0.2),
                           np.arange(-0.8, 1, 0.5))
+    
 
     if A_matrix is None:
         A_matrix = np.array([[1, 1, 1],
