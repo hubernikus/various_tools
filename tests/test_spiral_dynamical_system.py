@@ -7,40 +7,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from vartools.dynamicalsys.spiral_motion import spiral_motion_integrator, get_symbolic_expression
-from vartools.dynamicalsys.spiral_motion import spiral_pos, spiral
-
-import sympy
+from vartools.dynamicalsys.spiral_motion import spiral_analytic
+from vartools.dynamicalsys.spiral_motion import spiral_motion_integrator
 
 class TestSpiralmotion(unittest.TestCase):
     def test_creation(self):
         # Terminal for the spiral DS
-        terminalPoint = [0,0,-1]
+        end_point = np.array([0, 0, -1])
 
-        N = 500     # Points in the base spiral
-        c = 15      # Complexity of the spiral
-        dT = 0.0005 # Used during forward orbit construction
-
-        # Starting for a forward orbit of the spiral DS (immediate vicinity of [0,0,1])
-        startPoint = spiral(c, 0.001)
-
+        # Points in the base spiral
+        n_spiralpoints = 500
+        
+        # Complexity of the spiral
+        complexity_spiral = 15
+        
         # Base spiral
-        dataSetOrig = spiral_pos(c, N, 3)
+        dataset_analytic = spiral_analytic(complexity_spiral, n_spiralpoints, dimension=3)
 
-        # Forward orbits of the spiral DS
-        theta = sympy.symbols('theta', real=True)
-        velExpr = get_symbolic_expression(c, theta)
-        print("here")
-        dataSetDS = np.array(spiral_motion_integrator(
-            startPoint, dT, c, theta, velExpr, terminalPoint))
+        dt = 0.0005
+        start_position = spiral_analytic(complexity_spiral, n_points=1, tt=[0.001])[0, :]
+        dataset_ds = np.array(spiral_motion_integrator(start_position, dt,
+                                                       complexity_spiral, end_point))
 
-        fig = plt.figure("c = "+str(c))
+        fig = plt.figure("Figure: c = "+str(complexity_spiral))
         ax = fig.add_subplot(1,2,1, projection='3d')
-        ax.plot(dataSetOrig[:,0], dataSetOrig[:,1], dataSetOrig[:,2],'b')
-        ax.scatter(dataSetOrig[0,0], dataSetOrig[0,1],
-                   dataSetOrig[0,2],color='black',marker='o',label='Start')
-        ax.scatter(dataSetOrig[-1,0], dataSetOrig[-1,1],
-                   dataSetOrig[-1,2],color='black',marker='s',label='End')
+        ax.plot(dataset_analytic[:,0], dataset_analytic[:,1], dataset_analytic[:,2],'b')
+        ax.scatter(dataset_analytic[0,0], dataset_analytic[0,1],
+                   dataset_analytic[0,2],color='black',marker='o',label='Start')
+        ax.scatter(dataset_analytic[-1,0], dataset_analytic[-1,1],
+                   dataset_analytic[-1,2],color='black',marker='s',label='End')
         
         ax.set_xlabel('X(m)', fontsize=18, labelpad=15)
         ax.set_ylabel('Y(m)', fontsize=18, labelpad=15)
@@ -48,12 +43,12 @@ class TestSpiralmotion(unittest.TestCase):
         ax.legend(fontsize=18)
         ax.set_title('Demonstration', fontsize=20, pad=20)
 
-        axDS = fig.add_subplot(1,2,2, projection='3d')
-        axDS.plot(dataSetDS[:,0], dataSetDS[:,1], dataSetDS[:,2],'r--')
-        axDS.set_xlabel('X(m)', fontsize=18,labelpad=15)
-        axDS.set_ylabel('Y(m)', fontsize=18,labelpad=15)
-        axDS.set_zlabel('Z(m)', fontsize=18,labelpad=15)
-        axDS.set_title('Spiral DS', fontsize=20, pad=20)
+        ax_ds = fig.add_subplot(1,2,2, projection='3d')
+        ax_ds.plot(dataset_ds[:,0], dataset_ds[:,1], dataset_ds[:,2],'r--')
+        ax_ds.set_xlabel('X(m)', fontsize=18,labelpad=15)
+        ax_ds.set_ylabel('Y(m)', fontsize=18,labelpad=15)
+        ax_ds.set_zlabel('Z(m)', fontsize=18,labelpad=15)
+        ax_ds.set_title('Spiral DS', fontsize=20, pad=20)
         
         plt.show()
 

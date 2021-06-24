@@ -5,62 +5,55 @@
 # License: BSD (c) 2021
 
 import numpy as np
-import sympy
 
-def spiral(c, T):
-    x = np.sin(T)*np.cos(c*T)
-    y = np.sin(T)*np.sin(c*T)
-    z = np.cos(T)
-    return [x,y,z]
+def spiral_analytic(c, n_points, dimension=3, tt=None):
+    """ Create initial position. """
+    dataset = np.zeros((n_points, dimension))
 
-def spiral_pos(c, N, dim):
-    dataSet = np.zeros((N, dim))
-    T = np.linspace(0, np.pi, N)
-    dataSet[:,0] = np.sin(T)*np.cos(c*T)
-    dataSet[:,1] = np.sin(T)*np.sin(c*T)
-    dataSet[:,2] = np.cos(T)
+    if tt is None:
+        tt = np.linspace(0, np.pi, n_points)
+    else:
+        # No lists, only numpy array
+        tt = np.array(tt)
+
+    dataset[:, 0] = np.sin(tt)*np.cos(c*tt)
+    dataset[:, 1] = np.sin(tt)*np.sin(c*tt)
+    dataset[:, 2] = np.cos(tt)
     
-    return dataSet
+    return dataset
 
-def get_symbolic_expression(c, symbolX):
-    xDotExpr = sympy.expand_trig(sympy.cos(c*symbolX))
-    yDotExpr = sympy.expand_trig(sympy.sin(c*symbolX))
-    return [xDotExpr, yDotExpr]
+def spiral_motion_stable(position, dt, c, attractor):
+    """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
 
-
-def spiral_motion(position, dt, c, attractor):
+        
+def spiral_motion(position, dt, c, attractor, radius_correction=0):
     """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
     velocity = np.zeros(position.shape)
+    
+    # z = cos(theta)
+    # -dz/dt = sin(theta)
+    theta = np.arccos(position[2])
 
-    theta = np.arccos(velocity[2])
-    velocity[2] = -np.sqrt(1-position[2]**2)
     velocity[0] = position[2]*np.cos(c*theta) - c*position[1]
     velocity[1] = position[2]*np.sin(c*theta) + c*position[0]
+    velocity[2] = -np.sqrt(1-position[2]**2)
 
+    if radius_correction:
+        pos_norm = np.linalg.norm(position)
+        correction_velocity = position
+        velocity += 
+    
     return velocity
 
-def spiral_motion_integrator(startPoint, dt, c, symbolX, velExpr, attractor):
-    [x,y,z] = startPoint
-    print("C:",c)
-    dataSet = [[x,y,z]]
-    goal = np.array(attractor).astype(float)
-    current = np.array(startPoint)
-    
-    while np.linalg.norm(current-attractor) > 1e-5 and z > -1:
-        zDot = -np.sqrt(1-z**2)
-        xDot = z*velExpr[0].subs([(sympy.cos(symbolX),z), (sympy.sin(symbolX),-zDot)]) - c*y
-        yDot = z*velExpr[1].subs([(sympy.cos(symbolX),z), (sympy.sin(symbolX),-zDot)]) + c*x
+def spiral_motion_integrator(start_position, dt, c, attractor):
+    """ Integrate spiral motion. """
+    dataset = []
+    dataset.append(start_position)
+    current_position = start_position
 
-        vel = spiral_motion(np.array([x, y, z]), dt, c, attractor)
-        
-        breakpoint()
-        x = x + xDot*dt
-        y = y + yDot*dt
-        z = z + zDot*dt
+    while np.linalg.norm(current_position-attractor) > 1e-5 and current_position[2] > -1:
+          delta_vel = spiral_motion(dataset[-1], dt, c, attractor)
+          current_position = delta_vel*dt + current_position
+          dataset.append(current_position)
 
-        print(x, y, z)
-
-        dataSet = dataSet + [[x,y,z]]
-        current = np.array([x,y,z]).astype(float)
-
-    return dataSet
+    return dataset
