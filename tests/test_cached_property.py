@@ -1,6 +1,5 @@
 #!/USSR/bin/python3.9
 """ Script to show lab environment on computer """
-
 __author__ = "LukasHuber"
 __date__ = "2021-05-18"
 __email__ = "lukas.huber@epfl.ch"
@@ -11,7 +10,6 @@ import random
 import copy
 
 from functools_custom import lru_cached_property
-
 
 class TestSum(unittest.TestCase):
     def test_creation(self):

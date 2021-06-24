@@ -4,7 +4,6 @@
 # Date: 2021-05-18
 # Email: lukas.huber@epfl.ch
 
-
 import unittest
 import copy
 
