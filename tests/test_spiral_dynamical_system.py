@@ -26,6 +26,7 @@ class TestSpiralmotion(unittest.TestCase):
 
         dt = 0.0005
         start_position = spiral_analytic(complexity_spiral, n_points=1, tt=[0.001])[0, :]
+        start_position = [1, 1, 1.5]
         dataset_ds = np.array(spiral_motion_integrator(start_position, dt,
                                                        complexity_spiral, end_point))
 
@@ -50,11 +51,11 @@ class TestSpiralmotion(unittest.TestCase):
         ax_ds.set_zlabel('Z(m)', fontsize=18,labelpad=15)
         ax_ds.set_title('Spiral DS', fontsize=20, pad=20)
         
+        plt.ion()
         plt.show()
-
+        
 if __name__ == '__main__':
     # unittest.main()
-
     manual_tets = True
     if manual_tets:
         Tester = TestSpiralmotion()

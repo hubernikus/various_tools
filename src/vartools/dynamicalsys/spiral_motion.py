@@ -21,14 +21,22 @@ def spiral_analytic(c, n_points, dimension=3, tt=None):
     dataset[:, 2] = np.cos(tt)
     
     return dataset
-
-def spiral_motion_stable(position, dt, c, attractor):
-    """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
-
         
-def spiral_motion(position, dt, c, attractor, radius_correction=0):
+def spiral_motion(position, dt, c, p_radius_control=0,
+                  center_position=np.array([0, 0, 0]), axes_stretch=np.array([1, 1, 1]),
+                  orientation=None):
     """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
+    if orientation is not None:
+        raise NotImplementedError("TODO: Implement 3D rotation. (quaternion? / scipy?)")
+
+    position = (position - center_position) / axes_stretch
     velocity = np.zeros(position.shape)
+
+    # Bound value in [-1, 1]
+    position_norm = np.linalg.norm(position)
+    if not position_norm: # Zero value
+        return velocity
+    position = position / position_norm
     
     # z = cos(theta)
     # -dz/dt = sin(theta)
@@ -38,11 +46,13 @@ def spiral_motion(position, dt, c, attractor, radius_correction=0):
     velocity[1] = position[2]*np.sin(c*theta) + c*position[0]
     velocity[2] = -np.sqrt(1-position[2]**2)
 
-    if radius_correction:
-        pos_norm = np.linalg.norm(position)
-        correction_velocity = position
-        velocity += 
-    
+    if p_radius_control: # Nonzero
+        radius = 1
+        if (position_norm-radius):
+            correction_velocity = position * (position_norm-radius)
+            velocity = velocity - correction_velocity * p_radius_control
+
+    velocity = velocity * axes_stretch
     return velocity
 
 def spiral_motion_integrator(start_position, dt, c, attractor):
@@ -52,7 +62,7 @@ def spiral_motion_integrator(start_position, dt, c, attractor):
     current_position = start_position
 
     while np.linalg.norm(current_position-attractor) > 1e-5 and current_position[2] > -1:
-          delta_vel = spiral_motion(dataset[-1], dt, c, attractor)
+          delta_vel = spiral_motion(dataset[-1], dt, c, p_radius_control=1)
           current_position = delta_vel*dt + current_position
           dataset.append(current_position)
 
