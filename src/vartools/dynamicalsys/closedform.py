@@ -1,7 +1,8 @@
-""" Dynamical Systems with a closed-form description.
+"""
+Dynamical Systems with a closed-form description.
 """
 
-import functools
+# import functools
 import numpy as np
 
 # def decorator(original_function=None, *, optional_argument1=None, optional_argument2=None, ...):
@@ -36,22 +37,6 @@ import numpy as np
 #     if original_function:
 #         return _decorate(original_function)
 #     return _decorate
-
-
-def allow_max_velocity(original_function=None):
-    ''' Decorator to allow to limit the velocity to a maximum. '''
-    def wrapper(*args, max_vel=None, **kwargs):
-        if max_vel is None:
-            return original_function(*args, **kwargs)
-        else:
-            velocity = original_function(*args, **kwargs)
-            
-            mag_vel = np.linalg.norm(velocity)
-            if mag_vel > max_vel:
-                velocity = velocity / mag_vel
-            return velocity
-
-    return wrapper
 
 
 def parallel_ds(position, direction):

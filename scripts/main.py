@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-'''
+"""
 Tools to handle the direction space.
-'''
+"""
 
 __author__ =  "lukashuber"
 __date__ = "2021-05-16"
@@ -17,7 +17,7 @@ plt.ion()
 
 def test_linear_ds_3d_vectorfield(A_matrix=None, b_offset=None):
     fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    ax = fig.gca(projection='3d')8
 
     x, y, z = np.meshgrid(np.arange(-0.8, 1, 0.2),
                           np.arange(-0.8, 1, 0.2),

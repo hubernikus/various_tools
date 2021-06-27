@@ -10,6 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from vartools.dynamicalsys.spiral_motion import spiral_analytic
 from vartools.dynamicalsys.spiral_motion import spiral_motion_integrator
 
+
 class TestSpiralmotion(unittest.TestCase):
     def test_creation(self):
         # Terminal for the spiral DS
@@ -62,3 +63,4 @@ if __name__ == '__main__':
         Tester.test_creation()
     
 print('Done')
+
