@@ -9,7 +9,7 @@ from vartools.dynamicalsys import PendulumDynamics, DuffingOscillator, Bifurcati
 from vartools.dynamicalsys import plot_dynamical_system_streamplot
 
 
-class TestSpiralmotion(unittest.TestCase):
+class TestDynamicalSystems(unittest.TestCase):
     def visualize_pendulum(self):
         MyDynamics = PendulumDynamics(maximum_velocity=1)
         plot_dynamical_system_streamplot(DynamicalSystem=MyDynamics,
@@ -33,10 +33,10 @@ if __name__ == '__main__':
     # unittest.main()
     visual_tets = True
     if visual_tets:
-        Tester = TestSpiralmotion()
-        Tester.visualize_pendulum()
-        Tester.visualize_duffing()
-        Tester.visualize_spiral()
+        MyTester = TestDynamicalSystems()
+        MyTester.visualize_pendulum()
+        MyTester.visualize_duffing()
+        MyTester.visualize_spiral()
     
 print('Done')
 

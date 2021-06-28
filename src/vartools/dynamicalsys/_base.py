@@ -28,20 +28,33 @@ def allow_max_velocity(original_function=None):
 
 class DynamicalSystem(ABC):
     """ Virtual Class for Base dynamical system"""
-    def __init__(self, center_position=None, maximum_velocity=None, dimension=None):
+    def __init__(self, center_position=None, maximum_velocity=None, dimension=None,
+                 attractor_position=None):
         if center_position is None:
             self.center_position = np.zeros(dimension)
         else:
             self.center_position = np.array(center_position)
             self.center_position.shape[0] = dimension
-
+            
         self.maximum_velocity = maximum_velocity
+
+        if dimension is None and attractor_position is not None:
+            dimension = attractor_position.shape[0]
+        self.attractor_position = attractor_position
 
         if dimension is None:
             raise ValueError("Space dimension cannot be guess from inputs. Please define it at initialization.")
         
         self.dimension = dimension
 
+    @property
+    def attractor_position(self):
+        return self._attractor_position
+
+    @attractor_position.setter
+    def attractor_position(self, value):
+        self._attractor_position = value
+    
     def limit_velocity(self, velocity, maximum_velocity=None):
         if maximum_velocity is None:
             if self.maximum_velocity is None:
