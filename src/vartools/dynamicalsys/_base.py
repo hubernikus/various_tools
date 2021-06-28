@@ -37,7 +37,12 @@ class DynamicalSystem(ABC):
 
         self.maximum_velocity = maximum_velocity
 
-    def limit_velocity(self, velocity, maximum_velocity):
+        if dimension is None:
+            raise ValueError("Space dimension cannot be guess from inputs. Please define it at initialization.")
+        
+        self.dimension = dimension
+
+    def limit_velocity(self, velocity, maximum_velocity=None):
         if maximum_velocity is None:
             if self.maximum_velocity is None:
                 return velocity
@@ -51,7 +56,7 @@ class DynamicalSystem(ABC):
 
     @abstractmethod
     def evaluate(self, position):
-        """ Return velocity of the evaluated the dynamical system at 'position'."""
+        """ Returns velocity of the evaluated the dynamical system at 'position'."""
         pass
 
     def compute_dynamics(self, position):
@@ -64,3 +69,30 @@ class DynamicalSystem(ABC):
         for ii in range(position_array.shape[1]):
             velocity_array[:, ii] = self.evaluate_array(position_array[:, ii])
         return velocity_array
+
+    def check_convergence(self, *args, **kwargs):
+        """ Non compulsary function (only for stable systems), but needed to stop integration. """
+        raise NotImplementedError("No convergence check implemented.")
+    
+    def motion_integration(self, start_position, dt, max_iteration=10000):
+        """ Integrate spiral Motion """
+        dataset = []
+        dataset.append(start_position)
+        current_position = start_position
+
+        it_count = 0
+        while True:
+            it_count += 1
+            if it_count > max_iteration:
+                print("Maximum number of iterations reached.")
+                break
+
+            if self.check_convergence(dataset[-1]):
+                print("Trajectory converged to goal..")
+                break
+
+            delta_vel = self.evaluate(dataset[-1])
+            current_position = delta_vel*dt + current_position
+            dataset.append(current_position)
+            
+        return np.array(dataset).T
