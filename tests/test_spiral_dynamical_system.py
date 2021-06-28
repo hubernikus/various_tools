@@ -7,30 +7,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from vartools.dynamicalsys.spiral_motion import spiral_analytic
-from vartools.dynamicalsys.spiral_motion import spiral_motion_integrator
-
+from vartools.dynamicalsys import SpiralStable
 
 class TestSpiralmotion(unittest.TestCase):
     def test_creation(self):
-        # Terminal for the spiral DS
-        end_point = np.array([0, 0, -1])
-
-        # Points in the base spiral
-        n_spiralpoints = 500
-        
         # Complexity of the spiral
         complexity_spiral = 15
         
         # Base spiral
-        dataset_analytic = spiral_analytic(complexity_spiral, n_spiralpoints, dimension=3)
+        SpiralDS = SpiralStable(c_factor=15, p_radius_control=1)
+                                       
+        dataset_analytic = SpiralDS.get_positions(n_points=500)
 
         dt = 0.0005
-        start_position = spiral_analytic(complexity_spiral, n_points=1, tt=[0.001])[0, :]
-        start_position = [1, 1, 1.5]
-        dataset_ds = np.array(spiral_motion_integrator(start_position, dt,
-                                                       complexity_spiral, end_point))
-
+        # start_position = SpiralDS.get_positions(n_points=1, tt=[0.001])[0, :]
+        start_position = np.array([1, 1, 1.5])
+        dataset_ds = SpiralDS.motion_integration(start_position, dt).T
+        
+        # dataset_ds = np.array(spiral_motion_integrator(start_position, dt,
+                                                       # complexity_spiral, end_point))
+                                                       
         fig = plt.figure("Figure: c = "+str(complexity_spiral))
         ax = fig.add_subplot(1,2,1, projection='3d')
         ax.plot(dataset_analytic[:,0], dataset_analytic[:,1], dataset_analytic[:,2],'b')
