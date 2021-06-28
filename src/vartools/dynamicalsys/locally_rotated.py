@@ -13,28 +13,32 @@ from vartools.directional_space import get_angle_space_inverse
 
 class LocallyRotated(DynamicalSystem):
     """ Returns dynamical system with a mean rotation of 'mean_rotation'
-    at position 'rotation_position'
+    at position 'rotation_center'
 
     Parameters
     ----------
     position: Position at which the dynamical system is evaluated
     center_position: Center of the dynamical system - rotation has to reach <pi/2 at this position
     mean_rotation: angle-space rotation at position.
-    rotation_position: 
+    rotation_center: 
     influence_radius:
     
     Return
     ------
     Velocity (dynamical system) evaluted at the center position
     """
-    def __init__(self, mean_rotation, rotation_position, center_position=None,
-                 influence_radius=1, delta_influence_center=0.1, influence_descent=0.5):
-        self.rotation_position = np.array(rotation_position)
+    def __init__(self, mean_rotation, rotation_center,
+                 influence_radius=1, delta_influence_center=0.1, influence_descent=0.5,
+                 center_position=None, maximum_velocity=None, dimension=2):
+        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
+                         dimension=dimension)
+        
+        self.rotation_center = np.array(rotation_center)
         self.mean_rotation = np.array(mean_rotation)
 
         super().__init__(center_position)
         
-        if np.allclose(self.center_position, self.rotation_position, rtol=influence_radius*1e-6):
+        if np.allclose(self.center_position, self.rotation_center, rtol=influence_radius*1e-6):
             raise ValueError("Center and rotation position are too close to each other.")
 
         self.influence_radius = influence_radius
@@ -67,7 +71,7 @@ class LocallyRotated(DynamicalSystem):
 
     def get_weight(self, position):
         # Evalaute the weights
-        dist_rot = np.linalg.norm(position-self.rotation_position)
+        dist_rot = np.linalg.norm(position-self.rotation_center)
 
         if dist_rot <= self.influence_radius:
             weight_rot = 1
