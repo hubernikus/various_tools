@@ -7,15 +7,14 @@ Dynamical Systems with a closed-form description.
 
 import numpy as np
 
-from vartools.dynamicalsys import DynamicalSystem, allow_max_velocity
-from vartools.directional_space import get_angle_space_inverse
+from vartools.dynamicalsys import DynamicalSystem
 
 
 class QuadraticAxisConvergence(DynamicalSystem):
     """ Dynamical system wich convergence faster towards x-axis. """
     def __init__(self, main_axis=None, conv_pow=2, stretching_factor=1,
-                 center_position=None, maximum_velocity=None):
-        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity)
+                 center_position=None, maximum_velocity=None, dimension=2):
+        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity, dimension=dimension)
 
         self.conv_pow = conv_pow
         self.stretching_factor = stretching_factor

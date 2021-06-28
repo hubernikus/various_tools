@@ -5,6 +5,7 @@ The :mod:`DynamicalSystem` module implements mixture modeling algorithms.
 from ._base import allow_max_velocity, DynamicalSystem
 from .linear import LinearSystem, ConstantValue
 from .circle_stable import CircularStable
+from .spiral_motion import SpiralStable
 from .locally_rotated import LocallyRotated
 from .quadratic_axis_convergence import QuadraticAxisConvergence
 
@@ -17,6 +18,7 @@ __all__ = ['allow_max_velocity',
            'LinearSystem',
            'ConstantValue',
            'CircularStable'
+           'SpiralStable',
            'LocallyRotated',
            'QuadraticAxisConvergence',
            'plot_dynamical_system_quiver',

@@ -7,7 +7,7 @@ Dynamical Systems with a closed-form description.
 
 import numpy as np
 
-from vartools.dynamicalsys import DynamicalSystem, allow_max_velocity
+from vartools.dynamicalsys import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
 
 
