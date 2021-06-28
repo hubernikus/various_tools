@@ -25,11 +25,20 @@ def allow_max_velocity(original_function=None):
 
 class DynamicalSystem(ABC):
     """ Virtual Class for Base dynamical system"""
-    def __init__(self):
-        pass
+    def __init__(self, center_position=None):
+        if center_position is None:
+            self.center_position = np.zeros(self.rotation_position.shape[0])
+        else:
+            self.center_position = np.array(center_position)
 
+    def limit_velocity(self, velocity, max_vel):
+        mag_vel = np.linalg.norm(velocity)
+        if mag_vel > max_vel:
+            velocity = velocity / mag_vel
+        return velocity
+        
     @abstractmethod
-    def evaluate(self, position):
+    def evaluate(self, center_position=None):
         """ Return velocity of the evaluated the dynamical system at 'position'."""
         pass
 

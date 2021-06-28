@@ -10,6 +10,7 @@ import numpy as np
 from vartools.dynamicalsys import DynamicalSystem, allow_max_velocity
 from vartools.directional_space import get_angle_space_inverse
 
+
 class LocallyRotated(DynamicalSystem):
     """ Returns dynamical system with a mean rotation of 'mean_rotation'
     at position 'rotation_position'
@@ -31,10 +32,7 @@ class LocallyRotated(DynamicalSystem):
         self.rotation_position = np.array(rotation_position)
         self.mean_rotation = np.array(mean_rotation)
 
-        if center_position is None:
-            self.center_position = np.zeros(self.rotation_position.shape[0])
-        else:
-            self.center_position = np.array(center_position)
+        super().__init__(center_position)
         
         if np.allclose(self.center_position, self.rotation_position, rtol=influence_radius*1e-6):
             raise ValueError("Center and rotation position are too close to each other.")
@@ -93,4 +91,3 @@ class LocallyRotated(DynamicalSystem):
             weight_rot = weight_rot / sum_weights
             
         return weight_rot
-        # return weight_center
