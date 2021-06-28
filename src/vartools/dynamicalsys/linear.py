@@ -28,6 +28,8 @@ class LinearSystem(DynamicalSystem):
     Velocity (dynamical system) evaluted at the center position
     """
     def __init__(self, A_matrix=None, center_position=None, b=None):
+        super().__init__(center_position)
+
         if A_matrix is None:
             self.A_matrix = np.eye(position.shape[0]) * (-1)
         else:
@@ -39,16 +41,21 @@ class LinearSystem(DynamicalSystem):
                                  "Only one of them possible.")
             center_position = np.linalg.pinv(self.A_matrix) @ b
 
-        super().__init__(center_position)
-
     def evaluate(self, position, max_vel=None):
         velocity =  self.A_matrix.dot(position - self.center_position)
-
-        if max_vel is not None:
-            velocity = self.limit_velocity(velocity, max_vel)
-
+        velocity = self.limit_velocity(velocity, max_vel)
         return velocity
 
+    def is_stable(self, position):
+        """ Check stability of given A matrix """
+        A = self.A_matrix + self.A_matrix.T
+        eigvals, eigvecs = np.linalg.eig(A)
+
+        if all(eigvals < 0):
+            return True
+        else:
+            return False
+        
 
 class ConstantValue(DynamicalSystem):
     """ Returns constant velocity based on the DynamicalSystem parent-class"""

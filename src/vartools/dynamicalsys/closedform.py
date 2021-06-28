@@ -1,9 +1,11 @@
 """
 Dynamical Systems with a closed-form description.
 """
-
-# import functools
+# TODO remove this file.. -> new implementation is in classes
+# Author: Lukas Huber
+# License: BSD (c) 2021
 import numpy as np
+from vartools.dynamicalsys import DynamicalSystem, allow_max_velocity
 
 # def decorator(original_function=None, *, optional_argument1=None, optional_argument2=None, ...):
 #     def _decorate(function):
