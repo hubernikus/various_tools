@@ -8,10 +8,12 @@ from .circle_stable import CircularStable
 from .spiral_motion import SpiralStable
 from .locally_rotated import LocallyRotated
 from .quadratic_axis_convergence import QuadraticAxisConvergence
+from .model_dynamics import PendulumDynamics, DuffingOscillator, BifurcationSpiral
 
 # Helper functions for visualization
+from .plot_vectorfield import plot_dynamical_system
 from .plot_vectorfield import plot_dynamical_system_quiver
-
+from .plot_vectorfield import plot_dynamical_system_streamplot
 
 __all__ = ['allow_max_velocity',
            'DynamicalSystem',
@@ -21,5 +23,10 @@ __all__ = ['allow_max_velocity',
            'SpiralStable',
            'LocallyRotated',
            'QuadraticAxisConvergence',
+           'PendulumDynamics',
+           'DuffingOscillator',
+           'BifurcationSpiral',
+           'plot_dynamical_system',
            'plot_dynamical_system_quiver',
+           'plot_dynamical_system_streamplot',
            ]

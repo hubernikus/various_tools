@@ -11,7 +11,7 @@ from vartools.dynamicalsys import SpiralStable
 
 class TestSpiralmotion(unittest.TestCase):
     def test_creation(self):
-        # Complexity of the spiral
+        # Complexity of the spiral)
         complexity_spiral = 15
         
         # Base spiral

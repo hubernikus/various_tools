@@ -15,7 +15,6 @@ from vartools.dynamicalsys.closedform import evaluate_stable_circle_dynamical_sy
 
 
 
-
 if (__name__) == "__main__":
     plt.close('all')
     plt.ion()  # Interactive plotting
