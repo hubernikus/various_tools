@@ -13,7 +13,7 @@ class PendulumDynamics(DynamicalSystem):
     def __init__(self, length=1, weight=1, friction=1,
                  center_position=None, maximum_velocity=None, dimension=2):
         super().__init__(center_position=center_position,
-                           maximum_velocity=maximum_velocity, dimension=dimension)
+                         maximum_velocity=maximum_velocity, dimension=dimension)
         self.length = length
         self.weight = weight
         self.friction = friction
@@ -43,8 +43,11 @@ class DuffingOscillator(DynamicalSystem):
         
         velocity = np.zeros(self.dimension)
         velocity[0] = position[1]
-        velocity[1] = -self.delta_factor * ((-self.alpha_factor/self.beta_factor)* position[0]
-                                            - position[0]**3 - position[1])
+        # velocity[1] = -self.delta_factor*((-self.alpha_factor/self.beta_factor)* position[0]
+                                            # - position[0]**3 - position[1])
+        velocity[1] = (-1)*(self.delta_factor*position[1]
+                            + self.alpha_factor * position[0]
+                            + self.beta_factor * position[0]**3)
         
         velocity = self.limit_velocity(velocity)
         return velocity
