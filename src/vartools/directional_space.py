@@ -14,15 +14,20 @@ import numpy as np
 from vartools.linalg import get_orthogonal_basis
 
 
-def get_angle_space_of_array(directions, positions, func_vel_default):
+def get_angle_space_of_array(directions,
+                             positions=None, func_vel_default=None,
+                              null_direction_abs=None):
     """ Get the angle space for a whole array. """
-    dim = positions.shape[0]
-    num_samples = positions.shape[1]
+    dim = directions.shape[0]
+    num_samples = directions.shape[1]
 
     direction_space = np.zeros((dim-1, num_samples))
     for ii in range(num_samples):
         # Nominal Velocity / Null direction is evaluated each time
-        vel_default = func_vel_default(positions[:, ii])
+        if null_direction_abs is None:
+            vel_default = func_vel_default(positions[:, ii])
+        else:
+            vel_default = null_direction_abs
         direction_space[:, ii] = get_angle_space(directions[:, ii], null_direction=vel_default)
 
     return direction_space

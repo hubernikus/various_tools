@@ -48,7 +48,7 @@ class CircularStable(DynamicalSystem):
 
         velocity =  velocity_linear*self.factor_controler + velocity_circular
         
-                    radius = 1
+        radius = 1
         velocity = self.limit_velocity(velocity, maximum_velocity)
         return velocity
 

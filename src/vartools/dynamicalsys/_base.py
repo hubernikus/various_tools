@@ -34,8 +34,7 @@ class DynamicalSystem(ABC):
             self.center_position = np.zeros(dimension)
         else:
             self.center_position = np.array(center_position)
-            self.center_position.shape[0] = dimension
-            
+            dimension = self.center_position.shape[0]
         self.maximum_velocity = maximum_velocity
 
         if dimension is None and attractor_position is not None:

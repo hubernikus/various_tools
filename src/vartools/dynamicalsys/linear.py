@@ -26,22 +26,22 @@ class LinearSystem(DynamicalSystem):
     ------
     Velocity (dynamical system) evaluted at the center position
     """
-    def __init__(self, A_matrix=None, center_position=None, b=None):
-        super().__init__(center_position)
+    def __init__(self, attractor_position=None, A_matrix=None, b=None):
+        super().__init__(attractor_position=attractor_position)
 
         if A_matrix is None:
-            self.A_matrix = np.eye(position.shape[0]) * (-1)
+            self.A_matrix = np.eye(self.dimension) * (-1)
         else:
             self.A_matrix = A_matrix
 
         if b is not None:
-            if center_position is not None:
+            if attractor_position is not None:
                 raise ValueError("center_pos AND baseline default arguments has been used." +
                                  "Only one of them possible.")
-            center_position = np.linalg.pinv(self.A_matrix) @ b
+            self.attractor_position = np.linalg.pinv(self.A_matrix) @ b
 
     def evaluate(self, position, max_vel=None):
-        velocity =  self.A_matrix.dot(position - self.center_position)
+        velocity =  self.A_matrix.dot(position - self.attractor_position)
         velocity = self.limit_velocity(velocity, max_vel)
         return velocity
 
