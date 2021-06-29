@@ -8,7 +8,7 @@ from .circle_stable import CircularStable
 from .spiral_motion import SpiralStable
 from .locally_rotated import LocallyRotated
 from .quadratic_axis_convergence import QuadraticAxisConvergence
-from .model_dynamics import PendulumDynamics, DuffingOscillator, BifurcationSpiral
+from .multiattractor_dynamics import PendulumDynamics, DuffingOscillator, BifurcationSpiral
 
 # Helper functions for visualization
 from .plot_vectorfield import plot_dynamical_system
