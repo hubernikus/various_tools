@@ -5,8 +5,8 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from vartools.dynamicalsys import PendulumDynamics, DuffingOscillator, BifurcationSpiral
-from vartools.dynamicalsys import plot_dynamical_system_streamplot
+from vartools.dynamical_systems import PendulumDynamics, DuffingOscillator, BifurcationSpiral
+from vartools.dynamical_systems import plot_dynamical_system_streamplot
 
 
 class TestDynamicalSystems(unittest.TestCase):

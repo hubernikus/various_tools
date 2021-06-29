@@ -5,7 +5,7 @@
 # License: BSD (c) 2021
 
 import numpy as np
-from vartools.dynamicalsys import DynamicalSystem
+from ._base import DynamicalSystem
 
 # TODO: test! / visualize
 

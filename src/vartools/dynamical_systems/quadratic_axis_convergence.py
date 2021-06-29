@@ -7,7 +7,7 @@ Dynamical Systems with a closed-form description.
 
 import numpy as np
 
-from vartools.dynamicalsys import DynamicalSystem
+from ._base import DynamicalSystem
 
 class QuadraticAxisConvergence(DynamicalSystem):
     """ Dynamical system wich convergence faster towards x-axis. """

@@ -38,8 +38,8 @@ def plot_dynamical_system(DynamicalSystem=None, x_lim=None, y_lim=None, n_resolu
     # plt.figure()
     fig, ax = plt.subplots(figsize=figsize)
     if plottype=='quiver':
-        plt.quiver(positions[0, :, :], positions[1, :, :],
-                   velocities[0, :, :], velocities[1, :, :], color="blue")
+        plt.quiver(positions[0, :], positions[1, :],
+                   velocities[0, :], velocities[1, :], color="blue")
     elif plottype=='streamplot':
         ax.streamplot(x_vals, y_vals,
                       velocities[0, :].reshape(nx, ny), velocities[1, :].reshape(nx, ny), color="blue")

@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from vartools.dynamicalsys import LocallyRotated
-from vartools.dynamicalsys import plot_dynamical_system_quiver
+from vartools.dynamical_systems import LocallyRotated
+from vartools.dynamical_systems import plot_dynamical_system_quiver
 
 
 class TestSpiralmotion(unittest.TestCase):
@@ -16,10 +16,10 @@ class TestSpiralmotion(unittest.TestCase):
         DynamicalSystem = LocallyRotated(
             mean_rotation=[-np.pi/2],
             # mean_rotation=[np.pi],
-            rotation_position=[5, 2],
+            rotation_center=[5, 2],
             influence_radius=3)
         
-        plot_dynamical_system_quiver(func=DynamicalSystem.evaluate,
+        plot_dynamical_system_quiver(DynamicalSystem=DynamicalSystem,
                                      n_resolution=20)
 
         self.test_weight(DynamicalSystem)
@@ -27,17 +27,17 @@ class TestSpiralmotion(unittest.TestCase):
     def plot_critical_ds(self):
         DynamicalSystem = LocallyRotated(
             mean_rotation=[np.pi],
-            rotation_position=[4, 2],
+            rotation_center=[4, 2],
             influence_radius=4)
         
-        plot_dynamical_system_quiver(func=DynamicalSystem.evaluate,
+        plot_dynamical_system_quiver(DynamicalSystem=DynamicalSystem,
                                      n_resolution=20)
         
     def test_weight(self, DynamicalSystem=None, x_lim=[-10, 10], y_lim=[-10, 10], dim=2):
         if DynamicalSystem is None:
             DynamicalSystem = LocallyRotated(
                 mean_rotation=[np.pi],
-                rotation_position=[4, 2],
+                rotation_center=[4, 2],
                 influence_radius=4,
                 )
         
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     manual_tets = True
     if manual_tets:
         Tester = TestSpiralmotion()
-        Tester.plot_dynamical_system()
+        # Tester.plot_dynamical_system()
         # Tester.plot_critical_ds()
-        # Tester.test_weight()
+        Tester.test_weight()
     
 print('Done')
 

@@ -7,7 +7,7 @@ Dynamical Systems with a closed-form description.
 
 import numpy as np
 
-from vartools.dynamicalsys import DynamicalSystem
+from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
 
 
@@ -30,13 +30,13 @@ class LocallyRotated(DynamicalSystem):
     def __init__(self, mean_rotation, rotation_center,
                  influence_radius=1, delta_influence_center=0.1, influence_descent=0.5,
                  center_position=None, maximum_velocity=None, dimension=2):
-        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
-                         dimension=dimension)
-        
         self.rotation_center = np.array(rotation_center)
         self.mean_rotation = np.array(mean_rotation)
-
-        super().__init__(center_position)
+        
+        self.dimension = self.rotation_center.shape[0]
+        
+        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
+                         dimension=dimension)
         
         if np.allclose(self.center_position, self.rotation_center, rtol=influence_radius*1e-6):
             raise ValueError("Center and rotation position are too close to each other.")

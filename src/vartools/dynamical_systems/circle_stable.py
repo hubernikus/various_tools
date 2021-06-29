@@ -8,7 +8,7 @@ Dynamical Systems with a closed-form description.
 import warnings
 import numpy as np
 
-from vartools.dynamicalsys import DynamicalSystem
+from ._base import DynamicalSystem
 
 class CircularStable(DynamicalSystem):
     """ Dynamical system with Circular Motion x-axis. """

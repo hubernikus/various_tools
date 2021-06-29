@@ -7,7 +7,7 @@
 
 import numpy as np
 
-from vartools.dynamicalsys import DynamicalSystem
+from ._base import DynamicalSystem
 
 class SpiralStable(DynamicalSystem):
     """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
