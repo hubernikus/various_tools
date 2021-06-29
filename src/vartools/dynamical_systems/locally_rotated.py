@@ -10,7 +10,6 @@ import numpy as np
 from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
 
-
 class LocallyRotated(DynamicalSystem):
     """ Returns dynamical system with a mean rotation of 'mean_rotation'
     at position 'rotation_center'
@@ -18,7 +17,7 @@ class LocallyRotated(DynamicalSystem):
     Parameters
     ----------
     position: Position at which the dynamical system is evaluated
-    center_position: Center of the dynamical system - rotation has to reach <pi/2 at this position
+    attractor_position: Center of the dynamical system - rotation has to reach <pi/2 
     mean_rotation: angle-space rotation at position.
     rotation_center: 
     influence_radius:
@@ -29,17 +28,18 @@ class LocallyRotated(DynamicalSystem):
     """
     def __init__(self, mean_rotation, rotation_center,
                  influence_radius=1, delta_influence_center=0.1, influence_descent=0.5,
-                 center_position=None, maximum_velocity=None, dimension=2):
+                 attractor_position=None, maximum_velocity=None, dimension=2):
         self.rotation_center = np.array(rotation_center)
         self.mean_rotation = np.array(mean_rotation)
         
         self.dimension = self.rotation_center.shape[0]
         
-        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
-                         dimension=dimension)
-        
-        if np.allclose(self.center_position, self.rotation_center, rtol=influence_radius*1e-6):
-            raise ValueError("Center and rotation position are too close to each other.")
+        super().__init__(attractor_position=attractor_position, maximum_velocity=maximum_velocity,
+                         dimension=self.dimension)
+
+        # 'allclose'-check not needed.. since DS is just reduced towards attractor
+        # if np.allclose(self.center_position, self.rotation_center, rtol=influence_radius*1e-6):
+            # raise ValueError("Center and rotation position are too close to each other.")
 
         self.influence_radius = influence_radius
 
@@ -50,23 +50,22 @@ class LocallyRotated(DynamicalSystem):
 
         self.influence_descent = influence_descent
         
-    def evaluate(self, position, max_vel=None):
+    def evaluate(self, position):
         weight_rot = self.get_weight(position)
 
         rot_final = self.mean_rotation * weight_rot
-
-        dir_attractor = self.center_position - position
+        dir_attractor = self.attractor_position - position
 
         if not np.linalg.norm(dir_attractor): # Zero velocity
             return np.zeros(position.shape)
         
         velocity = get_angle_space_inverse(dir_angle_space=rot_final, null_direction=dir_attractor)
-        magnitude = np.linalg.norm(position - self.center_position)
+        magnitude = np.linalg.norm(position - self.attractor_position)
 
-        if max_vel is not None:
-            magnitude = min(magnitude, max_vel)
-
+        if self.maximum_velocity is not None:
+            magnitude = min(magnitude, self.maximum_velocity)
         velocity = velocity * magnitude
+        
         return velocity
 
     def get_weight(self, position):

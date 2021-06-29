@@ -6,6 +6,7 @@ Dynamical Systems with a closed-form description.
 # License: BSD (c) 2021
 
 import numpy as np
+from numpy import linalg as LA # Recommended..
 
 from ._base import DynamicalSystem
 
@@ -45,8 +46,8 @@ class LinearSystem(DynamicalSystem):
         velocity = self.limit_velocity(velocity, max_vel)
         return velocity
 
-    def is_stable(self, position):
-        """ Check stability of given A matrix """
+    def is_stable(self):
+        """ Check stability of given A matrix. """
         A = self.A_matrix + self.A_matrix.T
         eigvals, eigvecs = np.linalg.eig(A)
 

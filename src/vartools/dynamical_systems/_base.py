@@ -34,17 +34,19 @@ class DynamicalSystem(ABC):
             self.center_position = np.zeros(dimension)
         else:
             self.center_position = np.array(center_position)
-            dimension = self.center_position.shape[0]
+            self.dimension = self.center_position.shape[0]
         self.maximum_velocity = maximum_velocity
 
-        if dimension is None and attractor_position is not None:
-            dimension = attractor_position.shape[0]
         self.attractor_position = attractor_position
 
-        if dimension is None:
-            raise ValueError("Space dimension cannot be guess from inputs. Please define it at initialization.")
-        
-        self.dimension = dimension
+        if dimension is not None:
+            self.dimension = dimension
+        elif self.attractor_position is not None:
+            self.dimension = attractor_position.shape[0]
+        elif not hasattr(self, 'dimension'):
+            breakpoint()
+            raise ValueError("Space dimension cannot be guess from inputs. " +
+                             "Please define it at initialization.")
 
     @property
     def attractor_position(self):

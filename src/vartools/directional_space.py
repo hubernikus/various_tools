@@ -54,16 +54,22 @@ def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=
         null_matrix = get_orthogonal_basis(null_direction)
 
     direction_referenceSpace = null_matrix.T.dot(direction)
-    direction_directionSpace = direction_referenceSpace[1:]
-    # No zero-check since non-trivial through previous one.
-    direction_directionSpace = direction_directionSpace / np.linalg.norm(direction_directionSpace)
 
     # Make sure to catch numerical error of cosinus calculation
     cos_direction = direction_referenceSpace[0]
+    if cos_direction >= 1.0:
+        # Trivial solution
+        return np.zeros(direction_referenceSpace.shape[0] - 1)
     cos_direction = max(cos_direction, -1.0)
-    cos_direction = min(cos_direction, 1.0)
-
+    
+    direction_directionSpace = direction_referenceSpace[1:]
+    # No zero-check since non-trivial through previous one.
+    direction_directionSpace = direction_directionSpace / np.linalg.norm(direction_directionSpace)
+    
     direction_directionSpace = direction_directionSpace * np.arccos(cos_direction)
+
+    if any(np.isnan(direction_directionSpace)):
+        breakpoint() # TODO: remove after debugging
 
     return direction_directionSpace
 
