@@ -27,8 +27,13 @@ class LinearSystem(DynamicalSystem):
     ------
     Velocity (dynamical system) evaluted at the center position
     """
-    def __init__(self, attractor_position=None, A_matrix=None, b=None):
-        super().__init__(attractor_position=attractor_position)
+    def __init__(self, attractor_position=None, A_matrix=None, b=None, dimension=None):
+        if attractor_position is None:
+            if dimension is None:
+                raise ValueError("Please indicate dimension explicietly if not using an attractor.")
+            attractor_position = np.zeros(dimension)
+            
+        super().__init__(attractor_position=attractor_position, dimension=dimension)
 
         if A_matrix is None:
             self.A_matrix = np.eye(self.dimension) * (-1)

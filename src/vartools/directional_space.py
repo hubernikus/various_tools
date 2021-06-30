@@ -56,12 +56,17 @@ def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=
     direction_referenceSpace = null_matrix.T.dot(direction)
 
     # Make sure to catch numerical error of cosinus calculation
+    cos_margin=1e-5
     cos_direction = direction_referenceSpace[0]
-    if cos_direction >= 1.0:
+    if cos_direction >= (1.0-cos_margin):
         # Trivial solution
         return np.zeros(direction_referenceSpace.shape[0] - 1)
-    cos_direction = max(cos_direction, -1.0)
-    
+    elif cos_direction <= -(1.0-cos_margin):
+        warnings.warn("Opposite direction detected. Close to discontuinity!")
+        default_dir = np.zeros(direction_referenceSpace.shape[0] - 1)
+        default_dir[0] = pi
+        return default_dir
+        
     direction_directionSpace = direction_referenceSpace[1:]
     # No zero-check since non-trivial through previous one.
     direction_directionSpace = direction_directionSpace / np.linalg.norm(direction_directionSpace)

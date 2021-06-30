@@ -11,16 +11,18 @@ from ._base import DynamicalSystem
 
 class SpiralStable(DynamicalSystem):
     """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
-    def __init__(self, c_factor, p_radius_control=0, axes_stretch=np.array([1, 1, 1]), radius=1,
+    def __init__(self, complexity_spiral=15, p_radius_control=1, i_radius_control=0,
+                 axes_stretch=np.array([1, 1, 1]), radius=1,
                  orientation=None,
                  center_position=None, maximum_velocity=None, dimension=3):
-        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity, dimension=dimension)
+        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
+                         dimension=dimension)
 
         if orientation is not None:
             raise NotImplementedError("TODO: Implement 3D rotation. (quaternion? / scipy?)")
 
         self.p_radius_control = p_radius_control
-        self.c_factor = c_factor
+        self.complexity_spiral = complexity_spiral
         
         # TODO: (Properly) implement following tools
         self.axes_stretch = np.array([1, 1, 1])
@@ -43,8 +45,8 @@ class SpiralStable(DynamicalSystem):
 
         dataset = np.zeros((n_points, self.dimension))
 
-        dataset[:, 0] = np.sin(tt)*np.cos(self.c_factor*tt)
-        dataset[:, 1] = np.sin(tt)*np.sin(self.c_factor*tt)
+        dataset[:, 0] = np.sin(tt)*np.cos(self.complexity_spiral*tt)
+        dataset[:, 1] = np.sin(tt)*np.sin(self.complexity_spiral*tt)
         dataset[:, 2] = np.cos(tt)
 
         # dataset = self.axes_strech*dataset + np.tile(self.center_position, (n_points, 1))
@@ -64,8 +66,10 @@ class SpiralStable(DynamicalSystem):
         # -dz/dt = sin(theta)
         theta = np.arccos(position[2])
 
-        velocity[0] = position[2]*np.cos(self.c_factor*theta) - self.c_factor*position[1]
-        velocity[1] = position[2]*np.sin(self.c_factor*theta) + self.c_factor*position[0]
+        velocity[0] = (position[2]*np.cos(self.complexity_spiral*theta)
+                       - self.complexity_spiral*position[1])
+        velocity[1] = (position[2]*np.sin(self.complexity_spiral*theta)
+                       + self.complexity_spiral*position[0])
         velocity[2] = -np.sqrt(1 - position[2]**2)
 
         if self.p_radius_control: # Nonzero

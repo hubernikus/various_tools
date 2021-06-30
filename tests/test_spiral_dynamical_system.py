@@ -12,22 +12,24 @@ from vartools.dynamical_systems import SpiralStable
 class TestSpiralmotion(unittest.TestCase):
     def test_creation(self):
         # Complexity of the spiral)
-        complexity_spiral = 15
+        complexity_spiral=15
         
         # Base spiral
-        SpiralDS = SpiralStable(c_factor=15, p_radius_control=1)
+        SpiralDS = SpiralStable(complexity_spiral=complexity_spiral, p_radius_control=1)
                                        
         dataset_analytic = SpiralDS.get_positions(n_points=500)
 
         dt = 0.0005
         # start_position = SpiralDS.get_positions(n_points=1, tt=[0.001])[0, :]
-        start_position = np.array([1, 1, 1.5])
+        # start_position = np.array([1, 2, 1])
+        start_position = np.array([0.2, 0.2, 0.4])
         dataset_ds = SpiralDS.motion_integration(start_position, dt).T
         
         # dataset_ds = np.array(spiral_motion_integrator(start_position, dt,
                                                        # complexity_spiral, end_point))
                                                        
-        fig = plt.figure("Figure: c = "+str(complexity_spiral))
+        # fig = plt.figure("Figure: c = "+str(complexity_spiral))
+        fig = plt.figure()
         ax = fig.add_subplot(1,2,1, projection='3d')
         ax.plot(dataset_analytic[:,0], dataset_analytic[:,1], dataset_analytic[:,2],'b')
         ax.scatter(dataset_analytic[0,0], dataset_analytic[0,1],
