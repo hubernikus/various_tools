@@ -2,15 +2,14 @@
 Angle math for python in 2D
 Helper function for directional & angle evaluations
 """
+# Author: Lukas Huber
+# Created: "2019-11-15"
+# Email: lukas.huber@epfl.ch
 
 import warnings
 from math import pi
 
 import numpy as np
-
-__author__ = "Lukas Huber"
-__date__ = "2019-11-15"
-__email__ = "lukas.huber@epfl.ch"
 
 # TODO: optimize for speed. Cython?
 
@@ -20,7 +19,6 @@ def angle_is_between(angle_test, angle_low, angle_high):
     delta_high = angle_difference_directional(angle_high, angle_test)
 
     return (delta_low > 0 and delta_high > 0)
-
 
 def angle_is_in_between(angle_test, angle_low, angle_high, margin=1e-9):
     """ Verify if angle_test is in between angle_low & angle_high
@@ -76,7 +74,6 @@ def angle_difference_abs(angle1, angle2):
 def transform_polar2cartesian(magnitude, angle, center_position=None, center_point=None):
     """ Transform 2d from polar- to cartesian coordinates."""
     # Only 2D input
-
     if not center_point is None:
         # TODO remove center_position or center_position
         center_position = center_point
@@ -101,10 +98,6 @@ def transform_cartesian2polar(points, center_position=None, second_axis_is_dim=T
     """
     # TODO -- check dim and etc
     # Don't just squeeze, maybe...
-    
-    # if type(center_position)==type(None):
-        # center_position = np.zeros(self.dim)
-
     points = np.squeeze(points)
     if second_axis_is_dim:
         points = points.T
@@ -141,7 +134,8 @@ def periodic_weighted_sum(angles, weights, reference_angle=None):
     
     if reference_angle is None:
         if len(angles)>2:
-            raise NotImplementedError("No mean defined for periodic function with more than two angles.")
+            raise NotImplementedError(
+                "No mean defined for periodic function with more than two angles.")
         reference_angle = angle_difference_directional(angles[0], angles[1])/2.0 + angles[1]
         reference_angle = angle_modulo(reference_angle)
 

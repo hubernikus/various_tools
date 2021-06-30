@@ -16,7 +16,7 @@ from vartools.linalg import get_orthogonal_basis
 
 def get_angle_space_of_array(directions,
                              positions=None, func_vel_default=None,
-                              null_direction_abs=None):
+                             null_direction_abs=None):
     """ Get the angle space for a whole array. """
     dim = directions.shape[0]
     num_samples = directions.shape[1]
@@ -62,7 +62,9 @@ def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=
         # Trivial solution
         return np.zeros(direction_referenceSpace.shape[0] - 1)
     elif cos_direction <= -(1.0-cos_margin):
-        warnings.warn("Opposite direction detected. Close to discontuinity!")
+        # This value has to be used with care, since it's close to signularity.
+        # Due to the fact that the present transformation can be used to evaluate the total
+        # agnle no 'warning' is raised.
         default_dir = np.zeros(direction_referenceSpace.shape[0] - 1)
         default_dir[0] = pi
         return default_dir
