@@ -13,7 +13,111 @@ import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
 
+def logical_xor(value1, value2):
+    return bool(value1) ^ bool(value2)
 
+class UnitDirection():
+    """ Direction of the length 1 which can be respresented in angle space. """
+    def __init__(self, OtherDirection=None, null_matrix=None, unit_direction=None):
+        """
+        To create the angle space on of several 'reference angles / directions' have to be
+        pass to the function. 
+        
+        Parameters
+        ----------
+        OtherDirection : Argument of type 'UnitDirection', copy the null_matrix
+        unit_direction : Orthonormal float array of size (dimension, dimension)
+        null_matrix : Reference vector of size (dimension,)
+        """
+        if OtherDirection is not None:
+            self.null_matrix = np.copy(OtherDirection.null_matrix)
+        if null_matrix is not None:
+            self.null_matrix = np.copy(null_matrix)
+        elif null_direction is not None:
+            self.null_matrix = get_orthogonal_basis(null_direction)
+        else:
+            raise ValueError("No input argument as a base of the space.")
+
+    @property
+    def dimension(self):
+        return self._null_matrix.shape[0]
+    
+    @property
+    def null_matrix(self):
+        return self._null_matrix
+    
+    @null_matrix.setter
+    def null_matrix(self, value):
+        if hasattr(self, '_null_matrix'):
+            # Reset angles
+            self._angle = None
+            self._vector = None
+        
+        self._null_matrix = value
+            
+    def from_angle(self, value):
+        """ Update angle and reset 'equivalent' vector. """
+        self._angle = value
+        self._vector = None
+    
+    def from_vector(self, None):
+        """ Update vector and reset angle. """
+        self._vector = value
+        self._angle = None
+        
+    def as_angle(self, cos_margin=1e-5):
+        if self._angle is not None:
+            return self._angle
+        
+        if self._vector is None:
+            raise ValueError("Set value before evaluating.")
+        
+        direction_referenceSpace = null_matrix.T.dot(direction)
+
+        # Make sure to catch numerical error of cosinus calculation
+        cos_direction = direction_referenceSpace[0]
+        if cos_direction >= (1.0-cos_margin):
+            # Trivial solution
+            self._angle = np.zeros(direction_referenceSpace.shape[0] - 1)
+            return self._angle
+        
+        elif cos_direction <= -(1.0-cos_margin):
+            # This value has to be used with care, since it's close to signularity.
+            # Due to the fact that the present transformation can be used to evaluate the total
+            # agnle no 'warning' is raised.
+            self._angle = np.zeros(direction_referenceSpace.shape[0] - 1)
+            self._angle[0] = pi
+            return self._angle
+        
+        self._angle = direction_referenceSpace[1:]
+        # No zero-check since non-trivial through previous one.
+        self._angle = (self._angle
+                       /np.linalg.norm(self._angle))
+        self._angle = self._angle * np.arccos(cos_direction)
+        
+        return self._angle
+
+    def as_vector(self):
+        if self._vector is not None:
+            return self._vector
+        
+        if self._angle is None:
+            raise ValueError("Set value before evaluating.")
+        
+        norm_directionSpace = np.linalg.norm(dir_angle_space)
+        if norm_directionSpace:
+            self._vector = null_matrix.dot(
+                np.hstack((np.cos(norm_directionSpace),
+                           np.sin(norm_directionSpace) * dir_angle_space / norm_directionSpace))
+                )
+        else:
+            self._vector = null_matrix[:, 0]
+        return self._vector
+
+    def transform_to_base(self, null_matrix):
+        raise NotImplementedError()
+    
+    
 def get_angle_space_of_array(directions,
                              positions=None, func_vel_default=None,
                              null_direction_abs=None):
