@@ -6,15 +6,22 @@
 # License: BSD (c) 2021
 
 import numpy as np
-
 from ._base import DynamicalSystem
+
 
 class SpiralStable(DynamicalSystem):
     """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
-    def __init__(self, complexity_spiral=15, p_radius_control=1, i_radius_control=0,
+    def __init__(self, complexity_spiral=3, p_radius_control=1,
+                 # i_radius_control=0,  # Not implemented yet.
                  axes_stretch=np.array([1, 1, 1]), radius=1,
                  orientation=None,
                  center_position=None, maximum_velocity=None, dimension=3):
+        """
+        Parameters
+        ----------
+        complexity_spiral : parameter on 'steepness' of spiral
+        p_radius_control : P(ID)-controller to stay on the surface of the ellipse-spiral
+        """
         super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
                          dimension=dimension)
 
@@ -73,9 +80,8 @@ class SpiralStable(DynamicalSystem):
         velocity[2] = -np.sqrt(1 - position[2]**2)
 
         if self.p_radius_control: # Nonzero
-            if (position_norm - self.radius):
-                correction_velocity = position * (position_norm-self.radius)
-                velocity = velocity - correction_velocity * self.p_radius_control
+            correction_velocity = position * (position_norm-self.radius)
+            velocity = velocity - correction_velocity * self.p_radius_control
 
         velocity = velocity * self.axes_stretch
         velocity = self.limit_velocity(velocity)
