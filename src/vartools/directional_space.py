@@ -60,7 +60,7 @@ class UnitDirection():
         self._angle = value
         self._vector = None
     
-    def from_vector(self, None):
+    def from_vector(self, value):
         """ Update vector and reset angle. """
         self._vector = value
         self._angle = None
@@ -185,7 +185,7 @@ def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=
     return direction_directionSpace
 
 
-def get_angle_space_inverse_of_array(vecs_angle_space, positions, func_vel_default):
+def get_angle_space_inverse_of_array(vecs_angle_space, positions, DefaultSystem):
     """ Get the angle space for a whole array. """
     # breakpoint()
     dim = positions.shape[0]
@@ -194,7 +194,8 @@ def get_angle_space_inverse_of_array(vecs_angle_space, positions, func_vel_defau
     directions = np.zeros((dim, num_samples))
     
     for ii in range(num_samples):
-        vel_default = func_vel_default(positions[:, ii])
+        # vel_default = func_vel_default(positions[:, ii])
+        vel_default = DefaultSystem.evaluate(positions[:, ii])
         directions[:, ii] = get_angle_space_inverse(vecs_angle_space[:, ii], null_direction=vel_default)
         
     return directions
