@@ -3,7 +3,7 @@ Angle math for python in 2D
 Helper function for directional & angle evaluations
 """
 # Author: Lukas Huber
-# Created: "2019-11-15"
+# Created: 2019-11-15
 # Email: lukas.huber@epfl.ch
 
 import warnings

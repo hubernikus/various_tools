@@ -3,7 +3,7 @@ Directional Space function to use
 Helper function for directional & angle evaluations
 """
 # Author: LukasHuber
-# Date: 2021-05-18
+# Created: 2021-05-18
 # Email: lukas.huber@epfl.ch
 
 import warnings
@@ -16,12 +16,79 @@ from vartools.linalg import get_orthogonal_basis
 def logical_xor(value1, value2):
     return bool(value1) ^ bool(value2)
 
+def get_angle_from_vector(direction, null_matrix):
+    """
+    Returns a angle evalauted from the direciton & null_matrix
+    
+    Parameters
+    ---------
+    vector: unit vector of dimension (dim,)
+    null_matrix : null matrix of floats of dimension (dim, dim)
+
+    Returns
+    ------
+    angle : angle-space value of dimension (dim-1,)
+    """
+    direction_referenceSpace = null_matrix.T.dot(direction)
+        
+    # Make sure to catch numerical error of cosinus calculation
+    cos_direction = direction_referenceSpace[0]
+    if cos_direction >= (1.0-cos_margin):
+        # Trivial solution
+        angle = np.zeros(direction_referenceSpace.shape[0] - 1)
+        return angle
+
+    elif cos_direction <= -(1.0-cos_margin):
+        # This value has to be used with care, since it's close to signularity.
+        # Due to the fact that the present transformation can be used to evaluate the total
+        # agnle no 'warning' is raised.
+        angle = np.zeros(direction_referenceSpace.shape[0] - 1)
+        angle = pi
+        return angle
+
+    angle = direction_referenceSpace[1:]
+    # No zero-check since non-trivial through previous one.
+    angle = (angle
+                   /np.linalg.norm(self._angle))
+    angle = angle * np.arccos(cos_direction)
+    return angle
+
+def get_vector_from_angle(angle, null_matrix):
+    """
+    Returns a unit vector transformed back from the angle/direction-space.
+    
+    Parameters
+    ---------
+    angle : angle-space value of dimension (dim-1,)
+    null_matrix : null matrix of floats of dimension (dim, dim)
+
+    Returns
+    ------
+    vector: unit vector of dimension (dim,)
+    """
+    norm_directionSpace = np.linalg.norm(dir_angle_space)
+    if norm_directionSpace:
+        vector = null_matrix.dot(
+            np.hstack((np.cos(norm_directionSpace),
+                       np.sin(norm_directionSpace) * dir_angle_space / norm_directionSpace))
+            )
+    else:
+        vector = null_matrix[:, 0]
+    return vector
+    
+
 class UnitDirection():
-    """ Direction of the length 1 which can be respresented in angle space. """
+    """ Direction of the length 1 which can be respresented in angle space.
+    Not that this space is not Eucledian but it """
     def __init__(self, OtherDirection=None, null_matrix=None, unit_direction=None):
         """
         To create the angle space on of several 'reference angles / directions' have to be
         pass to the function. 
+
+        Properties
+        ----------
+        _vector : Each element in this space can be equivalently described as a unit-vector
+        _angle : The transformation of the angle space
         
         Parameters
         ----------
@@ -38,6 +105,35 @@ class UnitDirection():
         else:
             raise ValueError("No input argument as a base of the space.")
 
+    # def __iadd__(self, other):
+        # pass
+    
+    def __add__(self, other):
+        self = copy.deepcopy(self)
+        if not np.allclose(self.null_matrix, other.null_matrix):
+            other = copy.deepcopy(other)
+            other.transform_to_base(self)
+            
+        self._anlge = self.as_angle + other.as_angle()
+        return self
+
+    def __sub__(self, other):
+        return self + (-1)*other
+
+    def __mul__(self, other):
+        if isinstance(other, (float, int)):
+            return self._angle * other
+        else:
+            raise NotImplementedError("Operation not implemented.")
+            
+    def __rmul__(self, other):
+        return self * other
+
+    def get_shortest_angle(self, other):
+        """Get shortesst angle distance between points. """
+        pass
+        
+    
     @property
     def dimension(self):
         return self._null_matrix.shape[0]
@@ -64,59 +160,53 @@ class UnitDirection():
         """ Update vector and reset angle. """
         self._vector = value
         self._angle = None
-        
+
     def as_angle(self, cos_margin=1e-5):
         if self._angle is not None:
             return self._angle
-        
         if self._vector is None:
-            raise ValueError("Set value before evaluating.")
-        
-        direction_referenceSpace = null_matrix.T.dot(direction)
+            raise ValueError("Set vector or angle value before evaluating.")
 
-        # Make sure to catch numerical error of cosinus calculation
-        cos_direction = direction_referenceSpace[0]
-        if cos_direction >= (1.0-cos_margin):
-            # Trivial solution
-            self._angle = np.zeros(direction_referenceSpace.shape[0] - 1)
-            return self._angle
-        
-        elif cos_direction <= -(1.0-cos_margin):
-            # This value has to be used with care, since it's close to signularity.
-            # Due to the fact that the present transformation can be used to evaluate the total
-            # agnle no 'warning' is raised.
-            self._angle = np.zeros(direction_referenceSpace.shape[0] - 1)
-            self._angle[0] = pi
-            return self._angle
-        
-        self._angle = direction_referenceSpace[1:]
-        # No zero-check since non-trivial through previous one.
-        self._angle = (self._angle
-                       /np.linalg.norm(self._angle))
-        self._angle = self._angle * np.arccos(cos_direction)
-        
+        # Store & return angle
+        self._angle = get_angle_from_vector(direction=self._vector, null_matrix=self.null_matrix)
         return self._angle
-
+            
     def as_vector(self):
         if self._vector is not None:
             return self._vector
-        
         if self._angle is None:
-            raise ValueError("Set value before evaluating.")
-        
-        norm_directionSpace = np.linalg.norm(dir_angle_space)
-        if norm_directionSpace:
-            self._vector = null_matrix.dot(
-                np.hstack((np.cos(norm_directionSpace),
-                           np.sin(norm_directionSpace) * dir_angle_space / norm_directionSpace))
-                )
-        else:
-            self._vector = null_matrix[:, 0]
+            raise ValueError("Set vector or angle value before evaluating.")
+
+        # Store & return vector
+        self._vector = get_vector_from_angle(direction=self._vector, null_matrix=self.null_matrix)
         return self._vector
 
-    def transform_to_base(self, null_matrix):
-        raise NotImplementedError()
-    
+    def transform_to_base(self, null_matrix=None, NewDirection=None):
+        """ Rebase to new base."""
+        if NewDirecction is not None:
+            null_matrix = NewDirecction.null_matrix
+        elif null_matrix is None:
+            raise ValuerError("No new base-argument.")
+
+        if np.allclose(self.null_matrix, null_matrix):
+            # No transformation needed since the same matrix
+            return
+
+        # Relative angle to new reference frame
+        angle_to_nulldir = get_angle_from_vector_and_nullmatrix(null_matrix[:, 0])
+
+        if self.dimension == 2:
+            angle_in_frame = self.as_angle()
+            self._angle = angle_to_nulldir + angle_in_frame
+
+        elif self.dimension == 3:
+            raise NotImplementedError("You can do this...")
+        
+        elif self.dimension >= 3:
+            raise NotImplementedError("How is it defined for d>3")
+        
+        self._null_matrix = null_matrix
+        
     
 def get_angle_space_of_array(directions,
                              positions=None, func_vel_default=None,

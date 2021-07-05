@@ -1,6 +1,9 @@
 """
 Different linear algebraig helper function (mainly) based on numpy
 """
+# Author: Lukas Huber
+# Created: 2019-11-15
+# Email: lukas.huber@epfl.ch
 
 from functools import lru_cache
 import numpy as np
@@ -31,7 +34,7 @@ def get_orthogonal_basis(vector, normalize=True):
         if v_norm:
             vector = vector / v_norm
         else:
-            raise ValueError("Orthogonal basis Matrix not defined for 0-direction vector.")
+            raise ValueError("Orthogonal basis Matrix not defined for 0-norm vector.")
 
     dim = vector.shape[0]
     basis_matrix = np.zeros((dim, dim))
@@ -58,7 +61,7 @@ def get_orthogonal_basis(vector, normalize=True):
         
     elif dim > 3: # TODO: general basis for d>3
         basis_matrix[:, 0] = vector
-        for ii in range(1,dim):
+        for ii in range(1, dim):
             # TODO: higher dimensions
             if vector[ii]: # nonzero
                 basis_matrix[:ii, ii] = vector[:ii]
