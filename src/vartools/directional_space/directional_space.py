@@ -6,17 +6,23 @@ Helper function for directional & angle evaluations
 # Created: 2021-05-18
 # Email: lukas.huber@epfl.ch
 
+# Use python 3.10 [annotations / typematching]
+from __future__ import annotations  # Not needed from python 3.10 onwards
+
 import warnings
+from typing import Callable
 from math import pi
 
 import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
+# from vartools.dynamical_systems import DynamicalSystem
 
-def logical_xor(value1, value2):
+
+def logical_xor(value1: float, value2: float) -> bool:
     return bool(value1) ^ bool(value2)
 
-def get_angle_from_vector(direction, null_matrix):
+def get_angle_from_vector(direction: np.ndarray, null_matrix: np.ndarray) -> np.ndarray:
     """
     Returns a angle evalauted from the direciton & null_matrix
     
@@ -53,7 +59,7 @@ def get_angle_from_vector(direction, null_matrix):
     angle = angle * np.arccos(cos_direction)
     return angle
 
-def get_vector_from_angle(angle, null_matrix):
+def get_vector_from_angle(angle: np.ndarray, null_matrix: np.ndarray) -> np.ndarray:
     """
     Returns a unit vector transformed back from the angle/direction-space.
     
@@ -66,7 +72,8 @@ def get_vector_from_angle(angle, null_matrix):
     ------
     vector: unit vector of dimension (dim,)
     """
-    norm_directionSpace = np.linalg.norm(dir_angle_space)
+    breakpoint()
+    norm_directionSpace = np.linalg.norm(angle)
     if norm_directionSpace:
         vector = null_matrix.dot(
             np.hstack((np.cos(norm_directionSpace),
@@ -80,7 +87,9 @@ def get_vector_from_angle(angle, null_matrix):
 class UnitDirection():
     """ Direction of the length 1 which can be respresented in angle space.
     Not that this space is not Eucledian but it """
-    def __init__(self, OtherDirection=None, null_matrix=None, unit_direction=None):
+    def __init__(self, OtherDirection: np.ndarray = None,
+                 null_matrix: np.ndarray = None,
+                 null_direction: np.ndarray = None):
         """
         To create the angle space on of several 'reference angles / directions' have to be
         pass to the function. 
@@ -108,7 +117,7 @@ class UnitDirection():
     # def __iadd__(self, other):
         # pass
     
-    def __add__(self, other):
+    def __add__(self, other: UnitDirection) -> UnitDirection:
         self = copy.deepcopy(self)
         if not np.allclose(self.null_matrix, other.null_matrix):
             other = copy.deepcopy(other)
@@ -117,16 +126,16 @@ class UnitDirection():
         self._anlge = self.as_angle + other.as_angle()
         return self
 
-    def __sub__(self, other):
+    def __sub__(self, other: UnitDirection) -> UnitDirection:
         return self + (-1)*other
 
-    def __mul__(self, other):
+    def __mul__(self, other: UnitDirection) -> UnitDirection:
         if isinstance(other, (float, int)):
             return self._angle * other
         else:
             raise NotImplementedError("Operation not implemented.")
             
-    def __rmul__(self, other):
+    def __rmul__(self, other: UnitDirection) -> UnitDirection:
         return self * other
 
     def get_shortest_angle(self, other):
@@ -135,15 +144,15 @@ class UnitDirection():
         
     
     @property
-    def dimension(self):
+    def dimension(self) -> int:
         return self._null_matrix.shape[0]
     
     @property
-    def null_matrix(self):
+    def null_matrix(self) -> np.ndarray:
         return self._null_matrix
     
     @null_matrix.setter
-    def null_matrix(self, value):
+    def null_matrix(self, value: np.ndarray) -> None:
         if hasattr(self, '_null_matrix'):
             # Reset angles
             self._angle = None
@@ -151,17 +160,17 @@ class UnitDirection():
         
         self._null_matrix = value
             
-    def from_angle(self, value):
+    def from_angle(self, value: np.ndarray) -> None:
         """ Update angle and reset 'equivalent' vector. """
         self._angle = value
         self._vector = None
     
-    def from_vector(self, value):
+    def from_vector(self, value: np.ndarray) -> None:
         """ Update vector and reset angle. """
         self._vector = value
         self._angle = None
 
-    def as_angle(self, cos_margin=1e-5):
+    def as_angle(self, cos_margin: float = 1e-5) -> np.ndarray:
         if self._angle is not None:
             return self._angle
         if self._vector is None:
@@ -171,17 +180,18 @@ class UnitDirection():
         self._angle = get_angle_from_vector(direction=self._vector, null_matrix=self.null_matrix)
         return self._angle
             
-    def as_vector(self):
+    def as_vector(self) -> np.ndarray:
         if self._vector is not None:
             return self._vector
         if self._angle is None:
             raise ValueError("Set vector or angle value before evaluating.")
 
         # Store & return vector
-        self._vector = get_vector_from_angle(direction=self._vector, null_matrix=self.null_matrix)
+        self._vector = get_vector_from_angle(angle=self._vector, null_matrix=self.null_matrix)
         return self._vector
 
-    def transform_to_base(self, null_matrix=None, NewDirection=None):
+    def transform_to_base(self, null_matrix: np.ndarray=None,
+                          NewDirection: np.ndarray = None) -> None:
         """ Rebase to new base."""
         if NewDirecction is not None:
             null_matrix = NewDirecction.null_matrix
@@ -208,9 +218,10 @@ class UnitDirection():
         self._null_matrix = null_matrix
         
     
-def get_angle_space_of_array(directions,
-                             positions=None, func_vel_default=None,
-                             null_direction_abs=None):
+def get_angle_space_of_array(directions: np.ndarray,
+                             positions: np.ndarray = None,
+                             func_vel_default: Callable[[np.ndarray], np.ndarray] = None,
+                             null_direction_abs: np.ndarray = None) -> np.ndarray:
     """ Get the angle space for a whole array. """
     dim = directions.shape[0]
     num_samples = directions.shape[1]
@@ -227,8 +238,11 @@ def get_angle_space_of_array(directions,
     return direction_space
 
 
-def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=None,
-                    OrthogonalBasisMatrix=None):
+def get_angle_space(direction: np.ndarray,
+                    null_direction: np.ndarray = None,
+                    null_matrix: np.ndarray = None,
+                    normalize: bool = None,
+                    OrthogonalBasisMatrix: np.ndarray= None):
     """ Get the direction transformed to the angle space with respect to the 'null' direction."""
     if OrthogonalBasisMatrix is not None:
         raise TypeError("OrthogonalBasisMatrix is depreciated, use 'null_matrix' instead.")
@@ -275,7 +289,9 @@ def get_angle_space(direction, null_direction=None, null_matrix=None, normalize=
     return direction_directionSpace
 
 
-def get_angle_space_inverse_of_array(vecs_angle_space, positions, DefaultSystem):
+def get_angle_space_inverse_of_array(vecs_angle_space: np.ndarray,
+                                     positions: np.ndarray,
+                                     default_system: DynamicalSystem):
     """ Get the angle space for a whole array. """
     # breakpoint()
     dim = positions.shape[0]
@@ -285,16 +301,15 @@ def get_angle_space_inverse_of_array(vecs_angle_space, positions, DefaultSystem)
     
     for ii in range(num_samples):
         # vel_default = func_vel_default(positions[:, ii])
-        vel_default = DefaultSystem.evaluate(positions[:, ii])
+        vel_default = default_system.evaluate(positions[:, ii])
         directions[:, ii] = get_angle_space_inverse(vecs_angle_space[:, ii], null_direction=vel_default)
         
     return directions
 
 
-def get_angle_space_inverse(dir_angle_space, null_direction=None, null_matrix=None, NullMatrix=None):
-    """
-    Inverse angle space transformation
-    """
+def get_angle_space_inverse(dir_angle_space: np.ndarray, null_direction: np.ndarray = None,
+                            null_matrix: np.ndarray = None, NullMatrix: np.ndarray = None):
+    """ Inverse angle space transformation """
     # TODO: currently for one vector. Is multiple vectors desired (?)
     if NullMatrix is not None:
         warnings.warn("'NullMatrix' is depreciated use 'null_matrix' instead.")
@@ -315,8 +330,9 @@ def get_angle_space_inverse(dir_angle_space, null_direction=None, null_matrix=No
     return directions
 
 
-def get_directional_weighted_sum(null_direction, directions, weights,
-                                 total_weight=1, normalize=True, normalize_reference=True):
+def get_directional_weighted_sum(
+    null_direction: np.ndarray, directions: np.ndarray, weights: np.ndarray,
+    total_weight: float = 1, normalize: bool = True, normalize_reference: bool = True):
     """ Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
 
     Parameters
@@ -397,6 +413,9 @@ def get_directional_weighted_sum(null_direction, directions, weights,
 def get_angle_space_array_old(directions, null_direction, null_matrix=None, normalize=True, OrthogonalBasisMatrix=None):
     """ Get the directions transformed to the angle space with respect 
     """
+    if True:
+        raise DeprecationWarning("Not active anymore.")
+    
     # TODO: is this still needed or rather depreciated (?)
     dim = np.array(directions).shape[0]
     
