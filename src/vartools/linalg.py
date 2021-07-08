@@ -5,30 +5,28 @@ Different linear algebraig helper function (mainly) based on numpy
 # Created: 2019-11-15
 # Email: lukas.huber@epfl.ch
 
+import warnings
 from functools import lru_cache
+
 import numpy as np
 
+def logical_xor(value1: float, value2: float) -> bool:
+    return bool(value1) ^ bool(value2)
 
-def is_positive_definite(x):
+def is_positive_definite(x: np.ndarray) -> bool:
     """ Check if input matrix x is positive definite and return True/False."""
     return np.all(np.linalg.eigvals(x) > 0)
 
-def is_negative_definite(x):
+def is_negative_definite(x: np.ndarray) -> bool:
     """ Check if input matrix x is positive definite and return True/False."""
     return np.all(np.linalg.eigvals(x) < 0)
 
 # @lru_cache(maxsize=10)
 # TODO: expand cache for this [numpy-arrays]
 # TODO: OR make cython
-def get_orthogonal_basis(vector, normalize=True):
+def get_orthogonal_basis(vector: np.ndarray, normalize: bool = True) -> np.ndarray:
     """ Get Orthonormal basis matrxi for an dimensional input vector. """
-    if isinstance(vector, np.ndarray):
-        pass
-    elif isinstance(vector, list):
-        vector = np.array(vector)
-    else:
-        raise TypeError("Wrong input type vector")
-
+    warnings.warn("Basis implementation is not continuous.")
     if normalize:
         v_norm = np.linalg.norm(vector)
         if v_norm:
@@ -43,6 +41,7 @@ def get_orthogonal_basis(vector, normalize=True):
         basis_matrix[:, 0] = vector
         basis_matrix[:, 1] = np.array([-basis_matrix[1, 0],
                                        basis_matrix[0, 0]])
+        
     elif dim == 3:
         basis_matrix[:, 0] = vector
         basis_matrix[:, 1] = np.array([-vector[1], vector[0], 0])
@@ -58,21 +57,24 @@ def get_orthogonal_basis(vector, normalize=True):
         norm_vec = np.linalg.norm(basis_matrix[:, 2])
         if norm_vec:
             basis_matrix[:, 2] = basis_matrix[:, 2] / norm_vec
-        
-    elif dim > 3: # TODO: general basis for d>3
+
+    elif dim > 3:
+        # TODO: ensure smoothness for general basis for d>3 (?!?)
+    # if True:
         basis_matrix[:, 0] = vector
-        for ii in range(1, dim):
-            # TODO: higher dimensions
-            if vector[ii]: # nonzero
+        if vector[0]: # nonzero value
+            it_start = 1
+        else:
+            basis_matrix[0, 1] = 1
+            it_start = 2
+
+        for ii in range(it_start, dim):
+            if vector[ii]:   # nonzero
                 basis_matrix[:ii, ii] = vector[:ii]
                 basis_matrix[ii, ii] = (-np.sum(vector[:ii]**2)/vector[ii])
-                basis_matrix[:ii+1, ii] = basis_matrix[:ii+1, ii]/np.linalg.norm(basis_matrix[:ii+1, ii])
+                basis_matrix[:ii+1, ii] = (basis_matrix[:ii+1, ii]
+                                           / np.linalg.norm(basis_matrix[:ii+1, ii]))
             else:
                 basis_matrix[ii, ii] = 1
-            # basis_matrix[dim-(ii), ii] = -np.dot(vector[:dim-(ii)], vector[:dim-(ii)])
-            # basis_matrix[:, ii] = basis_matrix[:, ii]/LA.norm(basis_matrix[:, ii])
 
-        # raise ValueError("Not implemented for d>3")
-        # warnings.warn("Implement higher dimensionality than d={}".format(dim))
     return basis_matrix
-
