@@ -19,7 +19,6 @@ from numpy import linalg as LA
 from vartools.linalg import get_orthogonal_basis
 
 
-
 def get_angle_from_vector(direction: np.ndarray, base: DirectionBase) -> np.ndarray:
     """
     Returns a angle evalauted from the direciton & null_matrix
@@ -194,9 +193,9 @@ class UnitDirection():
                 vector=self.base.null_matrix[:, ii], base=self.base)
 
             # Do the 'proximity check' (pi-discontuinity) for the vectors
-            # by comparing each vector the the normal.
+            # by comparing each vector the the normal of the original base.
             if ii > 0:
-                base_norm = LA.norm(new_base_as_angle[:, ii]) 
+                base_norm = LA.norm(new_base_as_angle[:, ii] - new_base_as_angle[:, 0]) 
                 if base_norm >= pi:
                     warnings.warn("TODO: Throughfully test this case...")
                     dist_new_base = LA.norm(
