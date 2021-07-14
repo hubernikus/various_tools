@@ -19,7 +19,7 @@ from numpy import linalg as LA
 from vartools.linalg import get_orthogonal_basis
 
 
-def get_angle_from_vector(direction: np.ndarray, base: DirectionBase) -> np.ndarray:
+def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin: float = 1e-5) -> np.ndarray:
     """
     Returns a angle evalauted from the direciton & null_matrix
     
@@ -51,11 +51,12 @@ def get_angle_from_vector(direction: np.ndarray, base: DirectionBase) -> np.ndar
 
     angle = direction_referenceSpace[1:]
     # No zero-check since non-trivial through previous one.
-    angle = (angle / LA.norm(self._angle))
+    # angle = (angle / LA.norm(self._angle))
+    angle = (angle / LA.norm(angle))
     angle = angle * np.arccos(cos_direction)
     return angle
 
-def get_vector_from_angle(angle: np.ndarray, null_matrix: np.ndarray) -> np.ndarray:
+def get_vector_from_angle(angle: np.ndarray, base: DirectionBase) -> np.ndarray:
     """
     Returns a unit vector transformed back from the angle/direction-space.
     
@@ -96,8 +97,10 @@ class UnitDirection():
         ----------
         base: DirectionBase
         """
-        self.base = DirectionBase
+        self.base = base
 
+    def __repr__(self):
+        return f"<DirectionBase({str(self._matrix)})>"
     # def __iadd__(self, other):
         # pass
     
@@ -139,7 +142,7 @@ class UnitDirection():
     def base(self) -> DirectionBase:
         return self._base
     
-    @null_matrix.setter
+    @base.setter
     def base(self, value: DirectionBase) -> None:
         if hasattr(self, '_base'):
             # Reset angles / vector
@@ -152,11 +155,13 @@ class UnitDirection():
         """ Update angle and reset 'equivalent' vector. """
         self._angle = value
         self._vector = None
+        return self
     
     def from_vector(self, value: np.ndarray) -> None:
         """ Update vector and reset angle. """
         self._vector = value
         self._angle = None
+        return self
 
     def as_angle(self, cos_margin: float = 1e-5) -> np.ndarray:
         if self._angle is not None:
@@ -165,7 +170,7 @@ class UnitDirection():
             raise ValueError("Set vector or angle value before evaluating.")
 
         # Store & return angle
-        self._angle = get_angle_from_vector(direction=self._vector, base=self.base)
+        self._angle = get_angle_from_vector(direction=self._vector, base=self.base, cos_margin=cos_margin)
         return self._angle
             
     def as_vector(self) -> np.ndarray:
@@ -175,7 +180,10 @@ class UnitDirection():
             raise ValueError("Set vector or angle value before evaluating.")
 
         # Store & return vector
-        self._vector = get_vector_from_angle(angle=self._angle, base=self.base)
+        try:
+            self._vector = get_vector_from_angle(angle=self._angle, base=self.base)
+        except:
+            breakpoint()
         return self._vector
 
     def transform_to_base(self, new_base: DirectionBase) -> None:
@@ -211,8 +219,8 @@ class UnitDirection():
                         warnings.warn("Did a transform. Is this the only case where it happens?")
                         new_base_as_angle[:, ii]= new_base_opposite_angle
                         
-        # Create direction within directionspace [susp - sub-space]
-        dim_susp = dim-1
+        # Create direction within directionspace [subsp =^= sub-space]
+        dim_subsp = dim-1
 
         if self.dimension == 2:
             angle_in_frame = self.as_angle()
@@ -226,30 +234,37 @@ class UnitDirection():
         
         self._base = new_base
 
-        
+
+
 class DirectionBase():
     def __init__(self, vector: np.ndarray = None,
                  matrix: np.ndarray = None,
-                 unit_direction: UnitDirection = None,
+                 direction_base: DirectionBase = None,
                  ):
+        # Should it be a mutable OR immutable object?
         # TODO MAYBE: tests(?)
-        if OtherDirection is not None:
+        if direction_base is not None:
             self._matrix = np.copy(unit_direction.null_matrix)
-        if null_matrix is not None:
-            self._matrix = np.copy(null_matrix)
-        elif null_direction is not None:
-            self._matrix = get_orthogonal_basis(null_direction)
+            
+        elif matrix is not None:
+            self._matrix = np.copy(matrix)
+            
+        elif vector is not None:
+            self._matrix = get_orthogonal_basis(vector)
+            
         else:
             raise ValueError("No input argument as a base of the space.")
+
+    def __repr__(self):
+        return f"<DirectionBase({str(self._matrix)})>"
+    
+    def __eq__(self, other: DirectionBase):
+        return np.allclose(self._matrix, other.null_matrix)
 
     @property
     def null_matrix(self):
         return self._matrix
 
-    @null_matrix.setter
-    def null_matrix(self, value):
-        self._matrix = value
-
-    def __eq__(self, other: DirectionBase):
-        return np.allclose(self.null_matrix, other.null_matrix)
-        
+    # @null_matrix.setter
+    # def null_matrix(self, value):
+        # self._matrix = value
