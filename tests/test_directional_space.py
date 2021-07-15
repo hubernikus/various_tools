@@ -80,6 +80,9 @@ class TestDirectionalSpace(unittest.TestCase):
         
         direction1.transform_to_base(direction1)
 
+    def test_new_angle(self):
+        pass
+
     def visualization_direction_space(self):
         null_matrix = np.array([[1, 0, 0],
                                 [0, 1, 0],
@@ -95,9 +98,12 @@ class TestDirectionalSpace(unittest.TestCase):
         null_matrix = np.eye(dim)
 
         from scipy.spatial.transform import Rotation
-        rot = Rotation.from_euler('zyx', [40, 40, 0], degrees=True)
-
+        # rot = Rotation.from_euler('zyx', [40, 50, 70], degrees=True)
+        rot = Rotation.from_euler('zyx', [0, 45, 10], degrees=True)
         null_matrix = rot.apply(null_matrix)
+
+        # print(rot)
+        print(null_matrix)
         
         import matplotlib.pyplot as plt
         plt.figure()
@@ -131,7 +137,7 @@ class TestDirectionalSpace(unittest.TestCase):
         plt.grid()
         plt.ion()
         plt.show()
-        breakpoint()
+        # breakpoint()
         
     # def test_directional_convergence_forcing(self):
         # """ Based on Reference direction & normal decomposition force the convergence. """

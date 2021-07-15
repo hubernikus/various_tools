@@ -46,7 +46,7 @@ def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin
         # Due to the fact that the present transformation can be used to evaluate the total
         # agnle no 'warning' is raised.
         angle = np.zeros(direction_referenceSpace.shape[0] - 1)
-        angle = pi
+        angle[0] = pi
         return angle
 
     angle = direction_referenceSpace[1:]
