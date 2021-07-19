@@ -7,6 +7,8 @@
 import unittest
 import copy
 
+from math import pi
+
 import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
@@ -80,8 +82,218 @@ class TestDirectionalSpace(unittest.TestCase):
         
         direction1.transform_to_base(direction1)
 
-    def test_new_angle(self):
-        pass
+    def test_base_transform_same_normal(self):
+        """Test that unit-direction-angle length is the same if same normal is existent. """
+        from scipy.spatial.transform import Rotation
+        
+        # Default [Random?] Values
+        null_matrix = np.array([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 1]])
+        base0 = DirectionBase(matrix=null_matrix)
+
+        directions = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1], 
+            [0.3, 0.4, 0.78],
+            ]
+
+        for ind, direction in enumerate(directions):
+            direction0 = UnitDirection(base=base0).from_vector(directions)
+            angle_init = direction0.as_angle()
+
+            rot = Rotation.from_euler('zyx', [0, 0, 30], degrees=True)
+            null_matr_new = rot.apply(null_matrix)
+            new_base = DirectionBase(matrix=null_matr_new)
+
+            direction0.transform_to_base(new_base=new_base)
+            angle_after = direction0.as_angle()
+
+            self.assertTrue(np.isclose(np.linalg.norm(angle_after), np.linalg.norm(angle_init)),
+                             "Angle after transformation should have the same norm for simple x-rotation.")
+
+        print("Successful norm-test.")
+
+
+    def test_check_bijection(self):
+        from scipy.spatial.transform import Rotation
+        base = DirectionBase(matrix=np.array([[1, 0, 0],
+                                              [0, 1, 0],
+                                              [0, 0, 1]]))
+        # Example rotations in degrees (rotations < 90 deg OR pi/2)
+        rotations = [[0, 0, 0],
+                     [90, 0, 0],
+                     [0, 90, 0],
+                     [0, 0, 90],
+                     [34, 12, 25]]
+
+        directions = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [0.3, -0.5, 0.7],
+            [1, 1, 1],
+            [-1, -1, -1],
+            [-2, 3, -1],
+            ]
+
+        for initial_vector in directions:
+            for rot_vec in rotations:
+                rot = Rotation.from_euler('zyx', rot_vec, degrees=True)
+                # rot = Rotation.from_euler('zyx', [0, 0, 0], degrees=True)
+                new_null_matr = rot.apply(base.null_matrix)
+                new_base = DirectionBase(matrix=new_null_matr)
+
+                # Apply transformation
+                direction = UnitDirection(base=base).from_vector(initial_vector)
+                direction_rebased = direction.transform_to_base(new_base)
+                
+                # Transform back
+                direction_back = direction_rebased.transform_to_base(base)
+
+                print(f'{initial_vector=}')
+                print(f'{rot_vec=}')
+                print(f'{direction.as_angle()=}')
+                print(f'{direction_back.as_angle()=}')
+                print(f'{direction.as_vector()=}')
+                print(f'{direction_back.as_vector()=}')
+                
+                self.assertTrue(np.allclose(direction.as_vector(), direction_back.as_vector()),
+                                "Vector value after backtransformation not consistent.")
+                
+                self.assertTrue(np.allclose(direction.as_angle(), direction_back.as_angle()),
+                                "Angle value after backtransformation not consistent.")
+
+                
+        print("Done bijection test.")
+
+
+    def test_180_degree_rotation(visualize=False):
+        initial_vector = np.array([0, 1, 0])
+        base = DirectionBase(matrix=np.array([[1, 0, 0],
+                                              [0, 1, 0],
+                                              [0, 0, 1]]))
+
+        
+        check_angle = np.array([0, 0])
+
+        
+
+    def test_90_degree_rotation(self, visualize=False):
+        initial_vector = np.array([0, 1, 0])
+        base = DirectionBase(matrix=np.array([[1, 0, 0],
+                                              [0, 1, 0],
+                                              [0, 0, 1]]))
+
+        new_base = DirectionBase(matrix=np.array([[0, 1, 0],
+                                                  [0, 0, 1],
+                                                  [1, 0, 0]]))
+        check_angle = np.array([0, 0])
+
+        if visualize:
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.subplot(1, 2, 1)
+        # Apply test
+        direction = UnitDirection(base=base).from_vector(initial_vector)
+        direction_rebased = direction.transform_to_base(new_base)
+
+        if visualize:
+            angles = np.linspace(0, 2*np.pi, 50)
+            angle_init = direction.as_angle()
+            plt.plot(0.5*pi*np.cos(angles), 0.5*pi*np.sin(angles), 'k')
+            plt.plot(0, 0, 'ko', label=f"n0={np.round(base[0])}")
+            plt.plot(pi/2, 0, 'ko', label=f"e1={np.round(base[1])}")
+            plt.plot(0, pi/2, 'ko', label=f"e2={np.round(base[2])}")
+            plt.legend()
+            plt.axis('equal')
+            plt.plot(angle_init[0], angle_init[1], 'or')
+
+            vec_labels = [f"n0={np.round(new_base[0])}",
+                          f"e1={np.round(new_base[1])}",
+                          f"e2={np.round(new_base[2])}"]
+            # UnitDirection = UnitDirection(base0)
+            norm_angle = UnitDirection(base).from_vector(new_base[0]).as_angle()
+            # colors = ['
+
+            # for ii in range(3):
+            for ii in range(len(vec_labels)):
+                # angle = get_angle_from_vector(direction=null_matrix, base=base0)
+                angle = UnitDirection(base).from_vector(new_base[ii]).as_angle()
+                plt.plot(angle[0], angle[1], 'o', label=vec_labels[ii])
+
+            plt.subplot(1, 2, 2)
+            plt.plot(0.5*pi*np.cos(angles), 0.5*pi*np.sin(angles), 'k')
+            plt.plot(0, 0, 'ko', label=f"n0={np.round(new_base[0], 1)}")
+            plt.plot(pi/2, 0, 'ko', label=f"e1={np.round(new_base[1])}")
+            plt.plot(0, pi/2, 'ko', label=f"e2={np.round(new_base[2])}")
+            plt.legend()
+            plt.axis('equal')
+
+            plt.ion()
+            plt.show()
+            
+        self.assertTrue(np.allclose(direction_rebased.as_angle(), check_angle))
+
+    def test_base_transform(self):
+        null_matrix = np.array([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 1]]
+                                )
+        base0 = DirectionBase(matrix=null_matrix)
+        direction0 = UnitDirection(base=base0).from_vector([0, 0, 1])
+        angle_init = direction0.as_angle()
+        
+        from scipy.spatial.transform import Rotation
+        rot = Rotation.from_euler('zyx', [0, 0, 90], degrees=True)
+        # rot = Rotation.from_euler('zyx', [0, 0, 0], degrees=True)
+        null_matr_new = rot.apply(null_matrix)
+
+        null_matr_new = np.array([[0, 0, 1],
+                                  [1, 0, 0],
+                                  [0, 1, 0]])
+
+        # null_matr_new = np.array([[0, 0, 0],
+                                  # [1, 0, 1],
+                                  # [0, 0, 0]])
+        
+        new_base = DirectionBase(matrix=null_matr_new)
+
+        direction0.transform_to_base(new_base=new_base)
+
+        import matplotlib.pyplot as plt
+        plt.figure()
+        from math import pi
+        # Draw circle
+        n_points = 50
+        angles = np.linspace(0, 2*np.pi, n_points)
+        
+        plt.subplot(1, 2, 1)
+        plt.plot(0.5*pi*np.cos(angles), 0.5*pi*np.sin(angles), 'k')
+        plt.plot(0, 0, 'ko', label=f"n0={np.round(base0[0])}")
+        plt.plot(pi/2, 0, 'ko', label=f"e1={np.round(base0[1])}")
+        plt.plot(0, pi/2, 'ko', label=f"e2={np.round(base0[2])}")
+        plt.legend()
+        plt.axis('equal')
+        plt.plot(angle_init[0], angle_init[1], 'or')
+
+
+
+        plt.subplot(1, 2, 2)
+        plt.plot(0.5*pi*np.cos(angles), 0.5*pi*np.sin(angles), 'k')
+        plt.plot(0, 0, 'ko', label=f"n0={np.round(new_base[0], 1)}")
+        plt.plot(pi/2, 0, 'ko', label=f"e1={np.round(new_base[1])}")
+        plt.plot(0, pi/2, 'ko', label=f"e2={np.round(new_base[2])}")
+        plt.legend()
+        plt.axis('equal')
+
+        angle = direction0.as_angle()
+        plt.plot(angle[0], angle[1], 'or')
+
+        plt.ion()
+        plt.show()
+        # breakpoint()
 
     def visualization_direction_space(self):
         null_matrix = np.array([[1, 0, 0],
@@ -89,24 +301,19 @@ class TestDirectionalSpace(unittest.TestCase):
                                 [0, 0, 1]]
                                 )
         base0 = DirectionBase(matrix=null_matrix)
-        direction0 = UnitDirection(base=base0)
-
-        # null_matrix = np.array([[0, 1, 0],
-                                # [-1, 0, 0],
-                                # [0,  0, 1]])
-        dim = 3
-        null_matrix = np.eye(dim)
-
-        from scipy.spatial.transform import Rotation
-        # rot = Rotation.from_euler('zyx', [40, 50, 70], degrees=True)
-        rot = Rotation.from_euler('zyx', [0, 45, 10], degrees=True)
-        null_matrix = rot.apply(null_matrix)
-
-        # print(rot)
-        print(null_matrix)
+        direction0 = UnitDirection(base=base0).from_vector([0, 0, 1])
+        angle_init = direction0.as_angle()
         
+        from scipy.spatial.transform import Rotation
+        # rot = Rotation.from_euler('zyx', [0, 0, 90], degrees=True)
+        rot = Rotation.from_euler('zyx', [180, 90, 0], degrees=True)
+        # rot = Rotation.from_euler('zyx', [0, 0, 0], degrees=True)
+        null_matr_new = rot.apply(null_matrix)
+        new_base = DirectionBase(matrix=null_matr_new)
+
         import matplotlib.pyplot as plt
-        plt.figure()
+        plt.figure(figsize=(10, 4))
+        plt.subplot(1, 2, 1)
         
         from math import pi
         # Draw circle
@@ -118,23 +325,47 @@ class TestDirectionalSpace(unittest.TestCase):
         plt.plot(pi/2, 0, 'ko')
         plt.plot(0, pi/2, 'ko')
 
-        vec_labels = ["n0", "e1", "e2"]
+        vec_labels = [f"n0={np.round(new_base[0])}",
+                      f"e1={np.round(new_base[1])}",
+                      f"e2={np.round(new_base[2])}"]
         # UnitDirection = UnitDirection(base0)
+        norm_angle = UnitDirection(base0).from_vector(new_base[0]).as_angle()
+        # colors = ['
+        
         # for ii in range(3):
         for ii in range(len(vec_labels)):
             # angle = get_angle_from_vector(direction=null_matrix, base=base0)
-            angle = UnitDirection(base0).from_vector(null_matrix[:, ii]).as_angle()
+            angle = UnitDirection(base0).from_vector(new_base[ii]).as_angle()
             plt.plot(angle[0], angle[1], 'o', label=vec_labels[ii])
+
+            # angle_hat = angle - norm_angle
+            # plt.plot(angle_hat[0], angle_hat[1], 'ko', alpha=0.3, label=vec_labels[ii])
+        angle = direction0.as_angle()
+        plt.plot(angle[0], angle[1], 'ro', label=f"Vector {direction0.as_vector()}")
 
         plt.axis('equal')
         plt.legend()
-        
-        # plt.xlim([-0.6*pi, 0.6*pi])
-        # plt.ylim([-0.6*pi, 0.6*pi])
         plt.xlim([-2*pi, 2*pi])
         plt.ylim([-2*pi, 2*pi])
-        
         plt.grid()
+
+        plt.subplot(1, 2, 2)
+
+        direction0.transform_to_base(new_base=new_base)
+        angle = direction0.as_angle()
+        
+        plt.plot(0.5*pi*np.cos(angles), 0.5*pi*np.sin(angles), 'k')
+        # plt.plot(0, 0, 'ko')
+        # plt.plot(pi/2, 0, 'ko')
+        # plt.plot(0, pi/2, 'ko')
+        plt.axis('equal')
+        # plt.legend()
+        plt.xlim([-2*pi, 2*pi])
+        plt.ylim([-2*pi, 2*pi])
+        plt.grid()
+
+        plt.plot(angle[0], angle[1], 'ro', label=f"Vector {np.round(direction0.as_angle(), 1)}")
+        
         plt.ion()
         plt.show()
         # breakpoint()
@@ -148,5 +379,12 @@ if __name__ == '__main__':
     user_test = True
     if user_test:
         Tester = TestDirectionalSpace()
+        # Tester.test_base_transform_same_normal()
         # Tester.test_special_angle_displacement()
-        Tester.visualization_direction_space()
+
+        # Tester.test_base_transform()
+        # Tester.visualization_direction_space()
+        # Tester.test_90_degree_rotation(visualize=False)
+        Tester.test_check_bijection()
+        
+
