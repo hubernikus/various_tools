@@ -49,6 +49,27 @@ class TestDirectionalSpace(unittest.TestCase):
                        [-33, -20, 8],
                        ]
 
+    def test_comparison_operator_direction_base(self):
+        null_matrix = np.array([[1, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 1]])
+
+        base0 = DirectionBase(matrix=np.copy(null_matrix))
+        base1 = DirectionBase(matrix=np.copy(null_matrix))
+
+        self.assertTrue(base0 == base1)
+        self.assertFalse(base0 != base1)
+
+        null_matrix2 = np.array([[0, 1, 0],
+                                 [1, 0, 0],
+                                 [0, 0, 1]])
+        
+        base2 = DirectionBase(matrix=np.copy(null_matrix2))
+
+        self.assertTrue(base0 != base2)
+        self.assertFalse(base0 == base2)
+        
+        
     def test_orthonormality_matrix(self):
         margin = 1e-6
         max_dim = 50
@@ -289,7 +310,7 @@ class TestDirectionalSpace(unittest.TestCase):
             
         self.assertTrue(np.allclose(direction_rebased.as_angle(), check_angle))
 
-    def test_base_transform(self):
+    def visual_test_base_transform(self):
         null_matrix = np.array([[1, 0, 0],
                                 [0, 1, 0],
                                 [0, 0, 1]]
@@ -426,9 +447,9 @@ class TestDirectionalSpace(unittest.TestCase):
     # def test_directional_convergence_forcing(self):
         # """ Based on Reference direction & normal decomposition force the convergence. """
 
+
 if __name__ == '__main__':
     # unittest.main()
-
     user_test = True
     if user_test:
         Tester = TestDirectionalSpace()
@@ -441,3 +462,4 @@ if __name__ == '__main__':
         
         # Tester.test_check_bijection()
         # Tester.test_check_bijection_rebasing()
+        Tester.test_comparison_operator_direction_base()

@@ -19,6 +19,22 @@ from numpy import linalg as LA
 
 from vartools.linalg import get_orthogonal_basis
 
+class DirectionBaseError(Exception):
+    """Base class for DirectionBase"""
+    pass
+
+class NonEqualBaseError(DirectionBaseError):
+    """ Raised when inconsistency in base.
+    Attributes
+    ----------
+    """
+    def __init__(self, message="Direction Base is not equal."):
+        super().__init__(self.message)
+        
+    def __str__(self):
+        return f"{self.message}"
+        
+
 
 def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin: float = 1e-8) -> np.ndarray:
     """
@@ -123,6 +139,8 @@ class UnitDirection():
     #     return self
 
     def __sub__(self, other: UnitDirection) -> UnitDirection:
+        if self.base != other.base:
+            raise NonEqualBaseError()
         return self + (-1)*other
 
     def __mul__(self, other: float) -> UnitDirection:
@@ -423,8 +441,11 @@ class DirectionBase():
     def __repr__(self):
         return f"DirectionBase({str(self._matrix)})"
     
-    def __eq__(self, other: DirectionBase):
+    def __eq__(self, other: DirectionBase) -> bool:
         return np.allclose(self._matrix, other.null_matrix)
+    
+    def __ne__(self, other: DirectionBase) -> bool:
+        return not (self == other)
 
     def __matmul__(self, other: np.ndarray):
         return self.dot(other)
