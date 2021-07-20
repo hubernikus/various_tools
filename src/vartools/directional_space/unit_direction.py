@@ -19,8 +19,17 @@ from numpy import linalg as LA
 
 from vartools.linalg import get_orthogonal_basis
 
+class NoDirectionArgumentError(Exception):
+    """No Directional argument is passed"""
+    def __str__(self):
+        return f"No directional argument is passed."
+
+def ZeroVectorError(Exception):
+    def __str__(self):
+        return f"Zero vector is passed. No angle-space transformation possible."
+
 class DirectionBaseError(Exception):
-    """Base class for DirectionBase"""
+    """ Base class for exceptions. """
     pass
 
 class NonEqualBaseError(DirectionBaseError):
@@ -33,7 +42,6 @@ class NonEqualBaseError(DirectionBaseError):
         
     def __str__(self):
         return f"{self.message}"
-        
 
 
 def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin: float = 1e-8) -> np.ndarray:
@@ -108,7 +116,8 @@ def get_vector_from_angle(angle: np.ndarray, base: DirectionBase) -> np.ndarray:
 class UnitDirection():
     """ Direction of the length 1 which can be respresented in angle space.
     Not that this space is not Eucledian but it """
-    def __init__(self, base: DirectionBase):
+    def __init__(self, base: DirectionBase = None,
+                 unit_direction: UnitDirection = None):
         """
         To create the angle space on of several 'reference angles / directions' have to be
         pass to the function. 
@@ -120,9 +129,18 @@ class UnitDirection():
         
         Parameters
         ----------
-        base: DirectionBase
+        base: DirectionBase [base is not copied]
+        unit_direction = UnitDirection [base is copied]
         """
-        self.base = base
+        if base is not None:
+            self.base = base
+            
+        elif unit_direction is not None:
+            self.base = copy.deepcopy(self.unit_direction.base)
+            
+        else:
+            raise NoDirectionArgumentError("No direction argument is given.")
+        
 
     def __repr__(self):
         return f"<DirectionBase({str(self._matrix)})>"
@@ -138,16 +156,25 @@ class UnitDirection():
     #     self._anlge = self.as_angle + other.as_angle()
     #     return self
 
-    def __sub__(self, other: UnitDirection) -> UnitDirection:
+    def __add__(self, other: UnitDirection) -> UnitDirection:
         if self.base != other.base:
             raise NonEqualBaseError()
+        new = UnitDirection
+        self.from_angle(self.as_angle() + other.as_angle())
+        return self
+    
+    def __sub__(self, other: UnitDirection) -> UnitDirection:
         return self + (-1)*other
 
     def __mul__(self, other: float) -> UnitDirection:
-        return self._angle * other
+        self.from_angle(self.as_angle()*other)
+        return self
             
     def __rmul__(self, other: UnitDirection) -> UnitDirection:
         return self * other
+
+    def __div__(self, other: float) -> UnitDirection:
+        return self * (1/other)
 
     def get_shortest_angle(self, other):
         """Get shortesst angle distance between points. """
@@ -185,8 +212,12 @@ class UnitDirection():
         return self
     
     def from_vector(self, value: np.ndarray) -> None:
-        """ Update vector and reset angle. """
-        self._vector = value
+        """ Update (and normalize) vector and reset angle. """
+        value_norm = LA.norm(value)
+        if not value_norm:   # zero value
+            raise ZeroVectorError()
+            
+        self._vector = value / value_norm
         self._angle = None
         return self
 
@@ -416,15 +447,17 @@ class UnitDirection():
 
 
 class DirectionBase():
-    """ Directional base class to store the null_matrix / base_matrix which allows to represent vectors."""
-    def __init__(self, vector: np.ndarray = None,
+    """ Directional base class to store the null_matrix / base_matrix
+    which allows to represent vectors."""
+    def __init__(self,
+                 vector: np.ndarray = None,
                  matrix: np.ndarray = None,
                  direction_base: DirectionBase = None,
                  ):
         # Should it be a mutable OR immutable object?
         # TODO MAYBE: tests(?)
         if direction_base is not None:
-            self._matrix = np.copy(unit_direction.null_matrix)
+            self._matrix = np.copy(direction_base.null_matrix)
             
         elif matrix is not None:
             self._matrix = np.copy(matrix)

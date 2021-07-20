@@ -21,20 +21,31 @@ def is_negative_definite(x: np.ndarray) -> bool:
     """ Check if input matrix x is positive definite and return True/False."""
     return np.all(np.linalg.eigvals(x) < 0)
 
+class OrthogonalBasisError(Exception):
+    def __init__(self, message):
+        self._message = message
+        super().__init__(message)
+        
+    def __str__(self):
+        return f"{self._message} -> Orthogonal basis matrix not defined."
+
 # @lru_cache(maxsize=10)
 # TODO: expand cache for this [numpy-arrays]
 # TODO: OR make cython
 def get_orthogonal_basis(vector: np.ndarray, normalize: bool = True) -> np.ndarray:
     """ Get Orthonormal basis matrxi for an dimensional input vector. """
-    warnings.warn("Basis implementation is not continuous.")
+    # warnings.warn("Basis implementation is not continuous.") (?! problem?)
     if normalize:
         v_norm = np.linalg.norm(vector)
         if v_norm:
             vector = vector / v_norm
         else:
-            raise ValueError("Orthogonal basis Matrix not defined for 0-norm vector.")
+            raise OrthogonalBasisError("vector_norm=0")
 
     dim = vector.shape[0]
+    if dim <= 1:
+        raise OrthogonalBasisError(f"dimension={dim}")
+    
     basis_matrix = np.zeros((dim, dim))
 
     if dim == 2:
