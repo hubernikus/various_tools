@@ -10,16 +10,45 @@ import copy
 from math import pi
 
 import numpy as np
+from numpy import linalg as LA
 
 from vartools.linalg import get_orthogonal_basis
 
 from vartools.directional_space import get_angle_space
 from vartools.directional_space import get_angle_space_inverse
+from vartools.directional_space import get_angle_from_vector, get_vector_from_angle
 
 from vartools.directional_space import UnitDirection, DirectionBase
 
 
 class TestDirectionalSpace(unittest.TestCase):
+    directions_3d = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+        [-1, 0, 0],
+        [0, -1, 0],
+        [0, 0, -1],
+        [0.3, -0.5, 0.7],
+        [-0.9, -0.4, 0.3],
+        [1, 1, 1],
+        [-1, -1, -1],
+        [-2, 3, -1],
+        ]
+
+    # Example rotations in degrees (rotations < 90 deg OR pi/2)
+    rotations_euler = [[0, 0, 0],
+                       [90, 0, 0],
+                       [0, 90, 0],
+                       [0, 0, 90],
+                       [-90, 0, 0],
+                       [0, -90, 0],
+                       [0, 0, -90],
+                       [34, 12, 25],
+                       [20, -40, 10],
+                       [-33, -20, 8],
+                       ]
+
     def test_orthonormality_matrix(self):
         margin = 1e-6
         max_dim = 50
@@ -114,36 +143,60 @@ class TestDirectionalSpace(unittest.TestCase):
                              "Angle after transformation should have the same norm for simple x-rotation.")
 
         print("Successful norm-test.")
-
-
+        
     def test_check_bijection(self):
         from scipy.spatial.transform import Rotation
         base = DirectionBase(matrix=np.array([[1, 0, 0],
                                               [0, 1, 0],
                                               [0, 0, 1]]))
-        # Example rotations in degrees (rotations < 90 deg OR pi/2)
-        rotations = [[0, 0, 0],
-                     [90, 0, 0],
-                     [0, 90, 0],
-                     [0, 0, 90],
-                     [34, 12, 25]]
 
-        directions = [
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
-            [0.3, -0.5, 0.7],
-            [1, 1, 1],
-            [-1, -1, -1],
-            [-2, 3, -1],
-            ]
-
+        directions = self.directions_3d
+        rotations = self.rotations_euler
         for initial_vector in directions:
+            # initial_vector = [0.3, -0.5, 0.7]
+            # Normalize vector
+            initial_vector = initial_vector / LA.norm(initial_vector)
             for rot_vec in rotations:
+                # rot_vec = [0, 0, 0]
                 rot = Rotation.from_euler('zyx', rot_vec, degrees=True)
                 # rot = Rotation.from_euler('zyx', [0, 0, 0], degrees=True)
                 new_null_matr = rot.apply(base.null_matrix)
                 new_base = DirectionBase(matrix=new_null_matr)
+
+                angle = get_angle_from_vector(initial_vector, new_base)
+                reconst_vector = get_vector_from_angle(angle, new_base)
+
+                # if not np.allclose(initial_vector, reconst_vector):
+                    # breakpoint()
+                    
+                self.assertTrue(np.allclose(initial_vector, reconst_vector),
+                                "Vector after backtransformation not consistent:\n"
+                                + f"initial_vector = {initial_vector}, \n"
+                                + f"new_base = {np.round(new_base._matrix, 1)} \n"
+                                + f"rotation = {rot_vec} \n"
+                                + f"angle = {angle}, \n"
+                                + f"reconst_vector = {reconst_vector}."
+                                )
+        # print("Bijection done.")
+        
+    def test_check_bijection_rebasing(self):
+        from scipy.spatial.transform import Rotation
+        base = DirectionBase(matrix=np.array([[1, 0, 0],
+                                              [0, 1, 0],
+                                              [0, 0, 1]]))
+        directions = self.directions_3d
+        rotations = self.rotations_euler
+
+        for initial_vector in directions:
+            initial_vector = initial_vector / LA.norm(initial_vector)
+            
+            for rot_vec in rotations:
+                rot = Rotation.from_euler('zyx', rot_vec, degrees=True)
+                new_null_matr = rot.apply(base.null_matrix)
+                new_base = DirectionBase(matrix=new_null_matr)
+
+                if np.allclose((-1)*new_base[0], initial_vector):
+                    continue
 
                 # Apply transformation
                 direction = UnitDirection(base=base).from_vector(initial_vector)
@@ -151,34 +204,34 @@ class TestDirectionalSpace(unittest.TestCase):
                 
                 # Transform back
                 direction_back = direction_rebased.transform_to_base(base)
+                if False:
+                    print("")
+                    print(f'{base=}')
+                    print(f'{initial_vector=}')
+                    print(f'{direction.as_vector()=}')
+                    print(f'{direction.as_angle()=}')
 
-                print(f'{initial_vector=}')
-                print(f'{rot_vec=}')
-                print(f'{direction.as_angle()=}')
-                print(f'{direction_back.as_angle()=}')
-                print(f'{direction.as_vector()=}')
-                print(f'{direction_back.as_vector()=}')
-                
+                    print(f'{rot_vec=}')
+                    print(f'{new_base=}')
+                    print(f'{direction_rebased.as_vector()=}')
+                    print(f'{direction_rebased.as_angle()=}')
+
+                    print(f'{direction_back.as_angle()=}')
+                    print(f'{direction_back.as_vector()=}')
+
                 self.assertTrue(np.allclose(direction.as_vector(), direction_back.as_vector()),
                                 "Vector value after backtransformation not consistent.")
                 
                 self.assertTrue(np.allclose(direction.as_angle(), direction_back.as_angle()),
                                 "Angle value after backtransformation not consistent.")
-
-                
-        print("Done bijection test.")
-
+        print("Done bijection-rebasing test.")
 
     def test_180_degree_rotation(visualize=False):
         initial_vector = np.array([0, 1, 0])
         base = DirectionBase(matrix=np.array([[1, 0, 0],
                                               [0, 1, 0],
                                               [0, 0, 1]]))
-
-        
         check_angle = np.array([0, 0])
-
-        
 
     def test_90_degree_rotation(self, visualize=False):
         initial_vector = np.array([0, 1, 0])
@@ -385,6 +438,6 @@ if __name__ == '__main__':
         # Tester.test_base_transform()
         # Tester.visualization_direction_space()
         # Tester.test_90_degree_rotation(visualize=False)
-        Tester.test_check_bijection()
         
-
+        # Tester.test_check_bijection()
+        # Tester.test_check_bijection_rebasing()
