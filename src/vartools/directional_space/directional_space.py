@@ -18,6 +18,7 @@ import numpy as np
 from vartools.linalg import get_orthogonal_basis
 
 from vartools.directional_space import get_vector_from_angle
+# from vartools.directional_space import 
 # from vartools.dynamical_systems import DynamicalSystem
 
 
@@ -134,7 +135,8 @@ def get_angle_space_inverse(dir_angle_space: np.ndarray, null_direction: np.ndar
 
 
 def get_directional_weighted_sum(
-    null_direction: np.ndarray, directions: np.ndarray, weights: np.ndarray,
+    null_direction: np.ndarray,
+    directions: np.ndarray, weights: np.ndarray,
     total_weight: float = 1, normalize: bool = True, normalize_reference: bool = True):
     """ Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
 
@@ -167,11 +169,11 @@ def get_directional_weighted_sum(
 
     if normalize_reference:
         norm_refDir = np.linalg.norm(null_direction)
-        if norm_refDir==0: # nonzero
+        if norm_refDir == 0: # nonzero
             raise ValueError("Zero norm direction as input")
         null_direction /= norm_refDir
 
-     # TODO - higher dimensions
+    # TODO - higher dimensions
     if normalize:
         norm_dir = np.linalg.norm(directions, axis=0)
         ind_nonzero = (norm_dir>0)

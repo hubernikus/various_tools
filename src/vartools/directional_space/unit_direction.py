@@ -19,12 +19,32 @@ from numpy import linalg as LA
 
 from vartools.linalg import get_orthogonal_basis
 
-class NoDirectionArgumentError(Exception):
+class UnitDirectionError(Exception):
+    def __init__(self, message="Error with Unit Direction Handling"):
+        super().__init__(self.message)
+        
+    def __str__(self):
+        return f"{self.message}"
+
+class InversionError(UnitDirectionError):
+    def __init__(self, value):
+        self.value = value
+        super().__init__()
+        
+    def __str__(self):
+        return (f"angle_norm={self.value} "
+                + "-> Inverseion not possible, norm should be in [0, pi[")
+
+class NoDirectionArgumentError(UnitDirectionError):
     """No Directional argument is passed"""
+    def __init__(self, message="No directional argument is passed"):
+        super().__init__(self.message)
+        
     def __str__(self):
         return f"No directional argument is passed."
 
-def ZeroVectorError(Exception):
+
+class ZeroVectorError(Exception):
     def __str__(self):
         return f"Zero vector is passed. No angle-space transformation possible."
 
@@ -133,7 +153,7 @@ class UnitDirection():
         unit_direction = UnitDirection [base is copied]
         """
         if base is not None:
-            self.base = base
+            self.base = copy.deepcopy(base)
             
         elif unit_direction is not None:
             self.base = copy.deepcopy(self.unit_direction.base)
@@ -162,20 +182,52 @@ class UnitDirection():
         new = UnitDirection
         self.from_angle(self.as_angle() + other.as_angle())
         return self
+
+    def __radd__(self, other: UnitDirection) -> UnitDirection:
+        return self + other
     
     def __sub__(self, other: UnitDirection) -> UnitDirection:
         return self + (-1)*other
 
     def __mul__(self, other: float) -> UnitDirection:
-        self.from_angle(self.as_angle()*other)
-        return self
+        selfcopy = copy.deepcopy(self)
+        selfcopy.from_angle(selfcopy.as_angle()*other)
+        return selfcopy
             
     def __rmul__(self, other: UnitDirection) -> UnitDirection:
         return self * other
 
-    def __div__(self, other: float) -> UnitDirection:
-        return self * (1/other)
+    def __truediv__(self, other: float) -> UnitDirection:
+        return self * (1.0/other)
+    
+    # def __rdiv__(self, other: float) -> UnitDirection:
+        # return self * other
+    def norm(self) -> float:
+        """ Return norm of angle."""
+        return LA.norm(self.as_angle())
 
+    def get_distance_to(self, other: UnitDirection) -> float:
+        if self.base != other.base:
+            raise NonEqualBaseError()
+        return LA.norm(self.as_angle() + other.as_angle())
+
+    def invert_normal(self) -> UnitDirection:
+        """ Invert the normal of the unit vector """
+        angle_norm = self.norm()
+        if angle_norm >= pi:
+            raise InversionError(value=self.norm())
+
+        new_angle = self.as_angle() / angle_norm * (pi-angle_norm)
+        new_base = self.base.invert_normal()
+        
+        return UnitDirection(base=new_base).from_angle(new_angle)
+
+    def project_onto_sphere(self, reference_vector: UnitDirection, radius=pi/2) -> UnitDirection:
+        """ Project onto sphere """
+        if self.base != other.base:
+            raise NonEqualBaseError()
+        raise NotImplementedError()
+        
     def get_shortest_angle(self, other):
         """Get shortesst angle distance between points. """
         pass
@@ -202,7 +254,6 @@ class UnitDirection():
             # Reset angles / vector
             self._angle = None
             self._vector = None
-            
         self._base = value
             
     def from_angle(self, value: np.ndarray) -> DirectionBase:
@@ -250,10 +301,7 @@ class UnitDirection():
             return copy.deepcopy(self)
 
         # Make sure the angle is calculated
-        try:
-            angle = self.as_angle()
-        except:
-            breakpoint()
+        angle = self.as_angle()
         vector = self.as_vector()
 
         angle_in_newbase = get_angle_from_vector(vector, base=new_base)
@@ -482,10 +530,6 @@ class DirectionBase():
 
     def __matmul__(self, other: np.ndarray):
         return self.dot(other)
-    
-    def dot(self, other: np.ndarray):
-        # Dot product
-        return self._matrix.dot(other)
 
     @property
     def T(self) -> DirectionBase:
@@ -497,6 +541,17 @@ class DirectionBase():
     @property
     def null_matrix(self) -> DirectionBase:
         return self._matrix
+
+    
+    def dot(self, other: np.ndarray):
+        # Dot product
+        return self._matrix.dot(other)
+
+    def invert_normal(self):
+        """ Invert the normal / first vector."""
+        selfcopy = copy.deepcopy(self)
+        selfcopy[:, 0] = (-1)*selfcopy[:, 0]
+        return selfcopy
 
     # @property
     # def null_vector(self) -:
