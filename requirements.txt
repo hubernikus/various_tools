@@ -1,7 +1,10 @@
 # Requirement
 # python=3.9
-ipython   # for testing --- remove later
 numpy
-matplotlib    # for testing --- remove later
+
+# For testing / development 
+ipython   # For testing pusposes only | remove later
+matplotlib    # For testing pusposes only | remove later
+scipy   # For testing pusposes only | remove later
 
 

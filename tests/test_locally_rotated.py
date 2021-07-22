@@ -67,9 +67,9 @@ class TestSpiralmotion(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
-    # unittest.main()
+    unittest.main()
     
-    manual_tets = True
+    manual_tets = False
     if manual_tets:
         Tester = TestSpiralmotion()
         # Tester.plot_dynamical_system()

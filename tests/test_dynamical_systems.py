@@ -37,8 +37,9 @@ class TestDynamicalSystems(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    visual_tets = True
+    unittest.main()
+    
+    visual_tets = False
     if visual_tets:
         MyTester = TestDynamicalSystems()
         MyTester.visualize_pendulum()

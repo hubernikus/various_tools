@@ -68,8 +68,9 @@ class TestSpiralmotion(unittest.TestCase):
             plt.show()
         
 if __name__ == '__main__':
-    # unittest.main()
-    test_visualization = True
+    unittest.main()
+    
+    test_visualization = False
     if test_visualization:
         Tester = TestSpiralmotion()
         Tester.test_creation(visualize=test_visualization)

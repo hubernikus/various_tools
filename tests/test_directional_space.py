@@ -3,6 +3,7 @@
 # Author: LukasHuber
 # Date: 2021-05-18
 # Email: lukas.huber@epfl.ch
+# License: BSD (c) 2021
 
 import unittest
 import copy
@@ -69,7 +70,30 @@ class TestDirectionalSpace(unittest.TestCase):
         with self.assertRaises(Exception):
             impossibleBase = UnitDirection()
 
-    def test_operator(self):
+    def test_inversion_and_bijectiveness_3d(self):
+        """ Test of unit-direction inversion in 2d-3d."""
+        # dimensions = [2, 3, 4, 10, 20]
+        dim = 3
+        null_matrix = np.eye(dim)
+
+        from scipy.spatial.transform import Rotation
+        for direction in self.directions_3d:
+            for rot in self.rotations_euler:
+                direction = direction / LA.norm(direction)
+                rot = Rotation.from_euler('zyx', [0, 0, 30], degrees=True)
+                null_matr_new = rot.apply(null_matrix)
+                new_base = DirectionBase(matrix=null_matr_new)
+
+                dir0 = UnitDirection(base=new_base).from_vector(direction)
+                dir_inv = dir0.invert_normal()
+                
+                dir_reprod = dir_inv.invert_normal()
+                self.assertTrue(np.allclose(dir0.base.null_matrix, dir_reprod.base.null_matrix))
+                self.assertTrue(np.allclose(dir0.as_angle(), dir_reprod.as_angle()))
+                self.assertTrue(np.allclose(dir0.base[0], (-1)*dir_inv.base[0]))
+                self.assertTrue(np.isclose(pi-dir0.norm(), dir_inv.norm()))
+        
+    def test_operators(self):
         # TODO:
         pass
 
@@ -487,7 +511,7 @@ class TestDirectionalSpace(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # unittest.main()
+    unittest.main()
     
     user_test = False
     if user_test:
@@ -501,4 +525,5 @@ if __name__ == '__main__':
         
         # Tester.test_check_bijection()
         # Tester.test_check_bijection_rebasing()
-        Tester.test_comparison_operator_direction_base()
+        Tester.test_inversion_and_bijectiveness_3d()
+        # Tester.test_comparison_operator_direction_base()

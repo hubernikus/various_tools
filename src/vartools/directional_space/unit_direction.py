@@ -21,6 +21,7 @@ from vartools.linalg import get_orthogonal_basis
 
 class UnitDirectionError(Exception):
     def __init__(self, message="Error with Unit Direction Handling"):
+        self.message = message
         super().__init__(self.message)
         
     def __str__(self):
@@ -33,13 +34,10 @@ class InversionError(UnitDirectionError):
         
     def __str__(self):
         return (f"angle_norm={self.value} "
-                + "-> Inverseion not possible, norm should be in [0, pi[")
+                + "-> Inversion not possible, norm should be in [0, pi[")
 
 class NoDirectionArgumentError(UnitDirectionError):
     """No Directional argument is passed"""
-    def __init__(self, message="No directional argument is passed"):
-        super().__init__(self.message)
-        
     def __str__(self):
         return f"No directional argument is passed."
 
@@ -58,7 +56,8 @@ class NonEqualBaseError(DirectionBaseError):
     ----------
     """
     def __init__(self, message="Direction Base is not equal."):
-        super().__init__(self.message)
+        self.message = message
+        super().__init__(message)
         
     def __str__(self):
         return f"{self.message}"
@@ -135,17 +134,18 @@ def get_vector_from_angle(angle: np.ndarray, base: DirectionBase) -> np.ndarray:
 
 class UnitDirection():
     """ Direction of the length 1 which can be respresented in angle space.
-    Not that this space is not Eucledian but it """
+    Not that this space is not Eucledian but it
+    
+    Properties
+    ----------
+    _vector : Each element in this space can be equivalently described as a unit-vector
+    _angle : The transformation of the angle space
+    """
     def __init__(self, base: DirectionBase = None,
                  unit_direction: UnitDirection = None):
         """
         To create the angle space on of several 'reference angles / directions' have to be
-        pass to the function. 
-
-        Properties
-        ----------
-        _vector : Each element in this space can be equivalently described as a unit-vector
-        _angle : The transformation of the angle space
+        pass to the function.
         
         Parameters
         ----------
@@ -153,17 +153,21 @@ class UnitDirection():
         unit_direction = UnitDirection [base is copied]
         """
         if base is not None:
-            self.base = copy.deepcopy(base)
+            # self.base = copy.deepcopy(base)
+            self.base = base
             
         elif unit_direction is not None:
-            self.base = copy.deepcopy(self.unit_direction.base)
+            # self.base = copy.deepcopy(self.unit_direction.base)
+            self.base = self.unit_direction.base
             
         else:
             raise NoDirectionArgumentError("No direction argument is given.")
-        
+    
 
     def __repr__(self):
-        return f"<DirectionBase({str(self._matrix)})>"
+        return (f"Unit Direction({str(self.as_angle())}) \n"
+                f"{str(self.base)}")
+    
     # def __iadd__(self, other):
         # pass
     
@@ -214,10 +218,14 @@ class UnitDirection():
     def invert_normal(self) -> UnitDirection:
         """ Invert the normal of the unit vector """
         angle_norm = self.norm()
-        if angle_norm >= pi:
+        if angle_norm > pi:  # Strictly bigger, since (.)=pi is projected to the center
             raise InversionError(value=self.norm())
+        elif not angle_norm: # at center
+            new_angle = np.zeros(self._angle.shape)
+            new_angle[0] = pi
+        else:
+            new_angle = self.as_angle() / angle_norm * (pi-angle_norm)
 
-        new_angle = self.as_angle() / angle_norm * (pi-angle_norm)
         new_base = self.base.invert_normal()
         
         return UnitDirection(base=new_base).from_angle(new_angle)
@@ -542,7 +550,6 @@ class DirectionBase():
     def null_matrix(self) -> DirectionBase:
         return self._matrix
 
-    
     def dot(self, other: np.ndarray):
         # Dot product
         return self._matrix.dot(other)
@@ -550,7 +557,7 @@ class DirectionBase():
     def invert_normal(self):
         """ Invert the normal / first vector."""
         selfcopy = copy.deepcopy(self)
-        selfcopy[:, 0] = (-1)*selfcopy[:, 0]
+        selfcopy._matrix[:, 0] = (-1)*selfcopy._matrix[:, 0]
         return selfcopy
 
     # @property

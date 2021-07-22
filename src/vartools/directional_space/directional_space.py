@@ -5,6 +5,7 @@ Helper function for directional & angle evaluations
 # Author: LukasHuber
 # Created: 2021-05-18
 # Email: lukas.huber@epfl.ch
+# License: BSD (c) 2021
 
 # Use python 3.10 [annotations / typematching]
 from __future__ import annotations  # Not needed from python 3.10 onwards
