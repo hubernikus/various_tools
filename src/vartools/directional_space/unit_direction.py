@@ -297,10 +297,10 @@ class UnitDirection():
             raise ValueError("Set vector or angle value before evaluating.")
 
         # Store & return vector
-        try:
-            self._vector = get_vector_from_angle(angle=self._angle, base=self.base)
-        except:
-            breakpoint()
+        # try:
+        self._vector = get_vector_from_angle(angle=self._angle, base=self.base)
+        # except:
+            # breakpoint()
         return self._vector
 
     def transform_to_base(self, new_base: DirectionBase) -> None:
@@ -528,7 +528,8 @@ class DirectionBase():
         return self._matrix[:, arg]
         
     def __repr__(self):
-        return f"DirectionBase({str(self._matrix)})"
+        # return f"DirectionBase({str(self._matrix)})"
+        return f"DirectionBase({np.array2string(self._matrix, separator=', ')})"
     
     def __eq__(self, other: DirectionBase) -> bool:
         return np.allclose(self._matrix, other.null_matrix)

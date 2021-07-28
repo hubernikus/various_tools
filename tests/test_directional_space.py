@@ -92,6 +92,13 @@ class TestDirectionalSpace(unittest.TestCase):
                 self.assertTrue(np.allclose(dir0.as_angle(), dir_reprod.as_angle()))
                 self.assertTrue(np.allclose(dir0.base[0], (-1)*dir_inv.base[0]))
                 self.assertTrue(np.isclose(pi-dir0.norm(), dir_inv.norm()))
+
+    def test_get_vector_from_angle_specific(self):
+        angle = np.array([1.4422432, 1.4422432])
+        base = DirectionBase([[ 0.95187528,  0.30648564],
+                              [-0.30648564,  0.95187528]])
+        
+        get_vector_from_angle(angle=self._angle, base=self.base)
         
     def test_operators(self):
         # TODO:
@@ -511,9 +518,8 @@ class TestDirectionalSpace(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
-    
-    user_test = False
+    # unittest.main()
+    user_test = True
     if user_test:
         Tester = TestDirectionalSpace()
         # Tester.test_base_transform_same_normal()
@@ -525,5 +531,5 @@ if __name__ == '__main__':
         
         # Tester.test_check_bijection()
         # Tester.test_check_bijection_rebasing()
-        Tester.test_inversion_and_bijectiveness_3d()
+        # Tester.test_inversion_and_bijectiveness_3d()
         # Tester.test_comparison_operator_direction_base()
