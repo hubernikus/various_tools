@@ -165,7 +165,7 @@ class UnitDirection():
     
 
     def __repr__(self):
-        return (f"Unit Direction({str(self.as_angle())}) \n"
+        return (f"UnitDirection({str(self.as_angle())}) \n"
                 f"{str(self.base)}")
     
     # def __iadd__(self, other):
@@ -183,9 +183,7 @@ class UnitDirection():
     def __add__(self, other: UnitDirection) -> UnitDirection:
         if self.base != other.base:
             raise NonEqualBaseError()
-        new = UnitDirection
-        self.from_angle(self.as_angle() + other.as_angle())
-        return self
+        return UnitDirection(self).from_angle(self.as_angle() + other.as_angle())
 
     def __radd__(self, other: UnitDirection) -> UnitDirection:
         return self + other
@@ -194,9 +192,7 @@ class UnitDirection():
         return self + (-1)*other
 
     def __mul__(self, other: float) -> UnitDirection:
-        selfcopy = copy.deepcopy(self)
-        selfcopy.from_angle(selfcopy.as_angle()*other)
-        return selfcopy
+        return UnitDirection(self).from_angle(self.as_angle()*other)
             
     def __rmul__(self, other: UnitDirection) -> UnitDirection:
         return self * other
@@ -213,7 +209,7 @@ class UnitDirection():
     def get_distance_to(self, other: UnitDirection) -> float:
         if self.base != other.base:
             raise NonEqualBaseError()
-        return LA.norm(self.as_angle() + other.as_angle())
+        return LA.norm(self.as_angle() - other.as_angle())
 
     def invert_normal(self) -> UnitDirection:
         """ Invert the normal of the unit vector """
@@ -506,20 +502,21 @@ class DirectionBase():
     """ Directional base class to store the null_matrix / base_matrix
     which allows to represent vectors."""
     def __init__(self,
-                 vector: np.ndarray = None,
                  matrix: np.ndarray = None,
+                 vector: np.ndarray = None,
                  direction_base: DirectionBase = None,
                  ):
         # Should it be a mutable OR immutable object?
         # TODO MAYBE: tests(?)
-        if direction_base is not None:
-            self._matrix = np.copy(direction_base.null_matrix)
             
-        elif matrix is not None:
+        if matrix is not None:
             self._matrix = np.copy(matrix)
             
         elif vector is not None:
             self._matrix = get_orthogonal_basis(vector)
+
+        elif direction_base is not None:
+            self._matrix = np.copy(direction_base.null_matrix)
             
         else:
             raise ValueError("No input argument as a base of the space.")

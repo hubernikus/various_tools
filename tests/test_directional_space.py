@@ -99,6 +99,22 @@ class TestDirectionalSpace(unittest.TestCase):
                               [-0.30648564,  0.95187528]])
         
         get_vector_from_angle(angle=self._angle, base=self.base)
+
+    def test_repetitive_nonnorm_influence(self):
+        base = DirectionBase(np.array([[1., 0., 0.],
+                                       [0., 1., 0.],
+                                       [0., 0., 1.]]))
+        
+        dir1 = UnitDirection(base).from_angle(np.array([1.88495559, 1.25663706]))
+        dir2 = UnitDirection(base).from_angle(np.array([-5.02654825, -4.39822972]))
+
+        angle1 = dir1.as_angle()
+        angle2 = dir2.as_angle()
+
+        aa = (dir1 - dir2).norm()
+
+        self.assertTrue(np.allclose(angle2, dir2.as_angle()))
+        self.assertTrue(np.allclose(angle1, dir1.as_angle()))
         
     def test_operators(self):
         # TODO:
@@ -208,6 +224,7 @@ class TestDirectionalSpace(unittest.TestCase):
         null_matrix = np.array([[1, 0, 0],
                                 [0, 1, 0],
                                 [0, 0, 1]])
+        
         base0 = DirectionBase(matrix=null_matrix)
 
         directions = [
@@ -525,6 +542,7 @@ if __name__ == '__main__':
         # Tester.test_base_transform_same_normal()
         # Tester.test_special_angle_displacement()
 
+        Tester.test_repetitive_nonnorm_influence()
         # Tester.test_base_transform()
         # Tester.visualization_direction_space()
         # Tester.test_90_degree_rotation(visualize=False)
