@@ -116,9 +116,21 @@ class TestDirectionalSpace(unittest.TestCase):
         self.assertTrue(np.allclose(angle2, dir2.as_angle()))
         self.assertTrue(np.allclose(angle1, dir1.as_angle()))
         
-    def test_operators(self):
-        # TODO:
-        pass
+    def test_mult_operators(self):
+        dim = 3
+        base = DirectionBase(np.eye(dim))
+        dir1 = UnitDirection(base).from_angle(np.array([1, 0]))
+
+        # Multply with float factor
+        fac2 = 3 
+        dir2 = fac2*dir1
+        dir3 = dir1*fac2
+
+        self.assertTrue(dir1.base==dir2.base)
+        self.assertTrue(np.allclose(dir1.as_angle()*fac2, dir2.as_angle()))
+
+        self.assertTrue(dir2.base==dir3.base)
+        self.assertTrue(np.allclose(dir2.as_angle(), dir3.as_angle()))
 
     def test_comparison_operator_direction_base(self):
         null_matrix = np.array([[1, 0, 0],
@@ -542,7 +554,7 @@ if __name__ == '__main__':
         # Tester.test_base_transform_same_normal()
         # Tester.test_special_angle_displacement()
 
-        Tester.test_repetitive_nonnorm_influence()
+        # Tester.test_repetitive_nonnorm_influence()
         # Tester.test_base_transform()
         # Tester.visualization_direction_space()
         # Tester.test_90_degree_rotation(visualize=False)
@@ -550,4 +562,6 @@ if __name__ == '__main__':
         # Tester.test_check_bijection()
         # Tester.test_check_bijection_rebasing()
         # Tester.test_inversion_and_bijectiveness_3d()
+        
         # Tester.test_comparison_operator_direction_base()
+        # Tester.test_mult_operators()

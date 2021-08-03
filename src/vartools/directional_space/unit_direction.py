@@ -183,6 +183,7 @@ class UnitDirection():
     def __add__(self, other: UnitDirection) -> UnitDirection:
         if self.base != other.base:
             raise NonEqualBaseError()
+                
         return UnitDirection(self).from_angle(self.as_angle() + other.as_angle())
 
     def __radd__(self, other: UnitDirection) -> UnitDirection:
@@ -192,7 +193,7 @@ class UnitDirection():
         return self + (-1)*other
 
     def __mul__(self, other: float) -> UnitDirection:
-        return UnitDirection(self).from_angle(self.as_angle()*other)
+        return UnitDirection(self.base).from_angle(self.as_angle()*other)
             
     def __rmul__(self, other: UnitDirection) -> UnitDirection:
         return self * other
@@ -529,7 +530,7 @@ class DirectionBase():
         return f"DirectionBase({np.array2string(self._matrix, separator=', ')})"
     
     def __eq__(self, other: DirectionBase) -> bool:
-        return np.allclose(self._matrix, other.null_matrix)
+        return np.allclose(self.null_matrix, other.null_matrix)
     
     def __ne__(self, other: DirectionBase) -> bool:
         return not (self == other)
