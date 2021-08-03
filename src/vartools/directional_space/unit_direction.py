@@ -180,11 +180,16 @@ class UnitDirection():
     #     self._anlge = self.as_angle + other.as_angle()
     #     return self
 
+    def __eq__(self, other: UnitDirection) -> float:
+        return (self.base==other.base and np.allclose(self.as_angle(), other.as_angle()))
+    
+    def __neq__(self, other: UnitDirection) -> float:
+        return not (self == other)
+            
     def __add__(self, other: UnitDirection) -> UnitDirection:
         if self.base != other.base:
             raise NonEqualBaseError()
-                
-        return UnitDirection(self).from_angle(self.as_angle() + other.as_angle())
+        return UnitDirection(self.base).from_angle(self.as_angle() + other.as_angle())
 
     def __radd__(self, other: UnitDirection) -> UnitDirection:
         return self + other

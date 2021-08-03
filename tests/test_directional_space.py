@@ -93,6 +93,17 @@ class TestDirectionalSpace(unittest.TestCase):
                 self.assertTrue(np.allclose(dir0.base[0], (-1)*dir_inv.base[0]))
                 self.assertTrue(np.isclose(pi-dir0.norm(), dir_inv.norm()))
 
+    # def test_inversion_examples(self):
+    #     """ Test specific examples which have caused problems"""
+    #     dim = 3
+    #     base0 = DirectionBase(matrix=np.eye(dim))
+    #     inv_conv_rotated = UnitDirection(base0).from_angle(np.array([pi*0.6, pi*0.4]))
+    #     angle = Tester.inv_nonlinear.as_angle()
+
+    #     inv_inv_nonlin = inv_conv_rotated.invert_normal()
+
+    #     # Done
+
     def test_get_vector_from_angle_specific(self):
         angle = np.array([1.4422432, 1.4422432])
         base = DirectionBase([[ 0.95187528,  0.30648564],
@@ -132,26 +143,35 @@ class TestDirectionalSpace(unittest.TestCase):
         self.assertTrue(dir2.base==dir3.base)
         self.assertTrue(np.allclose(dir2.as_angle(), dir3.as_angle()))
 
+    def test_add_operators(self):
+        dim = 3
+        base = DirectionBase(np.eye(dim))
+        dir1 = UnitDirection(base).from_angle(np.array([1, 0]))
+
+        # Multply with float factor
+        fac2 = 3 
+        dir2 = fac2*dir1
+        dir3 = dir1*fac2
+
+        self.assertTrue(dir1.base==dir2.base)
+        self.assertTrue(np.allclose(dir1.as_angle()*fac2, dir2.as_angle()))
+
+        self.assertTrue(dir2.base==dir3.base)
+        self.assertTrue(np.allclose(dir2.as_angle(), dir3.as_angle()))
+
     def test_comparison_operator_direction_base(self):
-        null_matrix = np.array([[1, 0, 0],
-                                [0, 1, 0],
-                                [0, 0, 1]])
+        dim = 3
+        base = DirectionBase(np.eye(dim))
+        dir1 = UnitDirection(base).from_angle(np.array([1, 0]))
+        dir2 = UnitDirection(base).from_angle(np.array([0, 1]))
 
-        base0 = DirectionBase(matrix=np.copy(null_matrix))
-        base1 = DirectionBase(matrix=np.copy(null_matrix))
-
-        self.assertTrue(base0 == base1)
-        self.assertFalse(base0 != base1)
-
-        null_matrix2 = np.array([[0, 1, 0],
-                                 [1, 0, 0],
-                                 [0, 0, 1]])
+        dir3 = dir1 + dir2
+        dir_correct = UnitDirection(base).from_angle(np.array([1, 1]))
         
-        base2 = DirectionBase(matrix=np.copy(null_matrix2))
+        self.assertTrue(dir1.base==dir3.base)
+        self.assertTrue(dir2.base==dir3.base)
 
-        self.assertTrue(base0 != base2)
-        self.assertFalse(base0 == base2)
-        
+        self.assertTrue(dir3==dir_correct)
         
     def test_orthonormality_matrix(self):
         """ Test if matix in higher dimension is orthogonal."""
@@ -565,3 +585,6 @@ if __name__ == '__main__':
         
         # Tester.test_comparison_operator_direction_base()
         # Tester.test_mult_operators()
+        # Tester.test_comparison_operator_direction_base()
+
+        # Tester.test_inversion_examples()
