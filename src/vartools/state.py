@@ -6,11 +6,51 @@ Basic state to base anything on.
 # License: BSD (c) 2021
 
 # import time
-import copy
 
 import numpy as np
-import matplotlib.pyplot as plt    # Only for debugging
 
+# TODO: use this as an attribute for further calculations
+# !WARNING: This is still very experimental
+
+
+class BaseState(ABC):
+    def __init__(self,
+                 position,
+                 orientation,
+                 velocity,
+                 angular_velocity):
+        pass
+
+class Pose():
+    def __init__(self, position=None, orientation=None):
+        self.position = position
+        self.orientation = orientation
+
+    def update(self,  delta_time: float, twist: Twist):
+        if twist.linear is not None:
+            self.position = position + twist.linear * delta_time
+
+        if twist.angular is not None:
+            breakpoint()
+            # Not implemented
+            self.agnular = position + twist.agnular * delta_time
+
+class Twist():
+    def __init__(self, linear, angular):
+        pass
+
+    def update(self, twist: Twist, dt: float):
+        pass
+
+class Wrench():
+    def __init__(self, linear, angular):
+        pass
+
+
+class ConstantMovingState():
+    pass
+
+    
 
 class State(object):
     """ Basic state class which allows encapsulates further.  """
