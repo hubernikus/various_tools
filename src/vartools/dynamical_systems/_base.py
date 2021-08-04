@@ -8,7 +8,7 @@ Dynamical Systems with a closed-form description.
 from abc import ABC, abstractmethod
 
 import numpy as np
-
+from numpy import linalg as LA
 
 def allow_max_velocity(original_function=None):
     ''' Decorator to allow to limit the velocity to a maximum.'''
@@ -63,7 +63,7 @@ class DynamicalSystem(ABC):
             else:
                 maximum_velocity = self.maximum_velocity
         
-        mag_vel = np.linalg.norm(velocity)
+        mag_vel = LA.norm(velocity)
         if mag_vel > maximum_velocity:
             velocity = velocity / mag_vel * maximum_velocity
         return velocity
@@ -74,7 +74,8 @@ class DynamicalSystem(ABC):
         pass
 
     def compute_dynamics(self, position):
-        # This  or 'evaluate' / to be or not to be?!
+        # This or 'evaluate' / to be or not to be?!
+        # Could allow for additional cropping
         pass
 
     def evaluate_array(self, position_array):
