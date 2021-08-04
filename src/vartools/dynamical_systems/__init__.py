@@ -10,6 +10,7 @@ from .spiral_motion import SpiralStable
 from .locally_rotated import LocallyRotated
 from .quadratic_axis_convergence import QuadraticAxisConvergence
 from .multiattractor_dynamics import PendulumDynamics, DuffingOscillator, BifurcationSpiral
+from .sinus_attractor import SinusAttractorSystem
 
 # Various Dynamical System Adaptation Functions
 from .velocity_trimmer import BaseTrimmer, ConstVelocityDecreasingAtAttractor
@@ -31,6 +32,7 @@ __all__ = ['allow_max_velocity',
            'PendulumDynamics',
            'DuffingOscillator',
            'BifurcationSpiral',
+           'SinusAttractorSystem',
 
            'BaseTrimmer',
            'ConstVelocityDecreasingAtAttractor',

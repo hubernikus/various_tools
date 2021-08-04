@@ -20,7 +20,7 @@ class SpuriousAttractorError(Exception):
         
     def __str__(self):
         return f"position={self.position} -> Spurious Attractor (velocity=0) detected."
-
+    
 
 class BaseTrimmer(ABC):
     """ Virtual class which limits DS magnitudes. """ 
@@ -28,7 +28,7 @@ class BaseTrimmer(ABC):
         # pass
         
     @abstractmethod
-    def limit(self, velocity: np.npdarray, position: np.ndarray) -> np.ndarray:
+    def limit(self, velocity: np.ndarray, position: np.ndarray) -> np.ndarray:
         # Limit velocity to a set value
         pass
 

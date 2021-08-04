@@ -41,11 +41,11 @@ class DynamicalSystem(ABC):
             self.dimension = dimension
         elif attractor_position is not None:
             self.dimension = attractor_position.shape[0]
+            self.attractor_position = attractor_position
         elif not hasattr(self, 'dimension'):
             breakpoint()
             raise ValueError("Space dimension cannot be guess from inputs. " +
                              "Please define it at initialization.")
-
         self.attractor_position = attractor_position
 
     @property
