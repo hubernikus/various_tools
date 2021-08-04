@@ -200,6 +200,17 @@ class TestDirectionalSpace(unittest.TestCase):
                 for kk in range(jj+1, dim):
                     self.assertTrue(vec[:, jj].dot(vec[:, kk]) < margin)
 
+    def test_angle_space_distance(self):
+        dim = 3
+        base = DirectionBase(matrix=np.eye(dim))
+        dir1 = UnitDirection(base).from_angle(np.array([1.88495559, 1.25663706]))
+        dir2 = UnitDirection(base).from_angle(np.array([-3.14159265, -3.14159265]))
+
+        dd1 = dir1.as_angle()
+        dd2 = dir2.as_angle()
+        
+        self.assertAlmostEqual(LA.norm(dd2-dd1), dir1.get_distance_to(dir2))
+
     def old_test_bijectional_space(self):
         """ Test that forward&inverse directional space is ennaluating.""" 
         n_repetitions = 100
@@ -588,3 +599,5 @@ if __name__ == '__main__':
         # Tester.test_comparison_operator_direction_base()
 
         # Tester.test_inversion_examples()
+
+        # Tester.test_angle_space_distance()
