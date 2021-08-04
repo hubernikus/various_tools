@@ -564,10 +564,6 @@ class DirectionBase():
         selfcopy._matrix[:, 0] = (-1)*selfcopy._matrix[:, 0]
         return selfcopy
 
-    # @property
-    # def null_vector(self) -:
-        # return self._matrix[:, 0]
-
     # @null_matrix.setter
     # def null_matrix(self, value):
         # self._matrix = value

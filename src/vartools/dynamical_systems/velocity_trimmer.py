@@ -56,6 +56,7 @@ class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
             
         return velocity / mag_vel*desired_velocity
 
+
 class LimitMaximumVelocity(BaseTrimmer):
     def __init__(self, maximum_velocity: np.ndarray):
         self.maximum_velocity = maximum_velocity
