@@ -11,10 +11,14 @@ from .locally_rotated import LocallyRotated
 from .quadratic_axis_convergence import QuadraticAxisConvergence
 from .multiattractor_dynamics import PendulumDynamics, DuffingOscillator, BifurcationSpiral
 
+# Various Dynamical System Adaptation Functions
+from .velocity_trimmer import BaseTrimmer, ConstVelocityDecreasingAtAttractor
+
 # Helper functions for visualization
 from .plot_vectorfield import plot_dynamical_system
 from .plot_vectorfield import plot_dynamical_system_quiver
 from .plot_vectorfield import plot_dynamical_system_streamplot
+
 
 __all__ = ['allow_max_velocity',
            'DynamicalSystem',
@@ -27,6 +31,10 @@ __all__ = ['allow_max_velocity',
            'PendulumDynamics',
            'DuffingOscillator',
            'BifurcationSpiral',
+
+           'BaseTrimmer',
+           'ConstVelocityDecreasingAtAttractor',
+           
            'plot_dynamical_system',
            'plot_dynamical_system_quiver',
            'plot_dynamical_system_streamplot',
