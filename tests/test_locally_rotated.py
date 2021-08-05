@@ -22,7 +22,7 @@ class TestSpiralmotion(unittest.TestCase):
         plot_dynamical_system_quiver(DynamicalSystem=DynamicalSystem,
                                      n_resolution=20)
 
-        self.test_weight(DynamicalSystem)
+        self.visualize_weight(DynamicalSystem)
 
     def plot_critical_ds(self):
         DynamicalSystem = LocallyRotated(
@@ -33,7 +33,7 @@ class TestSpiralmotion(unittest.TestCase):
         plot_dynamical_system_quiver(DynamicalSystem=DynamicalSystem,
                                      n_resolution=20)
         
-    def test_weight(self, DynamicalSystem=None, x_lim=[-10, 10], y_lim=[-10, 10], dim=2):
+    def visualize_weight(self, DynamicalSystem=None, x_lim=[-10, 10], y_lim=[-10, 10], dim=2):
         if DynamicalSystem is None:
             DynamicalSystem = LocallyRotated(
                 mean_rotation=[np.pi],
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         Tester = TestSpiralmotion()
         # Tester.plot_dynamical_system()
         # Tester.plot_critical_ds()
-        Tester.test_weight()
+        # Tester.visualize_weight()
     
 print('Done')
 
