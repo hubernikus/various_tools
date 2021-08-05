@@ -353,24 +353,9 @@ class TestDirectionalSpace(unittest.TestCase):
                 
                 # Transform back
                 direction_back = direction_rebased.transform_to_base(base)
-                if False:
-                    print("")
-                    print(f'{base=}')
-                    print(f'{initial_vector=}')
-                    print(f'{direction.as_vector()=}')
-                    print(f'{direction.as_angle()=}')
-
-                    print(f'{rot_vec=}')
-                    print(f'{new_base=}')
-                    print(f'{direction_rebased.as_vector()=}')
-                    print(f'{direction_rebased.as_angle()=}')
-
-                    print(f'{direction_back.as_angle()=}')
-                    print(f'{direction_back.as_vector()=}')
-
+                
                 self.assertTrue(np.allclose(direction.as_vector(), direction_back.as_vector()),
                                 "Vector value after backtransformation not consistent.")
-                
                 self.assertTrue(np.allclose(direction.as_angle(), direction_back.as_angle()),
                                 "Angle value after backtransformation not consistent.")
         # print("Done bijection-rebasing test.")
@@ -578,8 +563,8 @@ class TestDirectionalSpace(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    user_test = True
+    unittest.main()
+    user_test = False
     if user_test:
         Tester = TestDirectionalSpace()
         # Tester.test_base_transform_same_normal()

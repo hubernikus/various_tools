@@ -83,8 +83,11 @@ def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin
     direction_referenceSpace = base.T.dot(direction)
     # direction_referenceSpace = base.dot(direction)
 
-    # Make sure to catch numerical error of cosinus calculation
-    cos_direction = direction_referenceSpace[0]
+    try:
+        # Make sure to catch numerical error of cosinus calculation
+        cos_direction = direction_referenceSpace[0]
+    except:
+        breakpoint()
 
     if cos_direction >= (1.0-cos_margin):
         # Trivial solution
@@ -132,7 +135,7 @@ def get_vector_from_angle(angle: np.ndarray, base: DirectionBase) -> np.ndarray:
     return vector
     
 
-class UnitDirection():
+class UnitDirection(object):
     """ Direction of the length 1 which can be respresented in angle space.
     Not that this space is not Eucledian but it
     
@@ -153,6 +156,12 @@ class UnitDirection():
         unit_direction = UnitDirection [base is copied]
         """
         if base is not None:
+            # if not isinstance(base._matrix, DirectionBase):
+            if not isinstance(base._matrix, np.ndarray):
+                # TODO: direct base instance check| but how?!
+                raise TypeError(f"{base} of {type(base)} \n"
+                                + f"-> Input of wrong type, should be 'DirectionBase'.")
+
             # self.base = copy.deepcopy(base)
             self.base = base
             
@@ -266,14 +275,15 @@ class UnitDirection():
             self._vector = None
         self._base = value
             
-    def from_angle(self, value: np.ndarray) -> DirectionBase:
+    def from_angle(self, value: (np.ndarray, list)) -> DirectionBase:
         """ Update angle and reset 'equivalent' vector. """
-        self._angle = value
+        self._angle = np.array(value)
         self._vector = None
         return self
     
-    def from_vector(self, value: np.ndarray) -> None:
+    def from_vector(self, value: (np.ndarray, list)) -> None:
         """ Update (and normalize) vector and reset angle. """
+        value = np.array(value)
         value_norm = LA.norm(value)
         if not value_norm:   # zero value
             raise ZeroVectorError()
@@ -306,7 +316,8 @@ class UnitDirection():
         return self._vector
 
     def transform_to_base(self, new_base: DirectionBase) -> None:
-        """Rebase to new base, and evaluate the 'self.angle' with respect to the center of the (new) base. """
+        """Rebase to new base, and evaluate the 'self.angle' with respect to the center of
+        the (new) base. """
         if self.base == new_base:
             return copy.deepcopy(self)
 
@@ -516,13 +527,13 @@ class DirectionBase():
         # TODO MAYBE: tests(?)
             
         if matrix is not None:
-            self._matrix = np.copy(matrix)
+            self._matrix = np.array(matrix)
             
         elif vector is not None:
             self._matrix = get_orthogonal_basis(vector)
 
         elif direction_base is not None:
-            self._matrix = np.copy(direction_base.null_matrix)
+            self._matrix = np.array(direction_base.null_matrix)
             
         else:
             raise ValueError("No input argument as a base of the space.")

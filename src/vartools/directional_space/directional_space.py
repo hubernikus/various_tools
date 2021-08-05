@@ -9,6 +9,7 @@ Helper function for directional & angle evaluations
 
 # Use python 3.10 [annotations / typematching]
 from __future__ import annotations  # Not needed from python 3.10 onwards
+from typing import List
 
 import warnings
 from typing import Callable
@@ -18,10 +19,12 @@ import numpy as np
 
 from vartools.linalg import get_orthogonal_basis
 
-from vartools.directional_space import get_vector_from_angle
+# from vartools.directional_space import get_vector_from_angle
+from .unit_direction import get_vector_from_angle
+from .unit_direction import UnitDirection, DirectionBase
+
 # from vartools.directional_space import 
 # from vartools.dynamical_systems import DynamicalSystem
-
 
 def get_angle_space_of_array(directions: np.ndarray,
                              positions: np.ndarray = None,
@@ -135,9 +138,52 @@ def get_angle_space_inverse(dir_angle_space: np.ndarray, null_direction: np.ndar
     return directions
 
 
-def get_directional_weighted_sum(
+def get_directional_weighted_sum_new(
     null_direction: np.ndarray,
-    directions: np.ndarray, weights: np.ndarray,
+    weights: np.ndarray,
+    unit_directions: List[UnitDirection]):
+    """ Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
+
+    Parameters
+    ----------
+    null_direction: basis direction for the angle-frame
+    directions: the directions which the weighted sum is taken from
+    unit_direction: list of unit direction
+    weights: used for weighted sum
+    total_weight: [<=1] 
+    normalize: variable of type Bool to decide if variables should be normalized
+
+    Return
+    ------
+    summed_velocity: The weighted sum transformed back to the initial space
+    """
+    # Only look at 'close' obstacles
+    ind_nonzero = weights > 0
+    weights = weights[ind_nonzero]
+    if total_weight>1:
+        weights = weights/np.sum(weights) * total_weight
+    unit_directions = [unit_directions[ii] for ii in range(len(unit_directions)) if ind_nonzero[ii]]
+    
+    base = DirectionBase(vector=null_direction)
+    if unit_directions is None:
+        unit_directions = [UnitDirection(base).from_vector(directions[:, ii])
+                           for ii in range(directions.shape[1])]
+    else:
+        for ii, u_dir in enumerate(unit_directions):
+            u_dir.transform_to_base(base)
+            
+    summed_dir = UnitDirection(base).from_angle(np.zeros(dim-1))
+    for ii, u_dir in enumerate(unit_directions):
+        summed_dir = summed_dir + u_dir*weights[ii]
+
+    return summed_dir.as_vector()
+    
+
+def get_directional_weighted_sum(
+# def get_directional_weighted_sum_old(
+    null_direction: np.ndarray,
+    weights: np.ndarray,
+    directions: np.ndarray = None, unit_directions: List[UnitDirection] = None,
     total_weight: float = 1, normalize: bool = True, normalize_reference: bool = True):
     """ Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
 
@@ -145,6 +191,7 @@ def get_directional_weighted_sum(
     ----------
     null_direction: basis direction for the angle-frame
     directions: the directions which the weighted sum is taken from
+    unit_direction: list of unit direction
     weights: used for weighted sum
     total_weight: [<=1] 
     normalize: variable of type Bool to decide if variables should be normalized
@@ -159,7 +206,7 @@ def get_directional_weighted_sum(
     directions = directions[:, ind_nonzero] 
     weights = weights[ind_nonzero]
 
-    if total_weight<1:
+    if total_weight>1:
         weights = weights/np.sum(weights) * total_weight
 
     n_directions = weights.shape[0]
@@ -167,12 +214,27 @@ def get_directional_weighted_sum(
         return directions[:, 0]
 
     dim = np.array(null_direction).shape[0]
+    
+    base = DirectionBase(vector=null_direction)
+    if unit_directions is None:
+        unit_directions = [UnitDirection(base).from_vector(directions[:, ii])
+                           for ii in range(directions.shape[1])]
+    else:
+        for u_dir in unit_directions:
+            u_dir.transform_to_base(base)
+            
+    summed_dir = UnitDirection(base).from_angle(np.zeros(dim-1))
+    for ii, u_dir in enumerate(unit_directions):
+        summed_dir = summed_dir + u_dir*weights[ii]
 
+    if True:
+        return summed_dir.as_vector()
+            
     if normalize_reference:
         norm_refDir = np.linalg.norm(null_direction)
         if norm_refDir == 0: # nonzero
             raise ValueError("Zero norm direction as input")
-        null_direction /= norm_refDir
+        null_direction = null_direction / norm_refDir
 
     # TODO - higher dimensions
     if normalize:
@@ -214,63 +276,3 @@ def get_directional_weighted_sum(
         direction_weightedSum = null_matrix[:,0]
 
     return direction_weightedSum
-
-
-def get_angle_space_array_old(directions, null_direction, null_matrix=None, normalize=True, OrthogonalBasisMatrix=None):
-    """ Get the directions transformed to the angle space with respect 
-    """
-    if True:
-        raise DeprecationWarning("Not active anymore.")
-    
-    # TODO: is this still needed or rather depreciated (?)
-    dim = np.array(directions).shape[0]
-    
-    if len(directions.shape)==1:
-        num_dirs = None
-        directions = directions.reshape(dim, 1)
-    else:
-        num_dirs = directions.shape[1]
-        
-    directions = np.copy(directions)
-
-    if normalize:
-        norm_dir = np.linalg.norm(directions, axis=0)
-        ind_nonzero = (norm_dir>0)
-        directions[:, ind_nonzero] = directions[:, ind_nonzero]/np.tile(norm_dir[ind_nonzero], (dim, 1))
-
-    if OrthogonalBasisMatrix is not None:
-        warnings.warn("OrthogonalBasisMatrix is depreciated, use 'null_matrix' instead.")
-        null_matrix = OrthogonalBasisMatrix
-        
-    if null_matrix is None:
-        null_matrix = get_orthogonal_basis(null_direction)
-
-    directions_referenceSpace = np.zeros(np.shape(directions))
-    for ii in range(np.array(directions).shape[1]):
-        directions_referenceSpace[:,ii] = null_matrix.T.dot( directions[:,ii])
-
-    # directions_referenceSpace = np.zeros(np.shape(directions))
-    # for ii in range(np.array(directions).shape[1]):
-        # directions_referenceSpace[:,ii] = null_matrix.T.dot( directions[:,ii])
-
-    directions_directionSpace = directions_referenceSpace[1:, :]
-
-    norm_dirSpace = np.linalg.norm(directions_directionSpace, axis=0)
-    ind_nonzero = (norm_dirSpace > 0)
-
-    directions_directionSpace[:,ind_nonzero] = (directions_directionSpace[:, ind_nonzero] /  np.tile(norm_dirSpace[ind_nonzero], (dim-1, 1)))
-
-    cos_directions = directions_referenceSpace[0,:]
-    if np.sum(cos_directions > 1) or np.sum(cos_directions < -1):
-        cos_directions = np.min(np.vstack((cos_directions, np.ones(directions.shape[1]))), axis=0)
-        cos_directions = np.max(np.vstack((cos_directions, -np.ones(directions.shape[1]))), axis=0)
-        warnings.warn("Cosinus value out of bound.")
-
-    directions_directionSpace *= np.tile(np.arccos(cos_directions), (dim-1, 1))
-
-    # directions_directionSpace *= (-1) # in 2D for convention 
-
-    if num_dirs is None:
-        directions_directionSpace = np.reshape(directions_directionSpace, (dim-1))
-        
-    return directions_directionSpace
