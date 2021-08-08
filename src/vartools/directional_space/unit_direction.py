@@ -83,11 +83,8 @@ def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin
     direction_referenceSpace = base.T.dot(direction)
     # direction_referenceSpace = base.dot(direction)
 
-    try:
-        # Make sure to catch numerical error of cosinus calculation
-        cos_direction = direction_referenceSpace[0]
-    except:
-        breakpoint()
+    # Make sure to catch numerical error of cosinus calculation
+    cos_direction = direction_referenceSpace[0]
 
     if cos_direction >= (1.0-cos_margin):
         # Trivial solution
@@ -300,6 +297,7 @@ class UnitDirection(object):
 
         # Store & return angle
         self._angle = get_angle_from_vector(direction=self._vector, base=self.base, cos_margin=cos_margin)
+
         return self._angle
             
     def as_vector(self) -> np.ndarray:

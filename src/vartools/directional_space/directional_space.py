@@ -138,8 +138,8 @@ def get_angle_space_inverse(dir_angle_space: np.ndarray, null_direction: np.ndar
     return directions
 
 
-def get_directional_weighted_sum_new(
-    null_direction: np.ndarray,
+def get_directional_weighted_sum_from_unit_directions(
+    base: DirectionBase,
     weights: np.ndarray,
     unit_directions: List[UnitDirection]):
     """ Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
@@ -160,27 +160,30 @@ def get_directional_weighted_sum_new(
     # Only look at 'close' obstacles
     ind_nonzero = weights > 0
     weights = weights[ind_nonzero]
+
+    total_weight = np.sum(weights)
     if total_weight>1:
         weights = weights/np.sum(weights) * total_weight
-    unit_directions = [unit_directions[ii] for ii in range(len(unit_directions)) if ind_nonzero[ii]]
+
+    unit_directions = [u_dir.transform_to_base(base)
+                       for ii, u_dir in enumerate(unit_directions) if ind_nonzero[ii]]
     
-    base = DirectionBase(vector=null_direction)
     if unit_directions is None:
         unit_directions = [UnitDirection(base).from_vector(directions[:, ii])
                            for ii in range(directions.shape[1])]
     else:
         for ii, u_dir in enumerate(unit_directions):
             u_dir.transform_to_base(base)
-            
-    summed_dir = UnitDirection(base).from_angle(np.zeros(dim-1))
+
+    summed_dir = UnitDirection(base).from_angle(np.zeros(unit_directions[0].dimension-1))
     for ii, u_dir in enumerate(unit_directions):
         summed_dir = summed_dir + u_dir*weights[ii]
 
     return summed_dir.as_vector()
     
 
+# def get_directional_weighted_sum(
 def get_directional_weighted_sum(
-# def get_directional_weighted_sum_old(
     null_direction: np.ndarray,
     weights: np.ndarray,
     directions: np.ndarray = None, unit_directions: List[UnitDirection] = None,

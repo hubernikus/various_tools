@@ -20,7 +20,8 @@ from vartools.directional_space import get_angle_space_inverse
 from vartools.directional_space import get_angle_from_vector, get_vector_from_angle
 
 from vartools.directional_space import UnitDirection, DirectionBase
-from vartools.directional_space import get_directional_weighted_sum
+# from vartools.directional_space import get_directional_weighted_sum
+from vartools.directional_space import get_directional_weighted_sum_from_unit_directions
 
 class TestDirecionalSum(unittest.TestCase):
     def test_directional_weighting(self):
@@ -32,11 +33,19 @@ class TestDirecionalSum(unittest.TestCase):
         directions = np.zeros((dim, n_dir))
         directions[:, 0] = [0.0, 1, 0]
         directions[:, 1] = [0.0, -1, 0]
+
+        base = DirectionBase(vector=null_direction)
+
+        unit_directions = [UnitDirection(base).from_vector(directions[:, dd])
+                           for dd in range(directions.shape[1])]
         
         weights = np.array([0.5, 0.5])
 
-        summed_dir = get_directional_weighted_sum(
-            null_direction=null_direction, directions=directions, weights=weights)
+        # summed_dir = get_directional_weighted_sum(
+            # null_direction=null_direction, directions=directions, weights=weights)
+
+        summed_dir = get_directional_weighted_sum_from_unit_directions(
+            base=base, unit_directions=unit_directions, weights=weights)
 
         self.assertTrue(np.allclose(summed_dir, np.array([1, 0, 0])))
 
@@ -54,8 +63,16 @@ class TestDirecionalSum(unittest.TestCase):
 
         weights = np.array([0.3, 0.7])
 
-        summed_dir = get_directional_weighted_sum(
-            null_direction=null_direction, directions=directions, weights=weights)
+        base = DirectionBase(vector=null_direction)
+
+        unit_directions = [UnitDirection(base).from_vector(directions[:, dd])
+                           for dd in range(directions.shape[1])]
+        
+        # summed_dir = get_directional_weighted_sum(
+            # null_direction=null_direction, directions=directions, weights=weights)
+
+        summed_dir = get_directional_weighted_sum_from_unit_directions(
+            base=base, unit_directions=unit_directions, weights=weights)
 
         matr = np.hstack((null_direction.reshape(dim, 1), directions))
 
@@ -80,8 +97,16 @@ class TestDirecionalSum(unittest.TestCase):
         # directions = directions / np.tile(LA.norm(directions, axis=0), (dim, 1))
 
         weights = np.array([0.3, 0.7, 0.1, -0.1, 0.1])
-        summed_dir = get_directional_weighted_sum(
-            null_direction=null_direction, directions=directions, weights=weights)
+
+        base = DirectionBase(vector=null_direction)
+        unit_directions = [UnitDirection(base).from_vector(directions[:, dd])
+                           for dd in range(directions.shape[1])]
+        
+        # summed_dir = get_directional_weighted_sum(
+            # null_direction=null_direction, directions=directions, weights=weights)
+
+        summed_dir = get_directional_weighted_sum_from_unit_directions(
+            base=base, unit_directions=unit_directions, weights=weights)
 
         matr = np.hstack((null_direction.reshape(dim, 1), directions))
         
@@ -93,6 +118,7 @@ class TestDirecionalSum(unittest.TestCase):
 if (__name__) == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)
     
+    # user_test = True
     user_test = False
     if user_test:
         Tester = TestDirecionalSum()
