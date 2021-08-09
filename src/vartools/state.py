@@ -9,6 +9,7 @@ Basic state to base anything on.
 from __future__ import annotations  # Not needed from python 3.10 onwards
 
 from dataclasses import dataclass
+import warnings
 
 import numpy as np
 from scipy.spatial.transform import Rotation # scipy rotation
@@ -16,15 +17,11 @@ from scipy.spatial.transform import Rotation # scipy rotation
 # TODO: use this as an attribute for further calculations
 # !WARNING: This is still very experimental
 
-def compute_rotation_matrix(self, orientation: np.ndarray) -> np.ndarray:
+def get_rotation_matrix(orientation: np.ndarray) -> np.ndarray:
     """ Return rotation matrix based on 2D-orientation input."""
-    if self.dim != 2:
-        warnings.warn("Orientation matrix only used for useful for 2-D rotations.")
-        return
-
-    orientation = self._orientation
-    return  np.array([[cos(orientation), -sin(orientation)], 
-                      [sin(orientation),  cos(orientation)]])
+    matrix = np.array([[np.cos(orientation), -np.sin(orientation)], 
+                       [np.sin(orientation),  np.cos(orientation)]])
+    return matrix
 
 class BaseState():
     def __init__(self,
@@ -67,20 +64,37 @@ class ObjectPose():
         self.stamp = stamp
 
     @property
+    def dimension(self):
+        if self.position is None:
+            return None
+        return self.position.shape[0]
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, value):
+        if value is None:
+            self._position = value
+            return
+        self._position = np.array(value)
+
+    @property
     def orientation(self):
         return self._orientation
     
     @orientation.setter
-    def orientation(self, value):
+    def orientation(self, value: (float, np.ndarray)):
         if value is None:
             self._orientation = value
             return
-        
-        if self.dim == 2:
+
+        if self.dimension == 2:
             self._orientation = value
-            self._rotation_matrix = self.compute_rotation_matrix(self.orientation)
+            self._rotation_matrix = get_rotation_matrix(self.orientation)
             
-        elif self.dim == 3:
+        elif self.dimension == 3:
             if not isinstance(value, Rotation):
                 raise TypeError("Use 'scipy - Rotation' type for 3D orientation.")
             self._orientation = value
@@ -119,16 +133,16 @@ class ObjectPose():
     
     def transform_direction_from_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
         """ Transform a direction, velocity or relative position to the global-frame """
-        return apply_rotation_reference_to_local(direction)
+        return self.apply_rotation_reference_to_local(direction)
 
     def apply_rotation_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
         if self._orientation is None:
             return direction
         
-        if self.dim == 2:
+        if self.dimension == 2:
             return self._rotation_matrix.dot(direction)
         
-        elif self.dim == 3:
+        elif self.dimension == 3:
             return self._orientation.apply(direction.T).T
         else:
             warnings.warn("Not implemented for higer dimensions")
@@ -136,16 +150,16 @@ class ObjectPose():
     
     def transform_direction_from_local_to_reference(self, direction: np.ndarray) -> np.ndarray:
         """ Transform a direction, velocity or relative position to the obstacle-frame """
-        return apply_local_to_reference_rotation(direction)
+        return self.apply_rotation_local_to_reference(direction)
         
     def apply_rotation_local_to_reference(self, direction: np.ndarray) -> np.ndarray:
         if self._orientation is None:
             return direction
         
-        if self.dim == 2:
+        if self.dimension == 2:
             return self._rotation_matrix.T.dot(direction)
         
-        elif self.dim == 3:
+        elif self.dimension == 3:
             return self._orientation.inv.apply(direction.T).T
             
         else:

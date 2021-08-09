@@ -104,7 +104,6 @@ class TestDirecionalSum(unittest.TestCase):
         
         # summed_dir = get_directional_weighted_sum(
             # null_direction=null_direction, directions=directions, weights=weights)
-
         summed_dir = get_directional_weighted_sum_from_unit_directions(
             base=base, unit_directions=unit_directions, weights=weights)
 

@@ -4,7 +4,9 @@ import unittest
 
 from math import pi
 
-# import numpy as np
+from scipy.spatial.transform import Rotation # scipy rotation
+
+import numpy as np
 # import matplotlib.pyplot as plt
 
 from vartools.state import ObjectPose
@@ -15,16 +17,16 @@ class TestObjectPose(unittest.TestCase):
         
         position = np.array([1, 0, 0])
         position_trafo = pose.transform_position_from_reference_to_local(position)
-        self.assertTrue(position==position_trafo)
+        self.assertTrue(np.allclose(position, position_trafo))
 
         position_trafo = pose.transform_position_from_local_to_reference(position)
-        self.assertTrue(position==position_trafo)
+        self.assertTrue(np.allclose(position, position_trafo))
         
         position_trafo = pose.transform_direction_from_reference_to_local(position)
-        self.assertTrue(position==position_trafo)
+        self.assertTrue(np.allclose(position, position_trafo))
         
         position_trafo = pose.transform_direction_from_local_to_reference(position)
-        self.assertTrue(position==position_trafo)
+        self.assertTrue(np.allclose(position, position_trafo))
         
     def test_position_bijection(self):
         pose = ObjectPose(position=[1, -1])
@@ -41,7 +43,7 @@ class TestObjectPose(unittest.TestCase):
         position_repr = pose.transform_position_from_local_to_reference(position_trafo)
 
         self.assertTrue(np.allclose(position, position_repr))
-        self.assertTrue(np.allclose(position_trafo, np.array([0, np.sqrt(2)])))
+        self.assertTrue(np.allclose(position_trafo, np.array([-1, 1])))
         
         # TODO: for higher dimenions
 
@@ -55,14 +57,15 @@ class TestObjectPose(unittest.TestCase):
         self.assertTrue(np.allclose(direction_trafo, direction_repr))
         self.assertTrue(np.allclose(direction_trafo, direction))
         
-        pose = ObjectPose(direction=[1, -1], orientation=90.0/180*pi))
+        pose = ObjectPose(position=[1, -1], orientation=90.0/180*pi)
         direction_trafo = pose.transform_direction_from_reference_to_local(direction)
         direction_repr = pose.transform_direction_from_local_to_reference(direction_trafo)
 
-        self.assertTrue(np.allclose(direction_trafo, direction_repr))
-        self.assertTrue(np.allclose(direction_trafo, np.array([0, np.sqrt(2)])))
-
+        self.assertTrue(np.allclose(direction, direction_repr))
+        self.assertTrue(np.allclose(direction_trafo, np.array([-1, 1])))
         # TODO: for higher dimenions
 
-if __name__ == '__main__':
+
+if (__name__) == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)
+    print("all done")
