@@ -3,6 +3,7 @@
 Dynamical Systems with a closed-form description.
 """
 import unittest
+from math import pi
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,8 +11,34 @@ import matplotlib.pyplot as plt
 from vartools.dynamical_systems import LocallyRotated
 from vartools.dynamical_systems import plot_dynamical_system_quiver
 
-
 class TestSpiralmotion(unittest.TestCase):
+    def test_initialize_from_mean_rotation(self):
+        """ Being able to initiate from initial rotation only. """
+        dynamical_system = LocallyRotated(mean_rotation=[0])
+
+        position = [1, 0]
+        velocity = dynamical_system.evaluate(position=position)
+
+        norm_dot = (np.dot(velocity, position))/(LA.norm(velocity, position))
+        self.assertTrue(np.isclose(norm_dot, -1))
+
+        
+    def plot_ds_around_obstacle(self):
+        from dynamic_obstacle_avoidance.obstacles import Ellipse
+
+        obs = Ellipse(
+            center_position=np.array([-8, 0]), 
+            axes_length=np.array([3, 1]),
+            orientation=10./180*pi,
+        )
+
+        dynamical_system = LocallyRotated(mean_rotation=[-np.pi/2]).from_ellipse(obs)
+
+        plot_dynamical_system_quiver(DynamicalSystem=DynamicalSystem,
+                                     n_resolution=20)
+        self.visualize_weight(DynamicalSystem)
+        
+        
     def plot_dynamical_system(self):
         DynamicalSystem = LocallyRotated(
             mean_rotation=[-np.pi/2],
@@ -23,6 +50,7 @@ class TestSpiralmotion(unittest.TestCase):
                                      n_resolution=20)
 
         self.visualize_weight(DynamicalSystem)
+        
 
     def plot_critical_ds(self):
         DynamicalSystem = LocallyRotated(
@@ -66,8 +94,8 @@ class TestSpiralmotion(unittest.TestCase):
 
         pass
 
-if __name__ == '__main__':
-    unittest.main()
+if (__name__) == '__main__':
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)
     
     manual_tets = False
     if manual_tets:
@@ -75,6 +103,7 @@ if __name__ == '__main__':
         # Tester.plot_dynamical_system()
         # Tester.plot_critical_ds()
         # Tester.visualize_weight()
+        Tester.plot_ds_around_obstacle()
     
 print('Done')
 

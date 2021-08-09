@@ -10,6 +10,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from numpy import linalg as LA
 
+from vartools.state import ObjectPose
+
 def allow_max_velocity(original_function=None):
     ''' Decorator to allow to limit the velocity to a maximum.'''
     # Reintroduce (?)
@@ -28,24 +30,33 @@ def allow_max_velocity(original_function=None):
 
 class DynamicalSystem(ABC):
     """ Virtual Class for Base dynamical system"""
-    def __init__(self, center_position=None, maximum_velocity=None, dimension=None,
-                 attractor_position=None):
-        if center_position is None:
-            self.center_position = np.zeros(dimension)
-        else:
-            self.center_position = np.array(center_position)
-            self.dimension = self.center_position.shape[0]
+    def __init__(self, pose: ObjectPose = None, maximum_velocity: np.ndarray = None,
+                 dimension: int = None,
+                 attractor_position: np.ndarray = None):
+
+        if pose is not None:
+            self.dimension = pose.position.shape[0]
+            
         self.maximum_velocity = maximum_velocity
 
         if dimension is not None:
             self.dimension = dimension
+            
         elif attractor_position is not None:
             self.dimension = attractor_position.shape[0]
             self.attractor_position = attractor_position
+            
         elif not hasattr(self, 'dimension'):
             breakpoint()
             raise ValueError("Space dimension cannot be guess from inputs. " +
                              "Please define it at initialization.")
+
+        if pose is None:
+            # Null pose
+            self.pose = ObjectPose() 
+        else:
+            self.pose = pose
+
         self.attractor_position = attractor_position
 
     @property

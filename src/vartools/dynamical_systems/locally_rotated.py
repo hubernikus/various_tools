@@ -5,10 +5,17 @@ Dynamical Systems with a closed-form description.
 # Email: hubernikus@gmail.com
 # License: BSD (c) 2021
 
+# Use python 3.10 [annotations / typematching]
+from __future__ import annotations  # Not needed from python 3.10 onwards
+
 import numpy as np
 
 from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
+from vartools.state import ObjectPose
+
+# TODO: move the 'from_ellipse'-subclass to a the dynamical_obstacle_avoidance repo to avoid reverse dependency
+from dynamic_obstacle_avoidance.obstacles import Ellipse
 
 class LocallyRotated(DynamicalSystem):
     """ Returns dynamical system with a mean rotation of 'mean_rotation'
@@ -19,48 +26,81 @@ class LocallyRotated(DynamicalSystem):
     position: Position at which the dynamical system is evaluated
     attractor_position: Center of the dynamical system - rotation has to reach <pi/2 
     mean_rotation: angle-space rotation at position.
-    rotation_center: 
     influence_radius:
     
     Return
     ------
     Velocity (dynamical system) evaluted at the center position
     """
-    def __init__(self, mean_rotation, rotation_center,
-                 influence_radius=1, delta_influence_center=0.1, influence_descent=0.5,
-                 attractor_position=None, maximum_velocity=None, dimension=2):
-        self.rotation_center = np.array(rotation_center)
+    def __init__(self, mean_rotation: np.array = None,
+                 influence_pose: pose = None,
+                 influence_radius: float = 1,
+                 influence_axes_length: np.ndarray = None,
+                 delta_influence_center: float = 0.1,
+                 influence_descent: float = 0.5,
+                 *args, **kargs):
+        # TODO: change 'Obstacle' to general 'State' (or similar) & make 'Obstacle' a subclass
+        # of the former
         self.mean_rotation = np.array(mean_rotation)
+
+        self.dimension = self.mean_rotation.shape[0] + 1
         
-        self.dimension = self.rotation_center.shape[0]
+        super().__init__(*args, **kargs)
+
+        if influence_axes_length is None:
+            self.influence_axes_length = np.ones(self.dimension) * influence_radius
+        else:
+            self.influence_axes_length = influence_axes_length
+        self.influence_pose = influence_pose
         
-        super().__init__(attractor_position=attractor_position, maximum_velocity=maximum_velocity,
-                         dimension=self.dimension)
-
-        # 'allclose'-check not needed.. since DS is just reduced towards attractor
-        # if np.allclose(self.center_position, self.rotation_center, rtol=influence_radius*1e-6):
-            # raise ValueError("Center and rotation position are too close to each other.")
-
-        self.influence_radius = influence_radius
-
         # Added weight to the rotation to ensure that @ center the rotation stable (< pi/2)
         self.rotation_weight = np.linalg.norm(self.mean_rotation) / (np.pi/2)
+        
         # Additional influence for center such that stirctly smallre than pi/2
-        self.influence_center = self.influence_radius*(1 + delta_influence_center)
-
+        self.delta_influence_center = delta_influence_center
         self.influence_descent = influence_descent
+
+    def from_ellipse(self, ellipse: Ellipse) -> LocallyRotated:
+        self.influence_pose = ellipse.pose
+        self.influence_axes_length = ellipse.axes_length
+        return self
+
+    def transform_global_to_ellipse_frame(self, direction):
+        """ Transform to ellipse frame"""
+        if self.influence_pose is not None:
+            direction = self.influence_pose.transform_direction_from_reference_to_local(
+                direction)
+        direction = direction / self.influence_axes_length
+        return direction
+
+    def transform_ellipse_to_global_frame(self, direction):
+        """ Reverse transform. """
+        direction = self.axes_length * direction
+        if self.influence_pose is not None:
+            direction = self.influence_pose.transform_direction_from_reference_to_local(
+                direction)
+        return direction
         
     def evaluate(self, position):
         weight_rot = self.get_weight(position)
 
         rot_final = self.mean_rotation * weight_rot
-        dir_attractor = self.attractor_position - position
+        
+        if self.attractor_position is None:
+            attractor_position = np.zeros(self.dimension)
+        else:
+            attractor_position = self.attractor_position
 
+        dir_attractor = attractor_position - position
+        
         if not np.linalg.norm(dir_attractor): # Zero velocity
             return np.zeros(position.shape)
-        
-        velocity = get_angle_space_inverse(dir_angle_space=rot_final, null_direction=dir_attractor)
-        magnitude = np.linalg.norm(position - self.attractor_position)
+
+        # TODO: why (-1) ?! change?
+        velocity = get_angle_space_inverse(
+            dir_angle_space=(-1)*rot_final, null_direction=dir_attractor)
+            
+        magnitude = np.linalg.norm(position-attractor_position)
 
         if self.maximum_velocity is not None:
             magnitude = min(magnitude, self.maximum_velocity)
@@ -68,25 +108,28 @@ class LocallyRotated(DynamicalSystem):
         
         return velocity
 
-    def get_weight(self, position):
+    def get_weight(self, position: np.ndarray) -> np.ndarray:
         # Evalaute the weights
-        dist_rot = np.linalg.norm(position-self.rotation_center)
+        dir_rot = self.transform_global_to_ellipse_frame(dir_rot)
+        # pose.transform_direction_from_reference_to_local(dir_rot)
 
-        if dist_rot <= self.influence_radius:
+        dist_rot = np.linalg.norm(dir_rot)
+
+        unit_radius = 1
+        if dist_rot <= unit_radius:
             weight_rot = 1
-        elif dist_rot >= 3*self.influence_radius:
+        elif dist_rot >= 1./self.influence_descent*unit_radius:
             weight_rot = 0
         else:
-            dist_rot = dist_rot - self.influence_radius
-            weight_rot = (self.influence_radius-
-                          dist_rot*self.influence_descent)/(self.influence_radius)
+            dist_rot = dist_rot - unit_radius
+            weight_rot = (unit_radius - dist_rot*self.influence_descent)/(unit_radius)
 
         # Evalaute center weight
-        dist_center = np.linalg.norm(position-self.center_position)
-        if dist_center > self.influence_center:
+        dist_center = np.linalg.norm(position-self.pose.position)
+        if dist_center > self.influence_at_center:
             weight_center = 0
         else:
-            weight_center = (self.influence_center - dist_center) / self.influence_center
+            weight_center = (self.influence_at_center - dist_center) / self.influence_at_center
             weight_center = weight_center * self.rotation_weight
 
         sum_weights = weight_rot + weight_center

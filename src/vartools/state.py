@@ -4,16 +4,29 @@ Basic state to base anything on.
 # Author: Lukas Huber
 # Mail: lukas.huber@epfl.ch
 # License: BSD (c) 2021
-
 # import time
+# Use python 3.10 [annotations / typematching]
+from __future__ import annotations  # Not needed from python 3.10 onwards
+
+from dataclasses import dataclass
 
 import numpy as np
+from scipy.spatial.transform import Rotation # scipy rotation
 
 # TODO: use this as an attribute for further calculations
 # !WARNING: This is still very experimental
 
+def compute_rotation_matrix(self, orientation: np.ndarray) -> np.ndarray:
+    """ Return rotation matrix based on 2D-orientation input."""
+    if self.dim != 2:
+        warnings.warn("Orientation matrix only used for useful for 2-D rotations.")
+        return
 
-class BaseState(ABC):
+    orientation = self._orientation
+    return  np.array([[cos(orientation), -sin(orientation)], 
+                      [sin(orientation),  cos(orientation)]])
+
+class BaseState():
     def __init__(self,
                  position,
                  orientation,
@@ -21,26 +34,123 @@ class BaseState(ABC):
                  angular_velocity):
         pass
 
-class Pose():
-    def __init__(self, position=None, orientation=None):
+class Time():
+    pass
+
+class Stamp():
+    def __init__(self, seq: int = None, stamp: Time = None, frame_id: str = None):
+        self.seq = seq
+        self.time = time
+        self.frame_id = frame_id
+
+@dataclass
+class ObjectTwist():
+    linear: np.ndarray
+    angular: np.ndarray
+
+
+class ObjectPose():
+    """ (ROS)-inspired pose of an object of dimension
+    Attributes
+    ----------
+    Position
+    
+    """
+    def __init__(self, position: np.ndarray = None, orientation: np.ndarray = None,
+                 stamp: Stamp = None):
+        # 2D case has rotation matrix
+        self._rotation_matrix = None
+
+        # Assign values
         self.position = position
         self.orientation = orientation
+        self.stamp = stamp
 
-    def update(self,  delta_time: float, twist: Twist):
+    @property
+    def orientation(self):
+        return self._orientation
+    
+    @orientation.setter
+    def orientation(self, value):
+        if value is None:
+            self._orientation = value
+            return
+        
+        if self.dim == 2:
+            self._orientation = value
+            self._rotation_matrix = self.compute_rotation_matrix(self.orientation)
+            
+        elif self.dim == 3:
+            if not isinstance(value, Rotation):
+                raise TypeError("Use 'scipy - Rotation' type for 3D orientation.")
+            self._orientation = value
+                
+        else:
+            if value is not None and np.sum(np.abs(value)): # nonzero value
+                warnings.warn("Rotation for dimensions > 3 not defined.")
+            self._orientation = value
+
+    def update(self, delta_time: float, twist: ObjectTwist):
         if twist.linear is not None:
             self.position = position + twist.linear * delta_time
 
         if twist.angular is not None:
             breakpoint()
             # Not implemented
-            self.agnular = position + twist.agnular * delta_time
+            self.angular = position + twist.agnular * delta_time
+            
+    def transform_position_from_reference_to_local(self, position: np.ndarray) -> np.ndarray:
+        """ Transform a position from the global frame of reference 
+        to the obstacle frame of reference"""
+        if not self.position is None:
+            position = position - self.position
+            
+        return self.apply_rotation_reference_to_local(direction=position)
+            
+    def transform_position_from_local_to_reference(self, position: np.ndarray) -> np.ndarray:
+        """ Transform a position from the obstacle frame of reference 
+        to the global frame of reference"""
+        position = self.apply_rotation_local_to_reference(direction=position)
+        
+        if not self.position is None:
+            position = position + self.position
+            
+        return position
+    
+    def transform_direction_from_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
+        """ Transform a direction, velocity or relative position to the global-frame """
+        return apply_rotation_reference_to_local(direction)
 
-class Twist():
-    def __init__(self, linear, angular):
-        pass
-
-    def update(self, twist: Twist, dt: float):
-        pass
+    def apply_rotation_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
+        if self._orientation is None:
+            return direction
+        
+        if self.dim == 2:
+            return self._rotation_matrix.dot(direction)
+        
+        elif self.dim == 3:
+            return self._orientation.apply(direction.T).T
+        else:
+            warnings.warn("Not implemented for higer dimensions")
+            return direction
+    
+    def transform_direction_from_local_to_reference(self, direction: np.ndarray) -> np.ndarray:
+        """ Transform a direction, velocity or relative position to the obstacle-frame """
+        return apply_local_to_reference_rotation(direction)
+        
+    def apply_rotation_local_to_reference(self, direction: np.ndarray) -> np.ndarray:
+        if self._orientation is None:
+            return direction
+        
+        if self.dim == 2:
+            return self._rotation_matrix.T.dot(direction)
+        
+        elif self.dim == 3:
+            return self._orientation.inv.apply(direction.T).T
+            
+        else:
+            warnings.warn("Not implemented for higer dimensions")
+            return direction
 
 class Wrench():
     def __init__(self, linear, angular):
@@ -65,7 +175,7 @@ class State(object):
     @property
     def typename(self):
         return self._typename
-
+ 
     @typename.setter
     def typename(self, value):
         self._typename = value
