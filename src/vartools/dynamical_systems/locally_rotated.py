@@ -12,7 +12,7 @@ import numpy as np
 
 from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
-from vartools.state import ObjectPose
+from vartools.states import ObjectPose
 
 # TODO: move the 'from_ellipse'-subclass to a the dynamical_obstacle_avoidance repo to avoid reverse dependency
 from dynamic_obstacle_avoidance.obstacles import Ellipse

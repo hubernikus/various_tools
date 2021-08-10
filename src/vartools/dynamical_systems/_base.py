@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from numpy import linalg as LA
 
-from vartools.state import ObjectPose
+from vartools.states import ObjectPose
 
 def allow_max_velocity(original_function=None):
     ''' Decorator to allow to limit the velocity to a maximum.'''
