@@ -10,9 +10,8 @@ It consists of three main sub-libraries:
 
 
 # Unit Testing
-In order to run all the test-scripts type:
+In order to run all the test-scripts, run in the command line in the main folder:
 ```
-cd test
-python -m unittest 
+python -m unittest discover tests
 ```
 

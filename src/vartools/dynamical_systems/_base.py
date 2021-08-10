@@ -84,6 +84,12 @@ class DynamicalSystem(ABC):
         """ Returns velocity of the evaluated the dynamical system at 'position'."""
         pass
 
+    def get_relative_position_to_attractor(self, position):
+        if self.attractor_position is None:
+            return position
+        else:
+            return position - self.attractor_position
+
     def compute_dynamics(self, position):
         # This or 'evaluate' / to be or not to be?!
         # Could allow for additional cropping
