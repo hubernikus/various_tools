@@ -29,9 +29,13 @@ class LinearSystem(DynamicalSystem):
     """
     def __init__(self, attractor_position=None, A_matrix=None, b=None, dimension=None,
                  maximum_velocity=None):
+        
         if attractor_position is None:
+            if A_matrix is not None:
+                dimension = A_matrix.shape[0]
             if dimension is None:
-                raise ValueError("Please indicate dimension explicietly if not using an attractor.")
+                raise ValueError(
+                    "Please indicate dimension explicietly if not using an attractor.")
             attractor_position = np.zeros(dimension)
             
         super().__init__(attractor_position=attractor_position, dimension=dimension,
