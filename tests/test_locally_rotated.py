@@ -10,7 +10,7 @@ from numpy import linalg as LA
 
 import matplotlib.pyplot as plt
 
-from vartools.state import ObjectPose
+from vartools.states import ObjectPose
 
 from vartools.dynamical_systems import LocallyRotated
 from vartools.dynamical_systems import plot_dynamical_system_quiver
