@@ -12,7 +12,7 @@ import numpy as np
 
 from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
-from vartools.state import ObjectPose
+from vartools.states import ObjectPose
 
 # TODO: move the 'from_ellipse'-subclass to a the dynamical_obstacle_avoidance repo to avoid reverse dependency
 from dynamic_obstacle_avoidance.obstacles import Ellipse
@@ -27,6 +27,7 @@ class LocallyRotated(DynamicalSystem):
     attractor_position: Center of the dynamical system - rotation has to reach <pi/2 
     mean_rotation: angle-space rotation at position.
     influence_radius:
+    influence_descent_factor: float > 0
     
     Return
     ------
@@ -37,7 +38,7 @@ class LocallyRotated(DynamicalSystem):
                  influence_radius: float = 1,
                  influence_axes_length: np.ndarray = None,
                  # delta_influence_center: float = 0.1,
-                 influence_descent: float = 0.5,
+                 influence_descent_factor: float = 1,
                  attractor_influence_radius: float = 1.0,
                  *args, **kargs):
         # TODO: change 'Obstacle' to general 'State' (or similar) & make 'Obstacle' a subclass
@@ -59,7 +60,7 @@ class LocallyRotated(DynamicalSystem):
         # Additional influence for center such that stirctly smallre than pi/2
         self.attractor_influence_radius = attractor_influence_radius
         # self.delta_influence_center = delta_influence_center
-        self.influence_descent = influence_descent
+        self.influence_descent_factor = influence_descent_factor
 
     def from_ellipse(self, ellipse: Ellipse) -> LocallyRotated:
         self.influence_pose = ellipse.pose
@@ -106,26 +107,34 @@ class LocallyRotated(DynamicalSystem):
         if scaled_dist_ellipse <= 1:
             weight_rot = 1
             
-        elif scaled_dist_ellipse >= 1./self.influence_descent:
+        elif scaled_dist_ellipse >= 1+self.influence_descent_factor:
             weight_rot = 0
             
         else:
             scaled_dist_ellipse = scaled_dist_ellipse - 1
-            weight_rot = (1 - scaled_dist_ellipse*self.influence_descent)/(1)
-
-        # Evalaute center weight
+            weight_rot = ((1 + self.influence_descent_factor-scaled_dist_ellipse) /
+                          self.influence_descent_factor)
+            
+        # Evalaute center weight [inverse of 1]
         rel_pos = self.get_relative_position_to_attractor(position)
         
         dist_center = np.linalg.norm(rel_pos)
-        if dist_center > self.attractor_influence_radius:
-            weight_center = 0
+
+        if dist_center == 0:
+            # dist_center = infinity -> give normalization
+            weight_rot = 0
+            return weight_rot
+            
+        elif dist_center > self.attractor_influence_radius:
+            # weight_center = 0
+            # -> no influence of weight_center normalization
+            return weight_rot
+            
         else:
-            weight_center = ((self.attractor_influence_radius - dist_center)
-                             / self.attractor_influence_radius)
             weight_center = weight_center * self.rotation_weight
 
-        sum_weights = weight_rot + weight_center
-        if sum_weights > 1:
-            weight_rot = weight_rot / sum_weights
+            sum_weights = weight_rot + weight_center
+            if sum_weights > 1:
+                weight_rot = weight_rot / sum_weights
             
         return weight_rot
