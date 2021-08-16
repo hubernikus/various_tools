@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 from numpy import linalg as LA
 
+
 class SampleFunctionAndDerivative():
     def __init__(self, matrix, center_position=None, *args, **kwargs):
         self.matrix = matrix
