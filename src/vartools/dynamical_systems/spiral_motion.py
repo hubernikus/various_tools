@@ -8,25 +8,24 @@
 import numpy as np
 from ._base import DynamicalSystem
 
+from vartools.states import ObjectPose
 
 class SpiralStable(DynamicalSystem):
     """ Return the velocity based on the evaluation of a spiral-shaped dynamical system."""
-    def __init__(self, complexity_spiral=3, p_radius_control=1,
+    def __init__(self, complexity_spiral: float = 3, p_radius_control: float = 1,
                  # i_radius_control=0,  # Not implemented yet.
-                 axes_stretch=np.array([1, 1, 1]), radius=1,
-                 orientation=None,
-                 center_position=None, maximum_velocity=None, dimension=3):
+                 axes_stretch = np.array([1, 1, 1]), radius: float = 1,
+                 pose: ObjectPose = None, maximum_velocity: np.ndarray = None,
+                 dimension: int = 3):
         """
         Parameters
         ----------
         complexity_spiral : parameter on 'steepness' of spiral
         p_radius_control : P(ID)-controller to stay on the surface of the ellipse-spiral
         """
-        super().__init__(center_position=center_position, maximum_velocity=maximum_velocity,
+        super().__init__(pose=pose,
+                         maximum_velocity=maximum_velocity,
                          dimension=dimension)
-
-        if orientation is not None:
-            raise NotImplementedError("TODO: Implement 3D rotation. (quaternion? / scipy?)")
 
         self.p_radius_control = p_radius_control
         self.complexity_spiral = complexity_spiral
@@ -34,10 +33,6 @@ class SpiralStable(DynamicalSystem):
         # TODO: (Properly) implement following tools
         self.axes_stretch = np.array([1, 1, 1])
         self.radius = 1
-
-        # Define attractor
-        self.attractor_position = np.copy(self.center_position)
-        self.attractor_position[2] = self.center_position[2] - self.axes_stretch[2]
 
     def get_positions(self, n_points=None, tt=None):
         """ Create initial position. """
@@ -60,7 +55,6 @@ class SpiralStable(DynamicalSystem):
         return dataset
 
     def evaluate(self, position):
-        position = (position - self.center_position) / self.axes_stretch
         velocity = np.zeros(position.shape)
 
         # Bound value in [-1, 1]
@@ -89,4 +83,5 @@ class SpiralStable(DynamicalSystem):
         return velocity
 
     def check_convergence(self, position, convergence_dist=1e-6):
-        return (np.linalg.norm(position-self.attractor_position) < convergence_dist)
+        vec_position_attr = self.get_relative_position_to_attractor(position)
+        return (np.linalg.norm(vec_position_attr) < convergence_dist)

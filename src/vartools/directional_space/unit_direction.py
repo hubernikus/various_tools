@@ -187,7 +187,8 @@ class UnitDirection(object):
     #     return self
 
     def __eq__(self, other: UnitDirection) -> float:
-        return (self.base==other.base and np.allclose(self.as_angle(), other.as_angle()))
+        return (self.base==other.base
+                and np.allclose(self.as_angle(), other.as_angle()))
     
     def __neq__(self, other: UnitDirection) -> float:
         return not (self == other)

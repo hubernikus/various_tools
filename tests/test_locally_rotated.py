@@ -57,7 +57,7 @@ class TestSpiralmotion(unittest.TestCase):
         dynamical_system = LocallyRotated(
             max_rotation=np.array([0]),
             influence_pose=ObjectPose(position=np.array([4, 4])),
-            influence_radius=1
+            influence_radius=1,
             )
 
         if visualize:

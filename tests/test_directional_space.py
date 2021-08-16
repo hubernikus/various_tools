@@ -104,13 +104,6 @@ class TestDirectionalSpace(unittest.TestCase):
 
     #     # Done
 
-    def test_get_vector_from_angle_specific(self):
-        angle = np.array([1.4422432, 1.4422432])
-        base = DirectionBase([[ 0.95187528,  0.30648564],
-                              [-0.30648564,  0.95187528]])
-        
-        get_vector_from_angle(angle=self._angle, base=self.base)
-
     def test_repetitive_nonnorm_influence(self):
         base = DirectionBase(np.array([[1., 0., 0.],
                                        [0., 1., 0.],

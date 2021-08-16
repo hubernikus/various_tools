@@ -16,7 +16,7 @@ from vartools.directional_space import get_angle_space_inverse
 from vartools.states import ObjectPose
 
 # TODO: move the 'from_ellipse'-subclass to a the dynamical_obstacle_avoidance repo to avoid reverse dependency
-from dynamic_obstacle_avoidance.obstacles import Ellipse
+# from dynamic_obstacle_avoidance.obstacles import Ellipse
 
 class LocallyRotated(DynamicalSystem):
     """ Returns dynamical system with a mean rotation of 'mean_rotation'
@@ -64,10 +64,10 @@ class LocallyRotated(DynamicalSystem):
         # self.delta_influence_center = delta_influence_center
         self.influence_descent_factor = influence_descent_factor
 
-    def from_ellipse(self, ellipse: Ellipse) -> LocallyRotated:
-        self.influence_pose = ellipse.pose
-        self.influence_axes_length = ellipse.axes_length
-        return self
+    # def from_ellipse(self, ellipse: Ellipse) -> LocallyRotated:
+        # self.influence_pose = ellipse.pose
+        # self.influence_axes_length = ellipse.axes_length
+        # return self
 
     def get_scaled_dist_to_ellipse(self, position):
         """ Transform to ellipse frame"""

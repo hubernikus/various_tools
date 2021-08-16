@@ -9,7 +9,7 @@ from scipy.spatial.transform import Rotation # scipy rotation
 import numpy as np
 # import matplotlib.pyplot as plt
 
-from vartools.state import ObjectPose
+from vartools.states import ObjectPose
 
 class TestObjectPose(unittest.TestCase):
     def test_null_pose(self):
