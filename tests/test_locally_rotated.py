@@ -52,7 +52,6 @@ class TestSpiralmotion(unittest.TestCase):
         vel_init = (-1)*position
         norm_dot = (np.dot(velocity, vel_init))/(LA.norm(velocity)*LA.norm(vel_init))
         self.assertTrue(np.isclose(norm_dot, np.cos(dynamical_system.max_rotation)))
-        
 
     def test_weight_far_away(self, visualize=False):
         dynamical_system = LocallyRotated(
@@ -72,6 +71,25 @@ class TestSpiralmotion(unittest.TestCase):
         weight = dynamical_system.get_weight(position=position)
         self.assertAlmostEqual(weight, 0)
 
+        position = dynamical_system.influence_pose.position
+        weight = dynamical_system.get_weight(position=position)
+        self.assertAlmostEqual(weight, 1)
+
+    def test_ellipse_with_axes(self, visualize=False):
+        dynamical_system = LocallyRotated(
+            max_rotation=np.array([0]),
+            influence_pose=ObjectPose(
+            position=np.array([-2, 3]), orientation=45*pi/180.0),
+            influence_axes_length=np.array([2, 1]),
+            )
+
+        if visualize:
+            self.visualize_weight(dynamical_system)
+
+        position = np.array([0, 0])
+        weight = dynamical_system.get_weight(position=position)
+        self.assertAlmostEqual(weight, 0)
+        
         position = dynamical_system.influence_pose.position
         weight = dynamical_system.get_weight(position=position)
         self.assertAlmostEqual(weight, 1)
@@ -116,7 +134,6 @@ class TestSpiralmotion(unittest.TestCase):
         plot_dynamical_system_quiver(dynamical_system=dynamical_system,
                                      n_resolution=20)
         self.visualize_weight(dynamical_system)
-        
         
     def plot_dynamical_system(self):
         dynamical_system = LocallyRotated(
@@ -187,12 +204,15 @@ class TestSpiralmotion(unittest.TestCase):
 if (__name__) == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)
     
-    manual_tets = False
+    manual_tets = True
     if manual_tets:
         Tester = TestSpiralmotion()
+        Tester.test_ellipse_with_axes(visualize=True)
+        
         # Tester.test_weight_close_point(visualize=True)
         # Tester.test_initialize_zero_max_rotation(visualize=True)
-        Tester.test_initialize_more_than_pi_max_rotation(visualize=True)
+        # Tester.test_initialize_more_than_pi_max_rotation(visualize=True)
+        
         # Tester.plot_dynamical_system()
         # Tester.plot_critical_ds()
         # Tester.visualize_weight()
