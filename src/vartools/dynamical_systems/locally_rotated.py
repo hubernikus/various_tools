@@ -9,6 +9,7 @@ Dynamical Systems with a closed-form description.
 from __future__ import annotations  # Not needed from python 3.10 onwards
 
 import numpy as np
+from numpy import linalg as LA
 
 from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
@@ -41,8 +42,8 @@ class LocallyRotated(DynamicalSystem):
                  influence_descent_factor: float = 1,
                  attractor_influence_radius: float = 1.0,
                  *args, **kargs):
-        # TODO: change 'Obstacle' to general 'State' (or similar) & make 'Obstacle' a subclass
-        # of the former
+        # TODO: change 'Obstacle' to general 'State' (or similar) & make
+        # 'Obstacle' a subclass of the former
         self.max_rotation = np.array(max_rotation)
         self.dimension = self.max_rotation.shape[0] + 1
         
@@ -54,7 +55,8 @@ class LocallyRotated(DynamicalSystem):
             self.influence_axes_length = influence_axes_length
         self.influence_pose = influence_pose
         
-        # Added weight to the rotation to ensure that @ center the rotation stable (< pi/2)
+        # Added weight to the rotation to ensure that @ center the
+        # rotation stable (< pi/2)
         self.rotation_weight = np.linalg.norm(self.max_rotation) / (np.pi/2)
         
         # Additional influence for center such that stirctly smallre than pi/2
@@ -70,8 +72,10 @@ class LocallyRotated(DynamicalSystem):
     def get_scaled_dist_to_ellipse(self, position):
         """ Transform to ellipse frame"""
         if self.influence_pose is not None:
-            direction = self.influence_pose.transform_position_from_reference_to_local(
+            position = (
+                self.influence_pose.transform_position_from_reference_to_local(
                 position)
+                )
         position = position / self.influence_axes_length
         return np.linalg.norm(position)
         
@@ -105,36 +109,48 @@ class LocallyRotated(DynamicalSystem):
         # pose.transform_direction_from_reference_to_local(dir_rot)
 
         if scaled_dist_ellipse <= 1:
+            # Inner strong-influence core
             weight_rot = 1
             
-        elif scaled_dist_ellipse >= 1+self.influence_descent_factor:
+        elif scaled_dist_ellipse >= 1 + self.influence_descent_factor:
+            # No influence far-away 
             weight_rot = 0
             
         else:
-            scaled_dist_ellipse = scaled_dist_ellipse - 1
-            weight_rot = ((1 + self.influence_descent_factor-scaled_dist_ellipse) /
-                          self.influence_descent_factor)
+            # scaled_dist_ellipse = 1-scaled_dist_ellipse
+            scaled_dist_ellipse = 1-(scaled_dist_ellipse-1)
+            weight_rot = scaled_dist_ellipse / self.influence_descent_factor
             
         # Evalaute center weight [inverse of 1]
         rel_pos = self.get_relative_position_to_attractor(position)
-        
         dist_center = np.linalg.norm(rel_pos)
 
         if dist_center == 0:
             # dist_center = infinity -> give normalization
             weight_rot = 0
-            return weight_rot
             
-        elif dist_center > self.attractor_influence_radius:
-            # weight_center = 0
-            # -> no influence of weight_center normalization
-            return weight_rot
-            
-        else:
-            weight_center = weight_center * self.rotation_weight
-
-            sum_weights = weight_rot + weight_center
+        elif dist_center < self.attractor_influence_radius:
+            # Projection of f: (0, 1] -> (infty -> 0]
+            weight_center = self.attractor_influence_radius/dist_center - 1.0
+            sum_weights = (weight_center + weight_rot)
             if sum_weights > 1:
                 weight_rot = weight_rot / sum_weights
+
+        # else:
+            # weight_center = 0
+            # -> no influence of weight_center normalization
+
+        # Additional [0-1] weight from dot-product [no influence behind]
+        vec_attr_pose = (-1)*self.get_relative_position_to_attractor(
+            self.influence_pose.position)
+        
+        vec_position_attr = self.get_relative_position_to_attractor(position)
+
+        dot_prod = (np.dot(vec_attr_pose, vec_position_attr)
+                    / (LA.norm(vec_attr_pose)*LA.norm(vec_position_attr)))
+        
+        if dot_prod > 0:
+            # in [0, 1]
+            weight_rot = weight_rot * (1-dot_prod)
             
         return weight_rot
