@@ -58,6 +58,6 @@ if (__name__) == '__main__':
     # visualize_pendulum_system()
     # visualize_duffing_system()
     # visualize_spiral_system()
-    visualize_sinuswave_system(save_figure=True)
+    # visualize_sinuswave_system(save_figure=True)
 
 print('Done')
