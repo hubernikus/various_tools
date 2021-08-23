@@ -1,7 +1,8 @@
 """ Various tools to help / and speed up."""
-
 from typing import Callable
+
 import numpy as np
+from numpy import linalg as LA
 
 def get_numerical_gradient(position: np.ndarray, function: Callable[[np.ndarray], float], 
                            delta_magnitude: float = 1e-6) -> np.ndarray:
@@ -75,7 +76,7 @@ def get_scaled_orthogonal_projection(vector):
           with algebraic multiplicity 1 and n − 1, respectively
     (iv) P_v z = ||v||^2 z for all z ∈ R n on the projective subspace defined by v∈R_n 
     (v) P_v w = 0 for all w ∈ R n such that vw;
-    (vi) 12 w^T Ṗ_v w = v^T P_w v̇."""
+    (vi) 12 w^T Ṗ_v w = v^T P_w v̇. """
     return LA.norm(vector)*np.eye(vector.shape[0]) - vector @ vector.T
 
 
