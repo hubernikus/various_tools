@@ -50,10 +50,11 @@ def plot_dynamical_system(
         
     if plottype=='quiver':
         ax.quiver(positions[0, :], positions[1, :],
-                   velocities[0, :], velocities[1, :], color="blue")
+                  velocities[0, :], velocities[1, :], color="blue")
     elif plottype=='streamplot':
-        ax.streamplot(x_vals, y_vals,
-                      velocities[0, :].reshape(nx, ny), velocities[1, :].reshape(nx, ny), color="blue")
+        ax.streamplot(
+            x_vals, y_vals,
+            velocities[0, :].reshape(nx, ny), velocities[1, :].reshape(nx, ny), color="blue")
     else:
         raise ValueError(f"Unknown plottype '{plottype}'.")
     
