@@ -11,15 +11,14 @@ from ._base import DynamicalSystem
 
 class PendulumDynamics(DynamicalSystem):
     def __init__(self, length=1, weight=1, friction=1,
-                 center_position=None, maximum_velocity=None, dimension=2):
-        super().__init__(center_position=center_position,
-                         maximum_velocity=maximum_velocity, dimension=dimension)
+                 maximum_velocity=None, dimension=2, **kwargs):
+        super().__init__(maximum_velocity=maximum_velocity, dimension=dimension, **kwargs)
+        
         self.length = length
         self.weight = weight
         self.friction = friction
 
     def evaluate(self, position):
-        position = position - self.center_position
         
         velocity = np.zeros(self.dimension)
         velocity[0] = position[1]
@@ -30,16 +29,14 @@ class PendulumDynamics(DynamicalSystem):
 
 class DuffingOscillator(DynamicalSystem):
     def __init__(self, delta_factor=0.3, alpha_factor=-1.2, beta_factor=0.3,
-                 center_position=None, maximum_velocity=None, dimension=2):
-        super().__init__(center_position=center_position,
-                           maximum_velocity=maximum_velocity, dimension=dimension)
+                 maximum_velocity=None, dimension=2, **kwargs):
+        super().__init__(maximum_velocity=maximum_velocity, dimension=dimension, **kwargs)
         # Assign values
         self.delta_factor = delta_factor
         self.alpha_factor = alpha_factor
         self.beta_factor = beta_factor
 
     def evaluate(self, position):
-        position = position - self.center_position
         
         velocity = np.zeros(self.dimension)
         velocity[0] = position[1]
@@ -53,14 +50,10 @@ class DuffingOscillator(DynamicalSystem):
         return velocity
 
 class BifurcationSpiral(DynamicalSystem):
-    def __init__(self,
-                 center_position=None, maximum_velocity=None, dimension=2):
-        super().__init__(center_position=center_position,
-                           maximum_velocity=maximum_velocity, dimension=dimension)
+    def __init__(self, maximum_velocity=None, dimension=2, **kwargs):
+        super().__init__(maximum_velocity=maximum_velocity, dimension=dimension, **kwargs)
 
     def evaluate(self, position):
-        position = position - self.center_position
-        
         velocity = np.zeros(self.dimension)
         velocity[0] = 2*position[0] - position[0]*position[1]
         velocity[1] = 2*position[0]**2 - position[1]
