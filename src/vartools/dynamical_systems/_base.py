@@ -47,7 +47,6 @@ class DynamicalSystem(ABC):
             self.attractor_position = attractor_position
             
         elif not hasattr(self, 'dimension'):
-            breakpoint()
             raise ValueError("Space dimension cannot be guess from inputs. " +
                              "Please define it at initialization.")
 

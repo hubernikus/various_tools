@@ -36,12 +36,19 @@ class BaseTrimmer(ABC):
 class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
     """ Returns scaled velocity which is only decreasing towards attractor."""
     def __init__(self, const_velocity: np.ndarray,
-                 distance_decrease: np.ndarray):
+                 distance_decrease: np.ndarray,
+                 attractor_position: np.ndarray = None,
+                 ):
         self.const_velocity = const_velocity
         self.distance_decrease = distance_decrease
+        self.attractor_position = attractor_position
 
     def limit(self, velocity: np.ndarray, position: np.ndarray) -> np.ndarray:
-        dist_attr = LA.norm(position)
+        if self.attractor_position is None:
+            dist_attr = LA.norm(position)
+        else:
+            dist_attr = LA.norm(position - self.attractor_position)
+            
         if not dist_attr:  
             return np.zeros(velocity.shape)
 
@@ -53,7 +60,7 @@ class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
             desired_velocity = self.const_velocity
         else:
             desired_velocity = self.const_velocity * (dist_attr / self.distance_decrease)
-            
+        print('dist_attr', dist_attr)
         return velocity / mag_vel*desired_velocity
 
 
