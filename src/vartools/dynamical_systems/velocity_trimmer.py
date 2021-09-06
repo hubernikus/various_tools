@@ -60,7 +60,6 @@ class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
             desired_velocity = self.const_velocity
         else:
             desired_velocity = self.const_velocity * (dist_attr / self.distance_decrease)
-        print('dist_attr', dist_attr)
         return velocity / mag_vel*desired_velocity
 
 
