@@ -6,7 +6,7 @@ Dynamical Systems with a closed-form description.
 # License: BSD (c) 2021
 
 import numpy as np
-from numpy import linalg as LA # Recommended..
+from numpy import linalg as LA
 
 from ._base import DynamicalSystem
 

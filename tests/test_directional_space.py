@@ -555,8 +555,9 @@ class TestDirectionalSpace(unittest.TestCase):
         # """ Based on Reference direction & normal decomposition force the convergence. """
 
 
-if __name__ == '__main__':
-    unittest.main()
+if (__name__) == '__main__':
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)
+    
     user_test = False
     if user_test:
         Tester = TestDirectionalSpace()
@@ -579,3 +580,4 @@ if __name__ == '__main__':
         # Tester.test_inversion_examples()
 
         # Tester.test_angle_space_distance()
+    # print("Done")
