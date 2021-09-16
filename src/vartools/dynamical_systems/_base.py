@@ -30,7 +30,7 @@ def allow_max_velocity(original_function=None):
 
 class DynamicalSystem(ABC):
     """ Virtual Class for Base dynamical system"""
-    def __init__(self, pose: ObjectPose = None, maximum_velocity: np.ndarray = None,
+    def __init__(self, pose: ObjectPose = None, maximum_velocity: float = None,
                  dimension: int = None,
                  attractor_position: np.ndarray = None):
 
@@ -74,6 +74,7 @@ class DynamicalSystem(ABC):
                 maximum_velocity = self.maximum_velocity
         
         mag_vel = LA.norm(velocity)
+        breakpoint()
         if mag_vel > maximum_velocity:
             velocity = velocity / mag_vel * maximum_velocity
         return velocity
