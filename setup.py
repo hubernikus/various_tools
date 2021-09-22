@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import setuptools
 from setuptools import setup
 
 setup(name='vartools',
@@ -7,11 +7,7 @@ setup(name='vartools',
       description='Various Tools',
       author='Lukas Huber',
       author_email='lukas.huber@epfl.ch',
-      packages=[
-          'vartools',
-                ],
-      scripts=[
-          'scripts/main.py',
-          ],
+      packages=setuptools.find_packages(where="src", exclude=("tests",)),
+      scripts=[],
       package_dir={'': 'src'}
      )
