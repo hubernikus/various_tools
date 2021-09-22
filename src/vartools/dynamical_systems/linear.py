@@ -6,7 +6,7 @@ Dynamical Systems with a closed-form description.
 # License: BSD (c) 2021
 
 import numpy as np
-from numpy import linalg as LA # Recommended..
+from numpy import linalg as LA
 
 from ._base import DynamicalSystem
 
@@ -27,8 +27,9 @@ class LinearSystem(DynamicalSystem):
     ------
     Velocity (dynamical system) evaluted at the center position
     """
-    def __init__(self, attractor_position=None, A_matrix=None, b=None, dimension=None,
-                 maximum_velocity=None):
+    def __init__(
+        self, attractor_position=None, A_matrix=None, b=None, dimension=None,
+        maximum_velocity: float = None, distance_decrease: float = 1):
         
         if attractor_position is None:
             if A_matrix is not None:
@@ -40,6 +41,7 @@ class LinearSystem(DynamicalSystem):
             
         super().__init__(attractor_position=attractor_position, dimension=dimension,
                          maximum_velocity=maximum_velocity)
+        self.distance_decrease = distance_decrease
 
         if A_matrix is None:
             self.A_matrix = np.eye(self.dimension) * (-1)
@@ -52,9 +54,30 @@ class LinearSystem(DynamicalSystem):
                                  "Only one of them possible.")
             self.attractor_position = np.linalg.pinv(self.A_matrix) @ b
 
+    def limit_velocity_around_attractor(self, velocity, position):
+        dist_attr = LA.norm(position - self.attractor_position)
+            
+        if not dist_attr:  
+            return np.zeros(velocity.shape)
+
+        mag_vel = LA.norm(velocity)
+        if not mag_vel:
+            return velocity
+
+        if dist_attr > self.distance_decrease:
+            desired_velocity = self.maximum_velocity
+        else:
+            desired_velocity = (self.maximum_velocity
+                                * (dist_attr / self.distance_decrease))
+        return velocity / mag_vel*desired_velocity
+
+
     def evaluate(self, position, max_vel=None):
         velocity =  self.A_matrix.dot(position - self.attractor_position)
-        velocity = self.limit_velocity(velocity, max_vel)
+
+        if self.maximum_velocity is not None:
+            velocity = self.limit_velocity_around_attractor(velocity, position)
+        # velocity = self.limit_velocity(velocity, max_vel)
         return velocity
 
     def is_stable(self):
