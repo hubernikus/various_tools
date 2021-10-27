@@ -12,47 +12,56 @@ from numpy import linalg as LA
 
 from vartools.states import ObjectPose
 
+
 def allow_max_velocity(original_function=None):
-    ''' Decorator to allow to limit the velocity to a maximum.'''
+    """Decorator to allow to limit the velocity to a maximum."""
     # Reintroduce (?)
     def wrapper(*args, max_vel=None, **kwargs):
         if max_vel is None:
             return original_function(*args, **kwargs)
         else:
             velocity = original_function(*args, **kwargs)
-            
+
             mag_vel = np.linalg.norm(velocity)
             if mag_vel > max_vel:
                 velocity = velocity / mag_vel
             return velocity
+
     return wrapper
 
 
 class DynamicalSystem(ABC):
-    """ Virtual Class for Base dynamical system"""
-    def __init__(self, pose: ObjectPose = None, maximum_velocity: float = None,
-                 dimension: int = None,
-                 attractor_position: np.ndarray = None):
+    """Virtual Class for Base dynamical system"""
+
+    def __init__(
+        self,
+        pose: ObjectPose = None,
+        maximum_velocity: float = None,
+        dimension: int = None,
+        attractor_position: np.ndarray = None,
+    ):
 
         if pose is not None:
             self.dimension = pose.position.shape[0]
-            
+
         self.maximum_velocity = maximum_velocity
 
         if dimension is not None:
             self.dimension = dimension
-            
+
         elif attractor_position is not None:
             self.dimension = attractor_position.shape[0]
             self.attractor_position = attractor_position
-            
-        elif not hasattr(self, 'dimension'):
-            raise ValueError("Space dimension cannot be guess from inputs. " +
-                             "Please define it at initialization.")
+
+        elif not hasattr(self, "dimension"):
+            raise ValueError(
+                "Space dimension cannot be guess from inputs. "
+                + "Please define it at initialization."
+            )
 
         if pose is None:
             # Null pose
-            self.pose = ObjectPose() 
+            self.pose = ObjectPose()
         else:
             self.pose = pose
 
@@ -65,14 +74,14 @@ class DynamicalSystem(ABC):
     @attractor_position.setter
     def attractor_position(self, value):
         self._attractor_position = value
-    
+
     def limit_velocity(self, velocity, maximum_velocity=None):
         if maximum_velocity is None:
             if self.maximum_velocity is None:
                 return velocity
             else:
                 maximum_velocity = self.maximum_velocity
-        
+
         mag_vel = LA.norm(velocity)
         breakpoint()
         if mag_vel > maximum_velocity:
@@ -80,34 +89,36 @@ class DynamicalSystem(ABC):
         return velocity
 
     @abstractmethod
-    def evaluate(self, position):
-        """ Returns velocity of the evaluated the dynamical system at 'position'."""
+    def evaluate(self, position: np.array) -> np.array:
+        """Returns velocity of the evaluated the dynamical system at 'position'."""
         pass
 
-    def get_relative_position_to_attractor(self, position):
+    def get_relative_position_to_attractor(self, position: np.array) -> np.array:
         if self.attractor_position is None:
             return position
         else:
             return position - self.attractor_position
 
-    def compute_dynamics(self, position):
+    def compute_dynamics(self, position: np.array) -> np.array:
         # This or 'evaluate' / to be or not to be?!
         # Could allow for additional cropping
         pass
 
-    def evaluate_array(self, position_array):
-        """ Return an array of positions evluated. """
+    def evaluate_array(self, position_array: np.array) -> np.array:
+        """Return an array of positions evluated."""
         velocity_array = np.zeros(position_array.shape)
         for ii in range(position_array.shape[1]):
             velocity_array[:, ii] = self.evaluate_array(position_array[:, ii])
         return velocity_array
 
     def check_convergence(self, *args, **kwargs):
-        """ Non compulsary function (only for stable systems), but needed to stop integration. """
+        """Non compulsary function (only for stable systems), but needed to stop integration."""
         raise NotImplementedError("No convergence check implemented.")
-    
-    def motion_integration(self, start_position, dt, max_iteration=10000):
-        """ Integrate spiral Motion """
+
+    def motion_integration(
+        self, start_position: np.array, dt: float, max_iteration: int = 10000
+    ):
+        """Integrate spiral Motion"""
         dataset = []
         dataset.append(start_position)
         current_position = start_position
@@ -124,7 +135,7 @@ class DynamicalSystem(ABC):
                 break
 
             delta_vel = self.evaluate(dataset[-1])
-            current_position = delta_vel*dt + current_position
+            current_position = delta_vel * dt + current_position
             dataset.append(current_position)
-            
+
         return np.array(dataset).T
