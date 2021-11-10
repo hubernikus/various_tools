@@ -1,6 +1,7 @@
 # Requirement
 # python=3.9
 numpy
+setuptools
 
 # For testing / development 
 ipython   # For testing pusposes only | remove later
