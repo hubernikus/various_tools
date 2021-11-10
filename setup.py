@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from setuptools import setup
 
 setup(name='vartools',
@@ -9,7 +8,7 @@ setup(name='vartools',
       author_email='lukas.huber@epfl.ch',
       packages=[
           'vartools',
-                ],
+          ],
       scripts=[
           'scripts/main.py',
           ],
