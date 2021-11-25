@@ -1,6 +1,9 @@
 """
 Plot Dynamical System
 """
+# Author: Lukas Huber
+# Email: lukas.huber@epfl.ch
+# Created: 2021-10-26
 import numpy as np
 import matplotlib.pyplot as plt
 

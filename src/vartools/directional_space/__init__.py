@@ -5,8 +5,9 @@ The 'direction_space' module allows representing code as part of the direction s
 from .unit_direction import get_angle_from_vector, get_vector_from_angle
 from .unit_direction import UnitDirection, DirectionBase
 
-from .directional_space import get_angle_space_inverse
 from .directional_space import get_angle_space
+from .directional_space import get_angle_space_inverse
+
 from .directional_space import get_directional_weighted_sum
 from .directional_space import get_directional_weighted_sum_from_unit_directions
 
