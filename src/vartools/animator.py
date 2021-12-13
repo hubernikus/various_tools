@@ -24,10 +24,28 @@ class Animator(ABC):
     animation_name: The name the animation should be saved to.
     filetype:
 
+    fig: 
 
-    Methods
+
+    (Virtual) Methods -> implement for base-classes
+    -----------------
+    update_step: Is exectued at each iteration
+    has_converged (optional): Returns bool to check if the system as converged.
+
+    + an initialization (member) function is adviced; e.g. setup
+    
+
+    Methods 
     -------
-
+    __init__: set the simulation paramters
+    figure (or create_figure): assigns and returns matplotlib.pyplot.figure object
+        this can also be assigned manually
+    run: Run the simulation
+        
+    // Mouse/keyboard events:
+    on_click: Pause/play on click
+    
+    
     """
 
     def __init__(
@@ -47,21 +65,32 @@ class Animator(ABC):
         self.file_type = file_type
 
         # Simulation parameter
-        self.animation_paused = False
+        self._animation_paused = False
 
     def on_click(self, event) -> None:
         # TODO: do space and forward/backwards event
         """Click event."""
-        if self.animation_paused:
-            self.animation_paused = False
+        if self._animation_paused:
+            self._animation_paused = False
         else:
-            self.animation_paused = True
+            self._animation_paused = True
 
-    def create_figure(self, *args, **kwargs) -> None:
+    def figure(self, *args, **kwargs) -> None:
+        """ Creates a new figure and returns it."""
         self.fig = plt.figure(*args, **kwargs)
-        cid = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
+        return self.fig
 
-    def run(self, save_animation: bool = False):
+    def create_figure(self, *args, **kwargs):
+        return self.figure(*args, **kwargs)
+
+    def run(self, save_animation: bool = False) -> None:
+        """ Runs the animation"""
+        if fig is None:
+            raise Exception("Member variable 'fig' is not defined.")
+
+        # Initiate keyboard-actions
+        cid = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
+        
         if save_animation:
             if self.animation_name is None:
                 now = datetime.datetime.now()
@@ -70,14 +99,14 @@ class Animator(ABC):
                 # Set filetype
                 animation_name = self.animation_name + self.file_type
 
-            self.anim = animation.FuncAnimation(
+            anim = animation.FuncAnimation(
                 self.fig,
                 self.update_step,
                 frames=self.it_max,
                 interval=self.dt_sleep * 1000,  # Conversion [s] -> [ms]
             )
 
-            self.anim.save(
+            anim.save(
                 os.path.join("figures", animation_name),
                 metadata={"artist": "Lukas Huber"},
                 # save_count=2,
@@ -91,8 +120,8 @@ class Animator(ABC):
                     print("Stopped animation on closing of the figure.")
                     break
 
-                if self.animation_paused:
-                    plt.pause(dt_sleep)
+                if self._animation_paused:
+                    plt.pause(self.dt_sleep)
                     continue
 
                 self.update_step(ii, animation_run=False)
