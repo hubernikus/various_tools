@@ -22,9 +22,9 @@ class Animator(ABC):
     dt_sleep: sleep time
 
     animation_name: The name the animation should be saved to.
-    filetype:
+    filetype: File type where animation is saved. Only used when no is given.
 
-    fig: 
+    fig: The figure object. Need for click etc. events
 
 
     (Virtual) Methods -> implement for base-classes
@@ -51,6 +51,7 @@ class Animator(ABC):
     def __init__(
         self,
         it_max: int = 100,
+        iterator = None, # Iterable
         dt_simulation: float = 0.1,
         dt_sleep: float = 0.1,
         animation_name=None,
@@ -85,7 +86,7 @@ class Animator(ABC):
 
     def run(self, save_animation: bool = False) -> None:
         """ Runs the animation"""
-        if fig is None:
+        if self.fig is None:
             raise Exception("Member variable 'fig' is not defined.")
 
         # Initiate keyboard-actions
@@ -115,7 +116,7 @@ class Animator(ABC):
 
         else:
             ii = 0
-            while ii < it_max:
+            while self.it_max is None or ii < self.it_max:
                 if not plt.fignum_exists(self.fig.number):
                     print("Stopped animation on closing of the figure.")
                     break
@@ -124,7 +125,7 @@ class Animator(ABC):
                     plt.pause(self.dt_sleep)
                     continue
 
-                self.update_step(ii, animation_run=False)
+                self.update_step(ii)
 
                 # Check convergence
                 if self.has_converged():
