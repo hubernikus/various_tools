@@ -2,6 +2,7 @@
 # Author: Lukas Huber
 # Date: 2021-11-25"
 # Email: lukas.huber@epfl.ch
+import os
 
 from abc import ABC, abstractmethod
 import datetime
@@ -100,6 +101,8 @@ class Animator(ABC):
                 # Set filetype
                 animation_name = self.animation_name + self.file_type
 
+            print(f"Saving animation to: {animation_name}.")
+
             anim = animation.FuncAnimation(
                 self.fig,
                 self.update_step,
@@ -128,7 +131,7 @@ class Animator(ABC):
                 self.update_step(ii)
 
                 # Check convergence
-                if self.has_converged():
+                if self.has_converged(ii):
                     print(f"All trajectories converged at it={ii}.")
                     break
 
@@ -137,7 +140,7 @@ class Animator(ABC):
 
                 ii += 1
 
-    def has_converged(self) -> bool:
+    def has_converged(self, ii) -> bool:
         """(Optional) convergence check which is called during each animation run."""
         return False
 
