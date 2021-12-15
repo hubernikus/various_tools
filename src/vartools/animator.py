@@ -9,8 +9,9 @@ import datetime
 
 import numpy as np
 
-from matplotlib import animation
+import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib import animation
 
 
 class Animator(ABC):
@@ -27,37 +28,37 @@ class Animator(ABC):
 
     fig: The figure object. Need for click etc. events
 
-
-    (Virtual) Methods -> implement for base-classes
+    Methods (Virtual)
     -----------------
-    update_step: Is exectued at each iteration
-    has_converged (optional): Returns bool to check if the system as converged.
+    update_step: Update the simulation, but also the
+    has_converged: Optional function to set a convergence check
 
-    + an initialization (member) function is adviced; e.g. setup
-    
+        + an initialization (member) function is adviced; e.g. setup
 
-    Methods 
+    Methods
     -------
     __init__: set the simulation paramters
     figure (or create_figure): assigns and returns matplotlib.pyplot.figure object
         this can also be assigned manually
+    subplots: use this suplots to create figure & axes which are further used in the
+    update_step:
+
     run: Run the simulation
-        
+
     // Mouse/keyboard events:
     on_click: Pause/play on click
-    
-    
+
     """
 
     def __init__(
         self,
         it_max: int = 100,
-        iterator = None, # Iterable
+        iterator=None,  # Iterable
         dt_simulation: float = 0.1,
         dt_sleep: float = 0.1,
         animation_name=None,
         file_type=".mp4",
-    ):
+    ) -> None:
         self.it_max = it_max
 
         self.dt_simulation = dt_simulation
@@ -69,8 +70,10 @@ class Animator(ABC):
         # Simulation parameter
         self._animation_paused = False
 
+        # Additional arguments are passed to the custom-init
+        # self._custom_init(*args, **kwargs)
+
     def on_click(self, event) -> None:
-        # TODO: do space and forward/backwards event
         """Click event."""
         if self._animation_paused:
             self._animation_paused = False
@@ -78,7 +81,7 @@ class Animator(ABC):
             self._animation_paused = True
 
     def figure(self, *args, **kwargs) -> None:
-        """ Creates a new figure and returns it."""
+        """Creates a new figure and returns it."""
         self.fig = plt.figure(*args, **kwargs)
         return self.fig
 
@@ -86,13 +89,13 @@ class Animator(ABC):
         return self.figure(*args, **kwargs)
 
     def run(self, save_animation: bool = False) -> None:
-        """ Runs the animation"""
+        """Runs the animation"""
         if self.fig is None:
             raise Exception("Member variable 'fig' is not defined.")
 
         # Initiate keyboard-actions
         cid = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
-        
+
         if save_animation:
             if self.animation_name is None:
                 now = datetime.datetime.now()
@@ -140,10 +143,6 @@ class Animator(ABC):
 
                 ii += 1
 
-    def has_converged(self, ii) -> bool:
-        """(Optional) convergence check which is called during each animation run."""
-        return False
-
     @abstractmethod
     def update_step(self, ii: int) -> None:
         """Things which need to be done (and plotted) during a run.
@@ -154,3 +153,8 @@ class Animator(ABC):
         3. plotting
         """
         pass
+
+    def has_converged(self, ii: int) -> bool:
+        """(Optional) convergence check which is called during each animation run.
+        Returns boolean to indicate if the system has converged (to stop the simulation)."""
+        return False
