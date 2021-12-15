@@ -113,7 +113,8 @@ class ObjectPose():
             # Not implemented
             self.angular = position + twist.agnular * delta_time
             
-    def transform_position_from_reference_to_local(self, position: np.ndarray) -> np.ndarray:
+    def transform_position_from_reference_to_local(
+        self, position: np.ndarray) -> np.ndarray:
         """ Transform a position from the global frame of reference 
         to the obstacle frame of reference"""
         if not self.position is None:
@@ -318,17 +319,3 @@ class State(object):
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
-
-
-    # Multiplication and division not commutative
-    # def __repr__(self):
-        # return "State(%r, %r, %r, %r)" % (self._typename, self._name, self._reference_frame, self.)
-
-    # def __str__(self):
-        # if self._empty:
-            # res = "Empty "
-        # res += "State: " + self._name + " expressed in " + self._reference_frame + " frame"
-        # return res
-
-    # def __typename__(self):
-        # return self.__repr__

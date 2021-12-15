@@ -1,8 +1,33 @@
 """ Various tools to help / and speed up."""
-
 from typing import Callable
-import numpy as np
 
+import numpy as np
+from numpy import linalg as LA
+
+
+# def get_numerical_derivative(
+    # value: float, function: Callable(float),
+    # delta_magnitude: float = 1e-6) -> float:
+    # return
+
+def get_numerical_gradient_of_vectorfield(
+    position: np.ndarray, function: Callable[[np.ndarray], float], 
+    delta_magnitude: float = 1e-6) -> np.ndarray:
+    dimension = position.shape[0]
+    dim_out = function(position).shape[0]
+    
+    tensor_low = np.zeros((dimension, dim_out))
+    tensor_high = np.zeros((dimension, dim_out))
+    
+    for ii in range(dimension):
+        delta_vec = np.zeros(dimension)
+        delta_vec[ii] = delta_magnitude/2.0
+        
+        tensor_low[ii, :] = function(position-delta_vec)
+        tensor_high[ii, :] = function(position+delta_vec)
+        
+    return (tensor_high - tensor_low)/delta_magnitude
+    
 def get_numerical_gradient(position: np.ndarray, function: Callable[[np.ndarray], float], 
                            delta_magnitude: float = 1e-6) -> np.ndarray:
     """ Returns the numerical derivative of an input function at the specified position."""
@@ -17,6 +42,7 @@ def get_numerical_gradient(position: np.ndarray, function: Callable[[np.ndarray]
         vec_low[ii] = function(position-delta_vec)
         vec_high[ii] = function(position+delta_vec)
     return (vec_high-vec_low)/delta_magnitude
+
 
 def get_numerical_hessian_fast(position: np.ndarray, function,
                                # function: Callable[[np.ndarray], float],
@@ -75,7 +101,7 @@ def get_scaled_orthogonal_projection(vector):
           with algebraic multiplicity 1 and n − 1, respectively
     (iv) P_v z = ||v||^2 z for all z ∈ R n on the projective subspace defined by v∈R_n 
     (v) P_v w = 0 for all w ∈ R n such that vw;
-    (vi) 12 w^T Ṗ_v w = v^T P_w v̇."""
-    return LA.norm(vector)*np.eye(vector.shape[0]) - vector @ vector.T
+    (vi) 12 w^T Ṗ_v w = v^T P_w v̇. """
+    return LA.norm(vector)*np.eye(vector.shape[0]) - vector.reshape(-1, 1) @ vector.reshape(1, -1)
 
 

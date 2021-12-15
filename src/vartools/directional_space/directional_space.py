@@ -92,7 +92,8 @@ def get_angle_space(direction: np.ndarray,
     direction_directionSpace = direction_directionSpace * np.arccos(cos_direction)
 
     if any(np.isnan(direction_directionSpace)):
-        breakpoint() # TODO: remove after debugging
+        # breakpoint() # TODO: remove after debugging
+        raise Exception("Direction-space is 'nan'.")
 
     return direction_directionSpace
 

@@ -63,7 +63,8 @@ class NonEqualBaseError(DirectionBaseError):
         return f"{self.message}"
 
 
-def get_angle_from_vector(direction: np.ndarray, base: DirectionBase, cos_margin: float = 1e-8) -> np.ndarray:
+def get_angle_from_vector(direction: np.ndarray, base: DirectionBase,
+                          cos_margin: float = 1e-8) -> np.ndarray:
     """
     Returns a angle evalauted from the direciton & null_matrix
     
