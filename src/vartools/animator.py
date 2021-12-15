@@ -23,33 +23,40 @@ class Animator(ABC):
     dt_sleep: sleep time
 
     animation_name: The name the animation should be saved to.
-    filetype:
+    filetype: File type where animation is saved. Only used when no is given.
 
+    fig: The figure object. Need for click etc. events
 
     Methods (Virtual)
     -----------------
-    _custom_init: Initialization of variables and plot. Make sure that all the variables which
-    are needed in the main class are passed as member-variables
     update_step: Update the simulation, but also the
     has_converged: Optional function to set a convergence check
 
+        + an initialization (member) function is adviced; e.g. setup
 
     Methods
     -------
+    __init__: set the simulation paramters
+    figure (or create_figure): assigns and returns matplotlib.pyplot.figure object
+        this can also be assigned manually
     subplots: use this suplots to create figure & axes which are further used in the
     update_step:
+
+    run: Run the simulation
+
+    // Mouse/keyboard events:
+    on_click: Pause/play on click
 
     """
 
     def __init__(
         self,
-        *args,
         it_max: int = 100,
+        iterator=None,  # Iterable
         dt_simulation: float = 0.1,
         dt_sleep: float = 0.1,
         animation_name=None,
         file_type=".mp4",
-        **kwargs,
     ) -> None:
         self.it_max = it_max
 
@@ -60,32 +67,34 @@ class Animator(ABC):
         self.file_type = file_type
 
         # Simulation parameter
-        self.animation_paused = False
+        self._animation_paused = False
 
         # Additional arguments are passed to the custom-init
-        self._custom_init(*args, **kwargs)
+        # self._custom_init(*args, **kwargs)
 
     def on_click(self, event) -> None:
         """Click event."""
-        # TODO: do space and forward/backwards event
-        if self.animation_paused:
-            self.animation_paused = False
+        if self._animation_paused:
+            self._animation_paused = False
         else:
-            self.animation_paused = True
+            self._animation_paused = True
 
-    # def figure(self, *args, **kwargs) -> matplotlib.figure.Figure:
-    # """ Creates an animation figure which can be paused, replayed and saved. """
-    # self.fig = plt.figure(*args, **kwargs)
-    # cid = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
-    # return self.fig
+    def figure(self, *args, **kwargs) -> None:
+        """Creates a new figure and returns it."""
+        self.fig = plt.figure(*args, **kwargs)
+        return self.fig
 
-    def subplots(self, *args, **kwargs) -> matplotlib.figure.Figure:
-        """Creates an animation figure which can be paused, replayed and saved."""
-        self.fig, self.ax = plt.subplots(*args, **kwargs)
+    def create_figure(self, *args, **kwargs):
+        return self.figure(*args, **kwargs)
+
+    def run(self, save_animation: bool = False) -> None:
+        """Runs the animation"""
+        if self.fig is None:
+            raise Exception("Member variable 'fig' is not defined.")
+
+        # Initiate keyboard-actions
         cid = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
-        return self.fig, self.ax
 
-    def run(self, save_animation: bool = False):
         if save_animation:
             if self.animation_name is None:
                 now = datetime.datetime.now()
@@ -94,14 +103,14 @@ class Animator(ABC):
                 # Set filetype
                 animation_name = self.animation_name + self.file_type
 
-            self.anim = animation.FuncAnimation(
+            anim = animation.FuncAnimation(
                 self.fig,
                 self.update_step,
                 frames=self.it_max,
                 interval=self.dt_sleep * 1000,  # Conversion [s] -> [ms]
             )
 
-            self.anim.save(
+            anim.save(
                 os.path.join("figures", animation_name),
                 metadata={"artist": "Lukas Huber"},
                 # save_count=2,
@@ -110,13 +119,13 @@ class Animator(ABC):
 
         else:
             ii = 0
-            while ii < self.it_max:
+            while self.it_max is None or ii < self.it_max:
                 if not plt.fignum_exists(self.fig.number):
                     print("Stopped animation on closing of the figure.")
                     break
 
-                if self.animation_paused:
-                    plt.pause(dt_sleep)
+                if self._animation_paused:
+                    plt.pause(self.dt_sleep)
                     continue
 
                 self.update_step(ii)
@@ -131,10 +140,10 @@ class Animator(ABC):
 
                 ii += 1
 
-    @abstractmethod
-    def _custom_init(self, *args, **kwargs) -> None:
-        """Setup the environment including creating the axes."""
-        pass
+    # @abstractmethod
+    # def _custom_init(self, *args, **kwargs) -> None:
+    # """Setup the environment including creating the axes."""
+    # pass
 
     @abstractmethod
     def update_step(self, ii: int) -> None:
