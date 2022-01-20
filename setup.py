@@ -7,8 +7,6 @@ setup(
     author="Lukas Huber",
     author_email="lukas.huber@epfl.ch",
     # packages=find_packages(),
-    scripts=[
-        "scripts/main.py",
-    ],
+    # scripts=[],
     package_dir={"": "src"},
 )
