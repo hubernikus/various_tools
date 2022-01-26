@@ -439,7 +439,7 @@ class UnitDirection(object):
             angles = np.linspace(0, 2*np.pi, 50)
             plt.plot(0.5*pi*np.cos(angles), 0.5*pi*np.sin(angles), 'k')
 
-            vec_labels = [f"n0={np.round(new_base[0])=}",
+            vec_labels = [f"n0={np.round(new_base[0])}",
                           f"e1={np.round(new_base[1])}",
                           f"e2={np.round(new_base[2])}"]
 
