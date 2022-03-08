@@ -64,6 +64,7 @@ class ObjectPose:
         position: np.ndarray = None,
         orientation: np.ndarray = None,
         stamp: Stamp = None,
+        dimension: int = None,
     ):
         # 2D case has rotation matrix
         self._rotation_matrix = None

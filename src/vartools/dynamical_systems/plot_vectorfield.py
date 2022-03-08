@@ -23,7 +23,7 @@ def plot_dynamical_system_streamplot(n_resolution=None, *args, **kwargs):
 def plot_dynamical_system(
     dynamical_system=None, x_lim=None, y_lim=None, n_resolution=15,
     figsize=(10, 7), plottype='quiver', axes_equal=True, fig_ax_handle=None,
-    DynamicalSystem=None):
+    DynamicalSystem=None, color='blue', zorder=0):
     """ Evaluate the dynamics of the dynamical system. """
     if DynamicalSystem is not None:
         raise Exception("'DynamicalSystem' -> Argument depreciated,"
@@ -54,10 +54,13 @@ def plot_dynamical_system(
     if plottype=='quiver':
         ax.quiver(positions[0, :], positions[1, :],
                   velocities[0, :], velocities[1, :], color="blue")
+        
     elif plottype=='streamplot':
         ax.streamplot(
             x_vals, y_vals,
-            velocities[0, :].reshape(nx, ny), velocities[1, :].reshape(nx, ny), color="blue")
+            velocities[0, :].reshape(nx, ny),
+            velocities[1, :].reshape(nx, ny),
+            color=color, zorder=zorder)
     else:
         raise ValueError(f"Unknown plottype '{plottype}'.")
     
