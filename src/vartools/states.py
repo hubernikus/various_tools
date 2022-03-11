@@ -47,8 +47,32 @@ class Stamp:
 
 @dataclass
 class ObjectTwist:
-    linear: np.ndarray
-    angular: np.ndarray
+    def __init__(
+        self,
+        linear: np.ndarray = None,
+        angular: np.ndarray = None,
+        dimension: float = None,
+    ):
+
+        if dimension is None:
+            if linear is None:
+                self.dimension = 2
+            else:
+                self.dimension = dimension
+
+        self.linear = linear
+        self.angular = angular
+
+    @property
+    def linear(self):
+        return self._linear
+
+    @linear.setter
+    def linear(self, value):
+        if value is None:
+            self._linear = np.zeros(self.dimension)
+        else:
+            self._linear = np.array(value)
 
 
 class ObjectPose:
@@ -66,9 +90,6 @@ class ObjectPose:
         stamp: Stamp = None,
         dimension: int = None,
     ):
-        # 2D case has rotation matrix
-        self._rotation_matrix = None
-
         # Assign values
         self.position = position
         self.orientation = orientation
@@ -103,7 +124,7 @@ class ObjectPose:
 
         if self.dimension == 2:
             self._orientation = value
-            self._rotation_matrix = get_rotation_matrix(self.orientation)
+            # self.rotation_matrix = get_rotation_matrix(self.orientation)
 
         elif self.dimension == 3:
             if not isinstance(value, Rotation):
@@ -114,6 +135,18 @@ class ObjectPose:
             if value is not None and np.sum(np.abs(value)):  # nonzero value
                 warnings.warn("Rotation for dimensions > 3 not defined.")
             self._orientation = value
+
+    @property
+    def rotation_matrix(self):
+        if self.dimension != 2:
+            warnings.warn("Orientation matrix only used for useful for 2-D rotations.")
+            return
+        if self.orientation is None:
+            return np.eye(self.dimension)
+
+        _cos = np.cos(self.orientation)
+        _sin = np.sin(self.orientation)
+        return np.array([[_cos, (-1) * _sin], [_sin, _cos]])
 
     def update(self, delta_time: float, twist: ObjectTwist):
         if twist.linear is not None:
@@ -157,7 +190,7 @@ class ObjectPose:
             return direction
 
         if self.dimension == 2:
-            return self._rotation_matrix.T.dot(direction)
+            return self.rotation_matrix.T.dot(direction)
 
         elif self.dimension == 3:
             return self._orientation.inv.apply(direction.T).T
@@ -176,7 +209,7 @@ class ObjectPose:
             return direction
 
         if self.dimension == 2:
-            return self._rotation_matrix.dot(direction)
+            return self.rotation_matrix.dot(direction)
 
         elif self.dimension == 3:
             return self._orientation.apply(direction.T).T
@@ -242,7 +275,7 @@ class State(object):
     @orientation.setter
     def orientation(self, value):
         if self.dim == 2:
-            self.compute__rotation_matrix()
+            # self.compute_rotation_matrix()
             self._orientation = value
 
         elif self.dim == 3:
@@ -264,12 +297,12 @@ class State(object):
 
         if self.dim == 2:
             if len(position.shape) == 1:
-                return self._rotation_matrix.T.dot(
+                return self.rotation_matrix.T.dot(
                     position - np.array(self.center_position)
                 )
             elif len(position.shape) == 2:
                 n_points = position.shape[1]
-                return self._rotation_matrix.T.dot(
+                return self.rotation_matrix.T.dot(
                     position - np.tile(self.center_position, (n_points, 1)).T
                 )
             else:
@@ -303,11 +336,11 @@ class State(object):
 
         if self.dim == 2:
             if len(position.shape) == 1:
-                return self._rotation_matrix.dot(position) + self.center_position
+                return self.rotation_matrix.dot(position) + self.center_position
             elif len(position.shape) == 2:
                 n_points = position.shape[1]
                 return (
-                    self._rotation_matrix.dot(position)
+                    self.rotation_matrix.dot(position)
                     + np.tile(self.center_position, (n_points, 1)).T
                 )
             else:
@@ -336,7 +369,7 @@ class State(object):
     def transform_relative2global_dir(self, direction):
         """Transform a direction, velocity or relative position to the local-frame"""
         if self.dim == 2:
-            return self._rotation_matrix.dot(direction)
+            return self.rotation_matrix.dot(direction)
 
         elif self.dim == 3:
             return self._orientation.apply(direction.T).T
@@ -348,7 +381,7 @@ class State(object):
     def transform_global2relative_dir(self, direction):
         """Transform a direction, velocity or relative position to the local-frame"""
         if self.dim == 2:
-            return self._rotation_matrix.T.dot(direction)
+            return self.rotation_matrix.T.dot(direction)
 
         elif self.dim == 3:
             return self._orientation.inv.apply(direction.T).T

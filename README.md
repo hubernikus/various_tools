@@ -24,7 +24,6 @@ python setup.py develop
 ## Usage
 
 
-
 # Unit Testing
 In order to run all the test-scripts, run in the command line in the main folder:
 ``` bash
