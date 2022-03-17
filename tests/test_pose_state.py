@@ -43,7 +43,7 @@ class TestObjectPose(unittest.TestCase):
         position_repr = pose.transform_position_from_local_to_reference(position_trafo)
 
         self.assertTrue(np.allclose(position, position_repr))
-        self.assertTrue(np.allclose(position_trafo, np.array([-1, 1])))
+        self.assertTrue(np.allclose(position_trafo, np.array([1, 1-])))
         
         # TODO: for higher dimenions
 
@@ -62,7 +62,7 @@ class TestObjectPose(unittest.TestCase):
         direction_repr = pose.transform_direction_from_local_to_reference(direction_trafo)
 
         self.assertTrue(np.allclose(direction, direction_repr))
-        self.assertTrue(np.allclose(direction_trafo, np.array([-1, 1])))
+        self.assertTrue(np.allclose(direction_trafo, np.array([1, -1])))
         # TODO: for higher dimenions
 
 

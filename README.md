@@ -13,12 +13,25 @@ It consists of three main sub-libraries:
 - Linear Algebra Helpers
 - General Math / Logic
 
+## Custom Environment
+Choose your favorite python-environment. I recommend to use [virtual environment venv](https://docs.python.org/3/library/venv.html).
+Setup virtual environment (use whatever compatible environment manager that you have with Python >3.7).
+
+``` bash
+python3.10 -m venv .venv
+```
+with python -V > 3.7
+
+Activate your environment
+``` sh
+source .venv/bin/activate
+```
+
 
 ## Setup / Install
 (using custom pip-environment)
 ``` bash
-pip install -r requirements.txt
-python setup.py develop
+pip install -r requirements.txt && pip install -e .
 ```
 
 ## Usage
