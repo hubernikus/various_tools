@@ -96,7 +96,8 @@ class ObjectPose:
         return self._orientation
 
     @orientation.setter
-    def orientation(self, value: (float, np.ndarray)):
+    def orientation(self, value):
+        """ Value is of type 'float' for 2D or `np.array`/`scipy.rotation` for 3D and higher."""
         if value is None:
             self._orientation = value
             return
