@@ -118,7 +118,7 @@ class ObjectPose:
 
     @orientation.setter
     def orientation(self, value):
-        """ Value is of type 'float' for 2D or `np.array`/`scipy.rotation` for 3D and higher."""
+        """ Value is of type 'float' for 2D or `numpy.array`/`scipy.spatial.transform.Rotation` for 3D and higher."""
         if value is None:
             self._orientation = value
             return
@@ -275,6 +275,7 @@ class State(object):
 
     @orientation.setter
     def orientation(self, value):
+        """ Orientation is of type `float` for 2D and of type `np.array`/scipy.rotation for 3D and higher.'''
         if self.dim == 2:
             # self.compute_rotation_matrix()
             self._orientation = value
