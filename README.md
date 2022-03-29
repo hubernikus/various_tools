@@ -34,6 +34,11 @@ source .venv/bin/activate
 pip install -r requirements.txt && pip install -e .
 ```
 
+In order to be able to save animations from `animator.py` you need `ffmpeg` installed. For linux (Ubuntu) this can be done via:
+``` bash
+sudo apt install ffmpeg
+```
+
 ## Usage
 
 
