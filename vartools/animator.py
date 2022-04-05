@@ -45,9 +45,12 @@ class Animator(ABC):
 
     run: Run the simulation
 
-    // Mouse/keyboard events:
-    on_click: Pause/play on click
 
+    Mouse/keyboard event
+    --------------------
+    MOUSE_CLICK / SPACE: Pause-play-toggle on click
+    LEFT / 'a': One step back
+    RIGHT / '': One step forward
     """
 
     def __init__(
@@ -73,12 +76,36 @@ class Animator(ABC):
         # Additional arguments are passed to the custom-init
         # self._custom_init(*args, **kwargs)
 
-    def on_click(self, event) -> None:
+    def step_forward(self) -> None:
+        self.it_count += 1
+        if self._animation_paused:
+            self.update_step(self.it_count)
+
+    def step_back(self) -> None:
+        self.it_count -= 1
+        if self._animation_paused:
+            self.update_step(self.it_count)
+
+    def pause_toggle(self, event=None) -> None:
         """Click event."""
         if self._animation_paused:
             self._animation_paused = False
         else:
             self._animation_paused = True
+
+    def on_press(self, event):
+        if event.key.isspace():
+            self.pause_toggle()
+            
+        elif event.key=='right' or event.key=='d':
+            self.step_forward()
+
+        elif event.key=='left' or event.key=='a':
+            self.step_back()
+
+        # else:
+        #    warnings.warn(f"Uknown key type {event}.")
+        
 
     def figure(self, *args, **kwargs) -> None:
         """Creates a new figure and returns it."""
@@ -94,7 +121,8 @@ class Animator(ABC):
             raise Exception("Member variable 'fig' is not defined.")
 
         # Initiate keyboard-actions
-        cid = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
+        bpe = self.fig.canvas.mpl_connect("button_press_event", self.pause_toggle)
+        kpe = self.fig.canvas.mpl_connect('key_press_event', self.on_press)
 
         if save_animation:
             if self.animation_name is None:
@@ -121,8 +149,8 @@ class Animator(ABC):
             print("Animation saving finished.")
 
         else:
-            ii = 0
-            while self.it_max is None or ii < self.it_max:
+            self.it_count = 0
+            while self.it_max is None or self.it_count < self.it_max:
                 if not plt.fignum_exists(self.fig.number):
                     print("Stopped animation on closing of the figure.")
                     break
@@ -131,17 +159,17 @@ class Animator(ABC):
                     plt.pause(self.dt_sleep)
                     continue
 
-                self.update_step(ii)
+                self.update_step(self.it_count)
 
                 # Check convergence
-                if self.has_converged(ii):
-                    print(f"All trajectories converged at it={ii}.")
+                if self.has_converged(self.it_count):
+                    print(f"All trajectories converged at it={self.it_count}.")
                     break
 
                 # TODO: adapt dt_sleep based on
                 plt.pause(self.dt_sleep)
 
-                ii += 1
+                self.it_count += 1
 
     @abstractmethod
     def update_step(self, ii: int) -> None:
