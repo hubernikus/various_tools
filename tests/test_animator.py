@@ -43,13 +43,15 @@ class AnimatorTest(Animator):
         self.ax.set_ylim(self.y_lim)
 
     def has_converged(self, ii):
-        return (ii > 1000)
+        return (ii > 10)
 
 
 def test_animator():
     my_animator = AnimatorTest(dt_sleep=0.001, it_max=10000)
     my_animator.setup()
     my_animator.run()
+
+    plt.close('all')
 
     
 if (__name__) == "__main__":
