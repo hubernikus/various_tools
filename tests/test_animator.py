@@ -53,6 +53,15 @@ def test_animator():
 
     plt.close('all')
 
-    
+
+def _test_saving():
+    my_animator = AnimatorTest(dt_sleep=0.001, it_max=100)
+    my_animator.setup()
+    my_animator.run(save_animation=True)
+
+    plt.close('all')
+
+
 if (__name__) == "__main__":
-    test_animator()    
+    test_animator()
+    # _test_saving()
