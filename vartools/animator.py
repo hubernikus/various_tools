@@ -7,11 +7,9 @@ import os
 from abc import ABC, abstractmethod
 import datetime
 
-import numpy as np
-
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation
+# from matplotlib.animation import PillowWriter
 
 
 class Animator(ABC):
@@ -121,19 +119,21 @@ class Animator(ABC):
             raise Exception("Member variable 'fig' is not defined.")
 
         # Initiate keyboard-actions
-        bpe = self.fig.canvas.mpl_connect("button_press_event", self.pause_toggle)
-        kpe = self.fig.canvas.mpl_connect('key_press_event', self.on_press)
+        self.fig.canvas.mpl_connect("button_press_event", self.pause_toggle)
+        self.fig.canvas.mpl_connect('key_press_event', self.on_press)
 
         if save_animation:
             if self.animation_name is None:
                 now = datetime.datetime.now()
-                animation_name = f"animation_{now:%Y-%m-%d_%H-%M-%S}" + self.file_type
+                animation_name = (f"animation_{now:%Y-%m-%d_%H-%M-%S}"
+                                  + self.file_type)
             else:
                 # Set filetype
                 animation_name = self.animation_name + self.file_type
 
             print(f"Saving animation to: {animation_name}.")
 
+            # breakpoint()
             anim = animation.FuncAnimation(
                 self.fig,
                 self.update_step,
@@ -141,10 +141,21 @@ class Animator(ABC):
                 interval=self.dt_sleep * 1000,  # Conversion [s] -> [ms]
             )
 
+
+            # FFmpeg for
+            writervideo = animation.FFMpegWriter(
+                fps=60,
+                # extra_args=['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2'],
+                # extra_args=['-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2'],
+                # extra_args=['-vf', 'crop=1600:800']
+            )
+
             anim.save(
                 os.path.join("figures", animation_name),
-                metadata={"artist": "Lukas Huber"},
-                # save_count=2,
+                # metadata={"artist": "Lukas Huber"},
+                # We chose default 'pillow', beacuse 'ffmpeg' often gives errors
+                writer=writervideo,
+                # animation.PillowWriter()
             )
             print("Animation saving finished.")
 
@@ -184,5 +195,6 @@ class Animator(ABC):
 
     def has_converged(self, ii: int) -> bool:
         """(Optional) convergence check which is called during each animation run.
-        Returns boolean to indicate if the system has converged (to stop the simulation)."""
+        Returns boolean to indicate if the system has converged (to stop the
+        simulation)."""
         return False

@@ -43,7 +43,7 @@ class AnimatorTest(Animator):
         self.ax.set_ylim(self.y_lim)
 
     def has_converged(self, ii):
-        return (ii > 10)
+        return (ii > 100)
 
 
 def test_animator():
