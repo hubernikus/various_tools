@@ -83,7 +83,7 @@ class DynamicalSystem(ABC):
                 maximum_velocity = self.maximum_velocity
 
         mag_vel = LA.norm(velocity)
-        breakpoint()
+        
         if mag_vel > maximum_velocity:
             velocity = velocity / mag_vel * maximum_velocity
         return velocity
