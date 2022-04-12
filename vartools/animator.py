@@ -9,6 +9,7 @@ import datetime
 
 import matplotlib.pyplot as plt
 from matplotlib import animation
+
 # from matplotlib.animation import PillowWriter
 
 
@@ -94,11 +95,11 @@ class Animator(ABC):
     def on_press(self, event):
         if event.key.isspace():
             self.pause_toggle()
-        
-        elif event.key=='right' or event.key == 'd':
+
+        elif event.key == "right" or event.key == "d":
             self.step_forward()
-        
-        elif event.key=='left' or event.key == 'a':
+
+        elif event.key == "left" or event.key == "a":
             self.step_back()
 
         # else:
@@ -119,13 +120,12 @@ class Animator(ABC):
 
         # Initiate keyboard-actions
         self.fig.canvas.mpl_connect("button_press_event", self.pause_toggle)
-        self.fig.canvas.mpl_connect('key_press_event', self.on_press)
+        self.fig.canvas.mpl_connect("key_press_event", self.on_press)
 
         if save_animation:
             if self.animation_name is None:
                 now = datetime.datetime.now()
-                animation_name = (f"animation_{now:%Y-%m-%d_%H-%M-%S}"
-                                  + self.file_type)
+                animation_name = f"animation_{now:%Y-%m-%d_%H-%M-%S}" + self.file_type
             else:
                 # Set filetype
                 animation_name = self.animation_name + self.file_type
@@ -201,13 +201,12 @@ class Animator(ABC):
         """Reset to correct figure size before saving.
         Somehow three times fixes the size -> I'm really not sure why this hast
         to be done. but it overcomes the 'ffmpeg'-saving error.
-        
+
         We are aware that this solution is very 'hacky', but somehow it solved
         the problem for now."""
-        if not hasattr(self, 'figsize'):
+        if not hasattr(self, "figsize"):
             self.figsize = self.fig.get_size_inches()
-            
+
         self.fig.set_dpi(100)
         for _ in range(3):
-            self.fig.set_size_inches(
-                self.figsize[0], self.figsize[1], forward=True)
+            self.fig.set_size_inches(self.figsize[0], self.figsize[1], forward=True)

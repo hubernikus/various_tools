@@ -9,7 +9,11 @@ from .circular_and_linear import CircularLinear
 from .spiral_motion import SpiralStable
 from .locally_rotated import LocallyRotated
 from .quadratic_axis_convergence import QuadraticAxisConvergence
-from .multiattractor_dynamics import PendulumDynamics, DuffingOscillator, BifurcationSpiral
+from .multiattractor_dynamics import (
+    PendulumDynamics,
+    DuffingOscillator,
+    BifurcationSpiral,
+)
 from .sinus_attractor import SinusAttractorSystem
 
 # Various Dynamical System Adaptation Functions
@@ -21,23 +25,21 @@ from .plot_vectorfield import plot_dynamical_system_quiver
 from .plot_vectorfield import plot_dynamical_system_streamplot
 
 
-__all__ = ['allow_max_velocity',
-           'DynamicalSystem',
-           'LinearSystem',
-           'ConstantValue',
-           'CircularStable'
-           'SpiralStable',
-           'LocallyRotated',
-           'QuadraticAxisConvergence',
-           'PendulumDynamics',
-           'DuffingOscillator',
-           'BifurcationSpiral',
-           'SinusAttractorSystem',
-
-           'BaseTrimmer',
-           'ConstVelocityDecreasingAtAttractor',
-           
-           'plot_dynamical_system',
-           'plot_dynamical_system_quiver',
-           'plot_dynamical_system_streamplot',
-           ]
+__all__ = [
+    "allow_max_velocity",
+    "DynamicalSystem",
+    "LinearSystem",
+    "ConstantValue",
+    "CircularStable" "SpiralStable",
+    "LocallyRotated",
+    "QuadraticAxisConvergence",
+    "PendulumDynamics",
+    "DuffingOscillator",
+    "BifurcationSpiral",
+    "SinusAttractorSystem",
+    "BaseTrimmer",
+    "ConstVelocityDecreasingAtAttractor",
+    "plot_dynamical_system",
+    "plot_dynamical_system_quiver",
+    "plot_dynamical_system_streamplot",
+]

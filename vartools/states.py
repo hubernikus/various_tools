@@ -208,5 +208,3 @@ class ObjectPose:
 class Wrench:
     def __init__(self, linear, angular):
         pass
-
-

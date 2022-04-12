@@ -12,9 +12,10 @@ from vartools.animator import Animator
 
 
 class AnimatorTest(Animator):
-    """ Test Animator which plots an evolving sinus curve."""
+    """Test Animator which plots an evolving sinus curve."""
+
     def setup(self):
-        self.x_width = 2*np.pi
+        self.x_width = 2 * np.pi
         self.y_lim = [-1.1, 1.1]
 
         self.fig, self.ax = plt.subplots(figsize=(6, 5))
@@ -23,27 +24,27 @@ class AnimatorTest(Animator):
         self.y_list = []
 
     def update_step(self, ii):
-        self.x_list.append(ii*0.1)
-        
+        self.x_list.append(ii * 0.1)
+
         self.y_list.append(
             # The main function
             np.sin(ii * np.pi / 10)
         )
 
-        while(self.x_list[0] < self.x_list[-1] - self.x_width/2):
+        while self.x_list[0] < self.x_list[-1] - self.x_width / 2:
             del self.x_list[0]
             del self.y_list[0]
 
         # Clear axes and plot
         self.ax.clear()
-        self.ax.plot(self.x_list, self.y_list, color='blue')
-        self.ax.plot(self.x_list[-1], self.y_list[-1], 'o', color='blue')
+        self.ax.plot(self.x_list, self.y_list, color="blue")
+        self.ax.plot(self.x_list[-1], self.y_list[-1], "o", color="blue")
 
-        self.ax.set_xlim(self.x_list[0], self.x_list[0]+self.x_width)
+        self.ax.set_xlim(self.x_list[0], self.x_list[0] + self.x_width)
         self.ax.set_ylim(self.y_lim)
 
     def has_converged(self, ii):
-        return (ii > 100)
+        return ii > 100
 
 
 def test_animator():
@@ -51,7 +52,7 @@ def test_animator():
     my_animator.setup()
     my_animator.run()
 
-    plt.close('all')
+    plt.close("all")
 
 
 def _test_saving():
@@ -59,7 +60,7 @@ def _test_saving():
     my_animator.setup()
     my_animator.run(save_animation=True)
 
-    plt.close('all')
+    plt.close("all")
 
 
 if (__name__) == "__main__":

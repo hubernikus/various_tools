@@ -13,6 +13,7 @@ import warnings
 import numpy as np
 from scipy.spatial.transform import Rotation  # scipy rotation
 
+
 def get_rotation_matrix(orientation: np.ndarray) -> np.ndarray:
     """Return rotation matrix based on 2D-orientation input."""
     matrix = np.array(
@@ -70,7 +71,7 @@ class State(object):
 
     @orientation.setter
     def orientation(self, value):
-        """ Orientation is of type `float` for 2D and of type `np.array`/scipy.rotation for 3D and higher."""
+        """Orientation is of type `float` for 2D and of type `np.array`/scipy.rotation for 3D and higher."""
         if self.dim == 2:
             # self.compute_rotation_matrix()
             self._orientation = value

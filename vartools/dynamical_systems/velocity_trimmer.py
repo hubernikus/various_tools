@@ -17,16 +17,17 @@ class SpuriousAttractorError(Exception):
     def __init__(self, position):
         self.position = position
         super().__init__()
-        
+
     def __str__(self):
         return f"position={self.position} -> Spurious Attractor (velocity=0) detected."
-    
+
 
 class BaseTrimmer(ABC):
-    """ Virtual class which limits DS magnitudes. """ 
+    """Virtual class which limits DS magnitudes."""
+
     # def __init__():
-        # pass
-        
+    # pass
+
     @abstractmethod
     def limit(self, velocity: np.ndarray, position: np.ndarray) -> np.ndarray:
         # Limit velocity to a set value
@@ -34,11 +35,14 @@ class BaseTrimmer(ABC):
 
 
 class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
-    """ Returns scaled velocity which is only decreasing towards attractor."""
-    def __init__(self, const_velocity: np.ndarray,
-                 distance_decrease: np.ndarray,
-                 attractor_position: np.ndarray = None,
-                 ):
+    """Returns scaled velocity which is only decreasing towards attractor."""
+
+    def __init__(
+        self,
+        const_velocity: np.ndarray,
+        distance_decrease: np.ndarray,
+        attractor_position: np.ndarray = None,
+    ):
         self.const_velocity = const_velocity
         self.distance_decrease = distance_decrease
         self.attractor_position = attractor_position
@@ -48,8 +52,8 @@ class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
             dist_attr = LA.norm(position)
         else:
             dist_attr = LA.norm(position - self.attractor_position)
-            
-        if not dist_attr:  
+
+        if not dist_attr:
             return np.zeros(velocity.shape)
 
         mag_vel = LA.norm(velocity)
@@ -59,8 +63,10 @@ class ConstVelocityDecreasingAtAttractor(BaseTrimmer):
         if dist_attr > self.distance_decrease:
             desired_velocity = self.const_velocity
         else:
-            desired_velocity = self.const_velocity * (dist_attr / self.distance_decrease)
-        return velocity / mag_vel*desired_velocity
+            desired_velocity = self.const_velocity * (
+                dist_attr / self.distance_decrease
+            )
+        return velocity / mag_vel * desired_velocity
 
 
 class LimitMaximumVelocity(BaseTrimmer):
@@ -68,7 +74,7 @@ class LimitMaximumVelocity(BaseTrimmer):
         self.maximum_velocity = maximum_velocity
 
     def limit(self, velocity: np.ndarray, position: np.ndarray) -> np.ndarray:
-        """ Crops velocity at maximum.
+        """Crops velocity at maximum.
         Note that 'position' position is unused!
         """
         mag_vel = LA.norm(velocity)

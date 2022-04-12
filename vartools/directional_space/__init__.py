@@ -14,14 +14,15 @@ from .directional_space import get_directional_weighted_sum_from_unit_directions
 from .directional_space import get_angle_space_of_array
 from .directional_space import get_angle_space_inverse_of_array
 
-__all__ = ['get_angle_from_vector',
-           'get_vector_from_angle',
-           'UnitDirection',
-           'DirectionBase',
-           'get_angle_space',
-           'get_angle_space_inverse',
-           'get_directional_weighted_sum',
-           'get_directional_weighted_sum_from_unit_directions',
-           'get_angle_space_of_array',
-           'get_angle_space_inverse_of_array',
-           ]
+__all__ = [
+    "get_angle_from_vector",
+    "get_vector_from_angle",
+    "UnitDirection",
+    "DirectionBase",
+    "get_angle_space",
+    "get_angle_space_inverse",
+    "get_directional_weighted_sum",
+    "get_directional_weighted_sum_from_unit_directions",
+    "get_angle_space_of_array",
+    "get_angle_space_inverse_of_array",
+]
