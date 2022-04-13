@@ -279,6 +279,10 @@ class UnitDirection(object):
         return self._base.null_matrix
 
     @property
+    def base_matrix(self) -> np.ndarray:
+        return self._base.null_matrix
+
+    @property
     def base(self) -> DirectionBase:
         return self._base
 
