@@ -34,6 +34,7 @@ def plot_dynamical_system(
     DynamicalSystem=None,
     color="blue",
     zorder=0,
+    ax=None,
 ):
     """Evaluate the dynamics of the dynamical system."""
     if DynamicalSystem is not None:
@@ -62,10 +63,12 @@ def plot_dynamical_system(
         velocities[:, it] = dynamical_system.evaluate(positions[:, it])
 
     # plt.figure()
-    if fig_ax_handle is None:
-        fig, ax = plt.subplots(figsize=figsize)
-    else:
+    if fig_ax_handle is not None:
         fig, ax = fig_ax_handle
+        pass
+    elif ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+    
 
     if plottype == "quiver":
         ax.quiver(

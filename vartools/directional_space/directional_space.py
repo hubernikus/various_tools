@@ -186,26 +186,31 @@ def get_directional_weighted_sum_from_unit_directions(
     if total_weight > 1:
         weights = weights / np.sum(weights) * total_weight
 
+    # print('uni dir', unit_directions[0].as_vector())
     unit_directions = [
         u_dir.transform_to_base(base)
         for ii, u_dir in enumerate(unit_directions)
         if ind_nonzero[ii]
     ]
+    # print('uni dir', unit_directions[0].as_vector())
 
-    if unit_directions is None:
-        unit_directions = [
-            UnitDirection(base).from_vector(directions[:, ii])
-            for ii in range(directions.shape[1])
-        ]
-    else:
-        for ii, u_dir in enumerate(unit_directions):
-            u_dir.transform_to_base(base)
+    # if unit_directions is None:
+        # unit_directions = [
+            # UnitDirection(base).from_vector(directions[:, ii])
+            # for ii in range(directions.shape[1])
+        # ]
+    # else:
+    for ii, u_dir in enumerate(unit_directions):
+        u_dir.transform_to_base(base)
 
     summed_dir = UnitDirection(base).from_angle(
         np.zeros(unit_directions[0].dimension - 1)
     )
     for ii, u_dir in enumerate(unit_directions):
         summed_dir = summed_dir + u_dir * weights[ii]
+
+    # print('dirdir', summed_dir.as_vector())
+    # breakpoint()
 
     return summed_dir.as_vector()
 
