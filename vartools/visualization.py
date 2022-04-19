@@ -27,7 +27,7 @@ class VectorfieldPlotter:
         attractor_position=None,
     ):
         self.figsize = figsize
-        
+
         if ax is None:
             self.fig, self.ax = plt.subplots(figsize=self.figsize)
         else:
@@ -59,15 +59,16 @@ class VectorfieldPlotter:
 
         # Obstacle Plotting Parameters
         self.obstacle_color = np.array([176, 124, 124]) / 255.0
-        
+
         self.plot_center = True
         self.plot_reference = False
         self.plot_obstacle_number = False
-        
+
         self.velocity_arrow_factor = 0.2
-        self.alpha_obstacle = 0.8
+        self.obstacle_alpha = 0.8
+        self.obstacle_zorder = 0
         self.border_linestyle = "--"
-        
+
         self.draw_wall_reference = False
         self.draw_velocity_arrow = False
         self.reference_point_number = False
@@ -110,7 +111,7 @@ class VectorfieldPlotter:
 
         self.ax.set_xlim(self.x_lim[0], self.x_lim[1])
         self.ax.set_ylim(self.y_lim[0], self.y_lim[1])
-    
+
     def plot(
         self, vector_functor, obstacle_list=None, check_functor=None, n_resolution=10
     ):
@@ -247,7 +248,7 @@ class VectorfieldPlotter:
 
                 outer_boundary = outer_boundary.T
                 boundary_polygon = plt.Polygon(
-                    outer_boundary, alpha=self.alpha_obstacle, zorder=-4
+                    outer_boundary, alpha=self.obstacle_alpha, zorder=-4
                 )
                 boundary_polygon.set_color(self.obstacle_color)
                 self.ax.add_patch(boundary_polygon)
@@ -257,7 +258,9 @@ class VectorfieldPlotter:
 
             else:
                 obs_polygon.append(
-                    plt.Polygon(x_obs, alpha=self.alpha_obstacle, zorder=2)
+                    plt.Polygon(
+                        x_obs, alpha=self.obstacle_alpha, zorder=self.obstacle_zorder
+                    )
                 )
                 obs_polygon[n].set_color(self.obstacle_color)
 
@@ -274,6 +277,16 @@ class VectorfieldPlotter:
                     textcoords="data",
                     size=16,
                     weight="bold",
+                )
+
+            if self.plot_center:
+                self.ax.plot(
+                    obs.center_position[0],
+                    obs.center_position[1],
+                    "k.",
+                    # linewidth=12,
+                    # markeredgewidth=2.4,
+                    # markersize=8,
                 )
 
             # Automatic adaptation of center
