@@ -68,7 +68,6 @@ def plot_dynamical_system(
         pass
     elif ax is None:
         fig, ax = plt.subplots(figsize=figsize)
-    
 
     if plottype == "quiver":
         ax.quiver(

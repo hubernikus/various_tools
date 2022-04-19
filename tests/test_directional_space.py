@@ -265,12 +265,7 @@ class TestDirectionalSpace(unittest.TestCase):
 
         base0 = DirectionBase(matrix=null_matrix)
 
-        directions = [
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
-            [0.3, 0.4, 0.78],
-        ]
+        directions = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0.3, 0.4, 0.78]]
 
         for ind, direction in enumerate(directions):
             direction0 = UnitDirection(base=base0).from_vector(direction)

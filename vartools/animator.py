@@ -209,4 +209,6 @@ class Animator(ABC):
 
         self.fig.set_dpi(100)
         for _ in range(3):
-            self.fig.set_size_inches(self.figsize[0], self.figsize[1], forward=True)
+            self.fig.set_size_inches(
+                self.figsize[0], self.figsize[1], forward=True
+            )

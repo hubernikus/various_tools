@@ -195,10 +195,10 @@ def get_directional_weighted_sum_from_unit_directions(
     # print('uni dir', unit_directions[0].as_vector())
 
     # if unit_directions is None:
-        # unit_directions = [
-            # UnitDirection(base).from_vector(directions[:, ii])
-            # for ii in range(directions.shape[1])
-        # ]
+    # unit_directions = [
+    # UnitDirection(base).from_vector(directions[:, ii])
+    # for ii in range(directions.shape[1])
+    # ]
     # else:
     for ii, u_dir in enumerate(unit_directions):
         u_dir.transform_to_base(base)

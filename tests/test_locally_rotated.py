@@ -166,9 +166,7 @@ class TestSpiralmotion(unittest.TestCase):
     ):
         if dynamical_system is None:
             dynamical_system = LocallyRotated(
-                mean_rotation=[np.pi],
-                rotation_center=[4, 2],
-                influence_radius=4,
+                mean_rotation=[np.pi], rotation_center=[4, 2], influence_radius=4
             )
 
         n_resolution = 100
