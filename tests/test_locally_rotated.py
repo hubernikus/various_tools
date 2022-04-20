@@ -9,11 +9,15 @@ import numpy as np
 from numpy import linalg as LA
 
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.colors import ListedColormap
+# from matplotlib.colors import LinearSegmentedColormap
 
 from vartools.states import ObjectPose
 
 from vartools.dynamical_systems import LocallyRotated
 from vartools.dynamical_systems import plot_dynamical_system_quiver
+from vartools.visualization import VectorfieldPlotter
 
 
 def test_initialize_zero_max_rotation(visualize=False):
@@ -111,12 +115,25 @@ def test_ellipse_with_axes(visualize=False):
 
 def test_weight_close_point(visualize=False):
     dynamical_system = LocallyRotated(
-        max_rotation=np.array([1]),
+        max_rotation=np.array([np.pi * 0.7]),
         influence_pose=ObjectPose(position=np.array([2, 2])),
-        influence_radius=3,
+        influence_radius=5,
     )
     if visualize:
-        visualize_weight(dynamical_system)
+        x_lim = [-20, 20]
+        y_lim = [-20, 20]
+        
+        fig, ax = visualize_weight(
+            dynamical_system,
+            n_resolution=100,
+            x_lim=x_lim, y_lim=y_lim,
+            )
+
+        my_plotter = VectorfieldPlotter(
+            fig=fig, ax=ax, x_lim=x_lim, y_lim=y_lim)
+
+        my_plotter.vector_color = "black"
+        my_plotter.plot(dynamical_system.evaluate, n_resolution=20)
 
     position = np.array([0, 0])
     weight = dynamical_system.get_weight(position=position)
@@ -172,18 +189,21 @@ def plot_critical_ds():
     plot_dynamical_system_quiver(dynamical_system=dynamical_system, n_resolution=20)
 
 
-def visualize_weight(dynamical_system=None, x_lim=[-10, 10], y_lim=[-10, 10], dim=2):
+def visualize_weight(
+    dynamical_system=None,
+    x_lim=[-10, 10], y_lim=[-10, 10], dim=2,
+    n_resolution=100,
+    fig=None, ax=None,
+):
     if dynamical_system is None:
         dynamical_system = LocallyRotated(
             mean_rotation=[np.pi], rotation_center=[4, 2], influence_radius=4
         )
 
-    n_resolution = 100
-
     import matplotlib.pyplot as plt
 
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(1, 1, 1)
+    if fig is None or ax is None:
+        fig, ax = plt.subplots(figsize=(6, 5))
 
     x_vals = np.linspace(x_lim[0], x_lim[1], n_resolution)
     y_vals = np.linspace(y_lim[0], y_lim[1], n_resolution)
@@ -197,14 +217,30 @@ def visualize_weight(dynamical_system=None, x_lim=[-10, 10], y_lim=[-10, 10], di
 
             gamma_values[ix, iy] = dynamical_system.get_weight(positions[:, ix, iy])
 
+    n_split = 128
+    # newcolors = cm.get_cmap('Reds_r', n_split)
+    # newcolors = cm.get_cmap('YlOrBr', n_split)
+    newcolors = cm.get_cmap('Oranges', n_split)
+    # bottom = cm.get_cmap('rBlues', 128)
+    newcolors = newcolors(np.linspace(0, 0.6, n_split))
+
+    # newcolors = np.vstack((top(np.linspace(0, 1, 128)),
+                           # bottom(np.linspace(0, 1, 128))))
+    newcmp = ListedColormap(newcolors, name='OrangeBlue')
+
     cs = plt.contourf(
         positions[0, :, :],
         positions[1, :, :],
         gamma_values,
-        np.arange(0.0, 1.0, 0.05),
-        extend="max",
-        alpha=0.6,
+        np.arange(0.0, 1.01, 0.01),
+        # extend="max",
+        # alpha=1.0,
+        # alpha=0.9,
         zorder=-3,
+        # colors="OrRd",
+        # cmap="Reds",
+        cmap=newcmp,
+        # antialiased=True,
     )
 
     if dynamical_system.attractor_position is None:
@@ -220,13 +256,19 @@ def visualize_weight(dynamical_system=None, x_lim=[-10, 10], y_lim=[-10, 10], di
     )
 
     ax.axis("equal")
-    cbar = fig.colorbar(cs)
+    fig.colorbar(
+        cs, ticks=np.linspace(0, 1, 11)
+    )
+
+    return fig, ax
 
 
 if (__name__) == "__main__":
     plt.close("all")
     # test_initialize_zero_max_rotation(visualize=False)
     # test_pi_half_rotation(visualize=False)
+    test_weight_close_point(visualize=True)
+    # test_ellipse_with_axes(visualize=True)
     pass
 
 print("Done")

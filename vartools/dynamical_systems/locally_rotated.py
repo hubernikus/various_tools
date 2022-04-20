@@ -90,12 +90,18 @@ class LocallyRotated(DynamicalSystem):
             return np.zeros(position.shape)
 
         weight_rot = self.get_weight(position)
-        rot_final = self.max_rotation * weight_rot
 
-        # TODO: why (-1) ?! change?
-        velocity = get_angle_space_inverse(
-            dir_angle_space=(-1) * rot_final, null_direction=(-1) * rel_position
-        )
+        if weight_rot > 0:
+            # Angle space is not defined opposite (where weight is zero)
+            rot_final = self.max_rotation * weight_rot
+
+            # TODO: why (-1) ?! change?
+            velocity = get_angle_space_inverse(
+                dir_angle_space=(-1) * rot_final, null_direction=(-1) * rel_position
+            )
+            
+        else:
+            velocity = (-1) * rel_position
 
         if self.maximum_velocity is not None:
             mag_pos = min(mag_pos, self.maximum_velocity)
@@ -141,19 +147,13 @@ class LocallyRotated(DynamicalSystem):
             if sum_weights > 1:
                 weight_rot = weight_rot / sum_weights
 
-        # else:
-        # weight_center = 0
-        # -> no influence of weight_center normalization
-
         # Additional [0-1] weight from dot-product [no influence behind]
         vec_attr_pose = (-1) * self.get_relative_position_to_attractor(
             self.influence_pose.position
         )
 
-        vec_position_attr = self.get_relative_position_to_attractor(position)
-
-        dot_prod = np.dot(vec_attr_pose, vec_position_attr) / (
-            LA.norm(vec_attr_pose) * LA.norm(vec_position_attr)
+        dot_prod = np.dot(vec_attr_pose, position) / (
+            LA.norm(vec_attr_pose) * LA.norm(position)
         )
 
         if dot_prod > 0:
@@ -161,7 +161,22 @@ class LocallyRotated(DynamicalSystem):
             weight_rot = weight_rot * (1 - dot_prod)
 
         return weight_rot
-
+    
 
 class MultiLocalRotation(DynamicalSystem):
-    pass
+    """ A collection of locally rotated DS"""
+    def __init__(self, _dynamicsal_systems, *args, **kwargs):
+        self._dynamicsal_systems = []
+
+    def evaluate(self):
+        pass
+
+    @property
+    def n_systems(self):
+        return len(self._dynamics_list)
+
+    def add(self, dynamical_system):
+        self._dynamics_list.append(dynamical_system)
+
+    def delete(self, it):
+        del self._dynamics_list[it]

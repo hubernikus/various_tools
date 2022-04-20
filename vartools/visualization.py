@@ -57,6 +57,10 @@ class VectorfieldPlotter:
         self.vector_color = "blue"
         self.vector_zorder = 0
 
+        # Integration Parameters
+        self.it_max = 1000
+        self.dt_step = 0.1
+        
         # Obstacle Plotting Parameters
         self.obstacle_color = np.array([176, 124, 124]) / 255.0
 
@@ -174,6 +178,7 @@ class VectorfieldPlotter:
                 color=self.vector_color,
                 zorder=self.vector_zorder,
             )
+            
         else:
             raise ValueError(f"Unknown plottype '{plottype}'.")
 
@@ -182,10 +187,32 @@ class VectorfieldPlotter:
         self.setup_environment()
 
     def plot_streamlines(
-        self, start_positions, vector_functor, check_functor=None, obstacle_list=None
+        self,
+        positions,
+        vector_functor,
+        collision_functor=None,
+        convergence_functor=None,
+        obstacle_list=None,
     ):
-        if True:
-            raise NotImplementedError("TODO when needed.")
+        # traj_list = []
+        for it_traj in range(positions.shape[1]):
+            trajetory = np.zeros((positions.shape[0], self.it_max+1))
+
+            trajetory[:, 0] = positions[:, it_traj]
+            for it_step in range(self.it_max):
+                trajetory[:, it_step+1] = vector_functor(trajetory[:, it_step + 1])
+
+                if collision_functor and collision_functor(trajetory[:, it_step + 1]):
+                    print(f"Trajectory {it_traj} collided at step {it_step}.")
+
+                if convergence_functor and convergence_functor(trajetory[:, it_step + 1]):
+                    print(f"Trajectory {it_traj} converged at step {it_step}.")
+
+            self.ax.plot(
+                trajetory[0, it_step+2], trajetory[1, it_step+2],
+                color=self.vector_color
+                )
+            # traj_list.append(trajetory[:, :(it_step+1)])
 
         # Do a few things
         if obstacle_list is not None:
@@ -331,6 +358,22 @@ class VectorfieldPlotter:
                     alpha=1,
                     zorder=3,
                 )
+
+    def evaluate_system(self, levelfunctor, n_resolution=100, obstacle_list=None):
+        """ Adds a very generic colorplot -> for more advanced features update."""
+        nx = n_resolution
+        ny = n_resolution
+        x_vals, y_vals = np.meshgrid(
+            np.linspace(self.x_lim[0], self.x_lim[1], nx),
+            np.linspace(self.y_lim[0], self.y_lim[1], ny),
+        )
+        positions = np.vstack((x_vals.reshape(1, -1), y_vals.reshape(1, -1)))
+
+        level_values = np.zeros(positions.shape[1])
+        for ii in range(positions.shape[1]):
+            level_values[ii] = levelfunctor(positions)
+
+        return level_values
 
     def save(self, figurename=None, figtype="pdf", folder="figures"):
         if figurename is None:
