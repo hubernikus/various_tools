@@ -15,9 +15,6 @@ from ._base import DynamicalSystem
 from vartools.directional_space import get_angle_space_inverse
 from vartools.states import ObjectPose
 
-# TODO: move the 'from_ellipse'-subclass to a the dynamical_obstacle_avoidance repo to avoid reverse dependency
-# from dynamic_obstacle_avoidance.obstacles import Ellipse
-
 
 class LocallyRotated(DynamicalSystem):
     """Returns dynamical system with a mean rotation of 'mean_rotation'
@@ -39,7 +36,7 @@ class LocallyRotated(DynamicalSystem):
     def __init__(
         self,
         max_rotation: (np.ndarray, list),
-        influence_pose: pose = None,
+        influence_pose: ObjectPose = None,
         influence_radius: float = 1,
         influence_axes_length: np.ndarray = None,
         # delta_influence_center: float = 0.1,
@@ -103,37 +100,39 @@ class LocallyRotated(DynamicalSystem):
         if self.maximum_velocity is not None:
             mag_pos = min(mag_pos, self.maximum_velocity)
         velocity = velocity * mag_pos
+
         return velocity
 
     def get_weight(self, position: np.ndarray) -> float:
-        """Get weight of local rotation. Dicreasing weight -> less rotated DS."""
-        position = np.array(position)
-        position = self.pose.transform_position_from_reference_to_local(position)
+        """Get weight of local rotation. Decreasign weight -> less rotated DS.
+        Based on RELATIVE position."""
+        # position = np.array(position)
+        # position = self.pose.transform_position_from_reference_to_local(position)
 
         # Direction towards 'attractor' (at origin)
         scaled_dist_ellipse = self.get_scaled_dist_to_ellipse(position)
         # pose.transform_direction_from_reference_to_local(dir_rot)
 
-        if scaled_dist_ellipse <= 1:
+        if scaled_dist_ellipse >= 1 + self.influence_descent_factor:
+            # No influence far-away
+            return 0
+
+        elif scaled_dist_ellipse <= 1:
             # Inner strong-influence core
             weight_rot = 1
 
-        elif scaled_dist_ellipse >= 1 + self.influence_descent_factor:
-            # No influence far-away
-            weight_rot = 0
-
         else:
             # scaled_dist_ellipse = 1-scaled_dist_ellipse
-            scaled_dist_ellipse = 1 - (scaled_dist_ellipse - 1)
-            weight_rot = scaled_dist_ellipse / self.influence_descent_factor
+            weight_rot = scaled_dist_ellipse - 1
+            weight_rot = 1 - (weight_rot / self.influence_descent_factor)
 
         # Evalaute center weight [inverse of 1]
         rel_pos = self.get_relative_position_to_attractor(position)
         dist_center = np.linalg.norm(rel_pos)
 
-        if dist_center == 0:
+        if dist_center <= 0:
             # dist_center = infinity -> give normalization
-            weight_rot = 0
+            return 0
 
         elif dist_center < self.attractor_influence_radius:
             # Projection of f: (0, 1] -> (infty -> 0]
@@ -162,3 +161,7 @@ class LocallyRotated(DynamicalSystem):
             weight_rot = weight_rot * (1 - dot_prod)
 
         return weight_rot
+
+
+class MultiLocalRotation(DynamicalSystem):
+    pass
