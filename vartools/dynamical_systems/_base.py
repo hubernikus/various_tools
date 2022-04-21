@@ -111,6 +111,11 @@ class DynamicalSystem(ABC):
             velocity_array[:, ii] = self.evaluate_array(position_array[:, ii])
         return velocity_array
 
+    def has_converged(self, position, convergence_margin=1e-1):
+        if not hasattr(self, 'attractor_position'):
+            raise NotImplementedError("Convergence does not exist without attractor.")
+        return LA.norm(position - self.attractor_position) < convergence_margin
+
     def check_convergence(self, *args, **kwargs):
         """Non compulsary function (only for stable systems), but needed to stop integration."""
         raise NotImplementedError("No convergence check implemented.")
