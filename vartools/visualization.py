@@ -200,16 +200,23 @@ class VectorfieldPlotter:
 
             trajetory[:, 0] = positions[:, it_traj]
             for it_step in range(self.it_max):
-                trajetory[:, it_step+1] = vector_functor(trajetory[:, it_step + 1])
-
-                if collision_functor and collision_functor(trajetory[:, it_step + 1]):
+                if collision_functor and collision_functor(trajetory[:, it_step]):
                     print(f"Trajectory {it_traj} collided at step {it_step}.")
+                    # it_step -= 1
+                    break
 
-                if convergence_functor and convergence_functor(trajetory[:, it_step + 1]):
+                if convergence_functor and convergence_functor(trajetory[:, it_step]):
                     print(f"Trajectory {it_traj} converged at step {it_step}.")
+                    # it_step -= 1
+                    break
+
+                trajetory[:, it_step+1] = (
+                        trajetory[:, it_step]
+                        + self.dt_step * vector_functor(trajetory[:, it_step])
+                    )
 
             self.ax.plot(
-                trajetory[0, it_step+2], trajetory[1, it_step+2],
+                trajetory[0, :it_step+1], trajetory[1, :it_step+1],
                 color=self.vector_color
                 )
             # traj_list.append(trajetory[:, :(it_step+1)])
