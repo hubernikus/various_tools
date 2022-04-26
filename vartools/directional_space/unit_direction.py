@@ -41,12 +41,6 @@ class InversionError(UnitDirectionError):
         )
 
 
-class NoDirectionArgumentError(UnitDirectionError):
-    """No Directional argument is passed"""
-
-    def __str__(self):
-        return f"No directional argument is passed."
-
 
 class ZeroVectorError(Exception):
     def __str__(self):
@@ -74,7 +68,10 @@ class NonEqualBaseError(DirectionBaseError):
 
 
 def get_angle_from_vector(
-    direction: np.ndarray, base: DirectionBase, cos_margin: float = 1e-8
+    direction: np.ndarray,
+    # base: DirectionBase,
+    base: np.ndarray,
+    cos_margin: float = 1e-8
 ) -> np.ndarray:
     """
     Returns a angle evalauted from the direciton & null_matrix
@@ -105,7 +102,8 @@ def get_angle_from_vector(
 
     elif cos_direction <= -(1.0 - cos_margin):
         # This value has to be used with care, since it's close to signularity.
-        # but because transformation can be used to evaluate the total angle no 'warning' is raised.
+        # but because transformation can be used to evaluate the total angle
+        # no 'warning' is raised.
         angle = np.zeros(direction_referenceSpace.shape[0] - 1)
         angle[0] = pi
         return angle
@@ -118,7 +116,11 @@ def get_angle_from_vector(
     return angle
 
 
-def get_vector_from_angle(angle: np.ndarray, base: DirectionBase) -> np.ndarray:
+def get_vector_from_angle(
+    angle: np.ndarray,
+    base: np.ndarray
+    # base: DirectionBase
+    ) -> np.ndarray:
     """
     Returns a unit vector transformed back from the angle/direction-space.
 
@@ -140,7 +142,7 @@ def get_vector_from_angle(angle: np.ndarray, base: DirectionBase) -> np.ndarray:
         )
     else:
         # vector = base.null_matrix[:, 0]
-        vector = base[0]
+        vector = base[:, 0]
     return vector
 
 
@@ -155,7 +157,10 @@ class UnitDirection(object):
     """
 
     def __init__(
-        self, base: DirectionBase = None, unit_direction: UnitDirection = None
+        self,
+        base: np.ndarray = None,
+        # base: DirectionBase = None,
+        unit_direction: UnitDirection = None,
     ):
         """
         To create the angle space on of several 'reference angles / directions' have to be
@@ -167,15 +172,6 @@ class UnitDirection(object):
         unit_direction = UnitDirection [base is copied]
         """
         if base is not None:
-            # if not isinstance(base._matrix, DirectionBase):
-            if not isinstance(base._matrix, np.ndarray):
-                # TODO: direct base instance check| but how?!
-                raise TypeError(
-                    f"{base} of {type(base)} \n"
-                    + f"-> Input of wrong type, should be 'DirectionBase'."
-                )
-
-            # self.base = copy.deepcopy(base)
             self.base = base
 
         elif unit_direction is not None:
@@ -183,34 +179,55 @@ class UnitDirection(object):
             self.base = self.unit_direction.base
 
         else:
-            raise NoDirectionArgumentError("No direction argument is given.")
+            raise ValueError("No direction argument is given.")
+
+        self._angle = None
+        self._vector = None
+
+    @property
+    def dimension(self) -> int:
+        # return self.base.null_matrix.shape[0]
+        return self._base.shape[0]
+
+    @property
+    def magnitude(self) -> float:
+        return LA.norm(self.angle)
+
+    @property
+    def null_matrix(self) -> np.ndarray:
+        return self._base
+
+    @property
+    def base_matrix(self) -> np.ndarray:
+        return self._base.null_matrix
+
+    @property
+    def base(self) -> np.ndarray:
+        return self._base
+
+    @base.setter
+    def base(self, value: np.ndarray) -> None:
+        if hasattr(self, "_base"):
+            # Reset angles / vector
+            self._angle = None
+            self._vector = None
+        self._base = value
 
     def __repr__(self):
         return f"UnitDirection({str(self.as_angle())}) \n" f"{str(self.base)}"
 
-    # def __iadd__(self, other):
-    # pass
-
-    # def __add__(self, other: UnitDirection) -> UnitDirection:
-    #     self = copy.deepcopy(self)
-    #     if not np.allclose(self.null_matrix, other.null_matrix):
-    #         other = copy.deepcopy(other)
-    #         other.transform_to_base(self)
-
-    #     self._anlge = self.as_angle + other.as_angle()
-    #     return self
-
     def __eq__(self, other: UnitDirection) -> float:
-        return self.base == other.base and np.allclose(
-            self.as_angle(), other.as_angle()
+        return (
+            np.allclose(self.base, other.base)
+            and np.allclose(self.as_angle(), other.as_angle())
         )
 
     def __neq__(self, other: UnitDirection) -> float:
         return not (self == other)
 
     def __add__(self, other: UnitDirection) -> UnitDirection:
-        if self.base != other.base:
-            raise NonEqualBaseError()
+        if not np.allclose(self.base, other.base):
+            raise ValueError("Bases are not equal.")
         return UnitDirection(self.base).from_angle(self.as_angle() + other.as_angle())
 
     def __radd__(self, other: UnitDirection) -> UnitDirection:
@@ -229,13 +246,14 @@ class UnitDirection(object):
         return self * (1.0 / other)
 
     # def __rdiv__(self, other: float) -> UnitDirection:
-    # return self * other
+    #     return self * other
+    
     def norm(self) -> float:
         """Return norm of angle."""
         return LA.norm(self.as_angle())
 
     def get_distance_to(self, other: UnitDirection) -> float:
-        if self.base != other.base:
+        if not np.allclose(self.base, other.base):
             raise NonEqualBaseError()
         return LA.norm(self.as_angle() - other.as_angle())
 
@@ -250,10 +268,44 @@ class UnitDirection(object):
         else:
             new_angle = self.as_angle() / angle_norm * (pi - angle_norm)
 
-        new_base = self.base.invert_normal()
+        new_base = (-1)*self.base
 
         return UnitDirection(base=new_base).from_angle(new_angle)
 
+    def _get_new_directional_base(self, new_base_angle):
+        """ Evaluate  a new 'basis' that allows rotational transferring."""
+        # DO tests (!)
+        null_matrix = self.null_matrix
+        
+        if not LA.norm(new_base_angle):
+            return copy.deepcopy(self)
+
+        if not (LA.norm(new_base_angle) - np.pi) % (2*np.pi):
+            raise ValueError("Normal transform is not defined for an angle of 'pi'.")
+
+        # Create basis in the directional space (without base-vector)
+        directional_basis = get_orthogonal_basis(new_base_angle)
+
+        new_null_matrix = np.zeros((self.dimension, self.dimension))
+        new_null_matrix[:, 0] = get_vector_from_angle(new_base_angle, null_matrix)
+        for ii in range(1, dimension-1):
+            new_null_matrix[:, ii] = get_vector_from_angle(
+                np.pi*new_base_angle, null_matrix
+            )
+
+        # Get last tangent
+        dot_prod = np.dot(new_null_matrix[:, 0], null_matrix[:, 0])
+        # proj_newbase_vector = new_null_matrix[:, 0] * dot_prod * np.copysign(1, dot_prod)
+        proj_base_vector = new_null_matrix[:, 0] * np.abs(dot_prod)
+        tangent = null_matrix[:, 0]*np.copysign(1, dot_prod) - proj_base_vector
+        new_null_matrix[:, -1] = tang / LA.norm(tang)
+
+        # Rebase the angle to new angle-space
+        new_angle = self.as_angle() - new_base_angle
+        new_angle = directional_basis.T @ new_angle
+
+        return new_null_matrix, new_angle
+    
     def project_onto_sphere(
         self, reference_vector: UnitDirection, radius=pi / 2
     ) -> UnitDirection:
@@ -266,35 +318,7 @@ class UnitDirection(object):
         """Get shortesst angle distance between points."""
         pass
 
-    @property
-    def dimension(self) -> int:
-        return self.base.null_matrix.shape[0]
-
-    @property
-    def magnitude(self) -> float:
-        return LA.norm(self.angle)
-
-    @property
-    def null_matrix(self) -> np.ndarray:
-        return self._base.null_matrix
-
-    @property
-    def base_matrix(self) -> np.ndarray:
-        return self._base.null_matrix
-
-    @property
-    def base(self) -> DirectionBase:
-        return self._base
-
-    @base.setter
-    def base(self, value: DirectionBase) -> None:
-        if hasattr(self, "_base"):
-            # Reset angles / vector
-            self._angle = None
-            self._vector = None
-        self._base = value
-
-    def from_angle(self, value: (np.ndarray, list)) -> DirectionBase:
+    def from_angle(self, value: (np.ndarray, list)) -> np.ndarray:
         """Update angle and reset 'equivalent' vector."""
         self._angle = np.array(value)
         self._vector = None
@@ -317,11 +341,9 @@ class UnitDirection(object):
         if self._vector is None:
             raise ValueError("Set vector or angle value before evaluating.")
 
-        # Store & return angle
         self._angle = get_angle_from_vector(
             direction=self._vector, base=self.base, cos_margin=cos_margin
         )
-
         return self._angle
 
     def as_vector(self) -> np.ndarray:
@@ -330,17 +352,13 @@ class UnitDirection(object):
         if self._angle is None:
             raise ValueError("Set vector or angle value before evaluating.")
 
-        # Store & return vector
-        # try:
         self._vector = get_vector_from_angle(angle=self._angle, base=self.base)
-        # except:
-        # breakpoint()
         return self._vector
 
-    def transform_to_base(self, new_base: DirectionBase) -> None:
+    def transform_to_base(self, new_base: np.ndarray) -> None:
         """Rebase to new base, and evaluate the 'self.angle' with respect to the center of
         the (new) base."""
-        if self.base == new_base:
+        if np.allclose(self.base, new_base):
             return copy.deepcopy(self)
 
         # Make sure the angle is calculated
@@ -389,8 +407,9 @@ class UnitDirection(object):
 
         return UnitDirection(new_base).from_angle(angle_in_newbase)
 
-    def transform_to_base_old_try2(self, new_base: DirectionBase) -> None:
-        """Rebase to new base, and evaluate the 'self.angle' with respect to the center of the (new) base."""
+    def transform_to_base_old_try2(self, new_base: np.ndarray) -> None:
+        """Rebase to new base, and evaluate the 'self.angle'
+        with respect to the center of the (new) base."""
         if self.base == new_base:
             return copy.deepcopy(self)
 
@@ -472,185 +491,72 @@ class UnitDirection(object):
             print("angle dot prod", np.dot(normed[:, 0], normed[:, 1]))
             print("new_base_vecs", new_base_vecs)
 
-        if True:
-            # DEBUGGING
-            import matplotlib.pyplot as plt
-
-            plt.figure()
-            # plt.subplot(1, 2, 1)
-            angles = np.linspace(0, 2 * np.pi, 50)
-            plt.plot(0.5 * pi * np.cos(angles), 0.5 * pi * np.sin(angles), "k")
-
-            vec_labels = [
-                f"n0={np.round(new_base[0])}",
-                f"e1={np.round(new_base[1])}",
-                f"e2={np.round(new_base[2])}",
-            ]
-
-            vec_labels = ["n0", "e1", "e2"]
-            for ii in range(len(vec_labels)):
-                # angle = UnitDirection(base0).from_vector(new_base[ii]).as_angle()
-                vec_label = (
-                    vec_labels[ii]
-                    + f"={np.round(new_base[ii])} = {np.round(new_base_as_angle[:, ii], 1)}"
-                )
-                plt.plot(
-                    new_base_as_angle[0, ii],
-                    new_base_as_angle[1, ii],
-                    "o",
-                    label=vec_label,
-                )
-
-            plt.plot(angle[0], angle[1], "o", label=f"angle={np.round(angle, 1)}")
-            plt.plot(
-                new_angle[0],
-                new_angle[1],
-                "o",
-                label=f"new_angle={np.round(new_angle, 1)}",
-            )
-            plt.plot(
-                new_angle_new_base[0],
-                new_angle_new_base[1],
-                "o",
-                label=f"new_angle_new_base={np.round(new_angle_new_base, 1)}",
-            )
-
-            reference_angle = (
-                UnitDirection(new_base).from_vector(self.as_vector()).as_angle()
-            )
-            plt.plot(
-                reference_angle[0],
-                reference_angle[1],
-                "o",
-                label=f"real_newbase={np.round(self.as_vector(), 1)}={np.round(reference_angle, 1)}",
-            )
-            # for ii in range(new_base_vecs.shape[1]):
-            # plt.plot([0, new_base_vecs[0, ii]], [0, new_base_vecs[1, ii]])
-            # rebase_angle = angle - new_base_as_angle[:, 0]
-            # plt.plot(rebase_angle[0], rebase_angle[1], 'ro')
-            # plt.plot(temp_copy_new_angle[0], temp_copy_new_angle[1], 'go')
-
-            plt.legend()
-            plt.axis("equal")
-            plt.ion()
-            plt.show()
-            breakpoint()
-
         return UnitDirection(new_base).from_angle(new_angle)
 
-    def old_stuff_which_should_be_removed_or_adapted(self):
-        # TODO: ...
-        # Get direction of norm
-        normalangle_of_new_base = get_angle_from_vector(
-            new_base.null_matrix[:, 0], base=self.base
-        )
 
-        if LA.norm(normalangle_of_new_base):
-            normal_angle = (
-                np.dot(normalangle_of_new_base, angle)
-                * normalangle_of_new_base
-                / LA.norm(normalangle_of_new_base) ** 2
-            )
+# class DirectionBase:
+#     # This seems redundant to existing 'base'-array
+#     """Directional base class to store the null_matrix / base_matrix
+#     which allows to represent vectors."""
 
-            perp_angle = angle - normal_angle
-            normal_angle = normal_angle + normalangle_of_new_base
+#     def __init__(
+#         self,
+#         matrix: np.ndarray = None,
+#         vector: np.ndarray = None,
+#         direction_base: DirectionBase = None,
+#     ):
+#         # Should it be a mutable OR immutable object?
+#         # TODO MAYBE: tests(?)
 
-            # The normal-vector of the old vector in the new-base; it is nonzero within this if-statement
-            normal_angle_new = get_angle_from_vector(
-                self.base.null_matrix[:, 0], base=new_base
-            )
-            normal_angle_new = (
-                normal_angle_new / LA.norm(normal_angle_new) * LA.norm(normal_angle)
-            )
+#         if matrix is not None:
+#             self._matrix = np.array(matrix)
 
-            # Adapt the pendicular part
-            perp_angle_norm = LA.norm(perp_angle)
-            if perp_angle_norm < pi / 2.0:  # nonzero
-                perp_vector = get_vector_from_angle(angle=perp_angle, base=self.base)
-                perp_angle_new = get_angle_from_vector(perp_vector, base=new_base)
-            else:
-                perp_vector = get_vector_from_angle(
-                    angle=perp_angle / perp_angle_norm, base=self.base
-                )
-                perp_angle_new = get_angle_from_vector(perp_vector, base=new_base)
-                perp_angle_new = perp_angle_new * perp_angle_norm
+#         elif vector is not None:
+#             self._matrix = get_orthogonal_basis(vector)
 
-            new_angle = normal_angle_new + perp_angle_new
-            breakpoint()
-            aa = 1  # To see where we are...
+#         elif direction_base is not None:
+#             self._matrix = np.array(direction_base.null_matrix)
 
-        else:
-            # Only rotation around the normal
-            vector = self.as_vector()
-            new_angle = get_angle_from_vector(vector, base=new_base)
+#         else:
+#             raise ValueError("No input argument as a base of the space.")
 
-        # Reset base & angle
-        self.base = new_base
-        self.from_angle(new_angle)
+#     def __getitem__(self, arg: int) -> np.ndarrary:
+#         return self._matrix[:, arg]
 
+#     def __repr__(self):
+#         # return f"DirectionBase({str(self._matrix)})"
+#         return f"DirectionBase({np.array2string(self._matrix, separator=', ')})"
 
-class DirectionBase:
-    """Directional base class to store the null_matrix / base_matrix
-    which allows to represent vectors."""
+#     def __eq__(self, other: DirectionBase) -> bool:
+#         return np.allclose(self.null_matrix, other.null_matrix)
 
-    def __init__(
-        self,
-        matrix: np.ndarray = None,
-        vector: np.ndarray = None,
-        direction_base: DirectionBase = None,
-    ):
-        # Should it be a mutable OR immutable object?
-        # TODO MAYBE: tests(?)
+#     def __ne__(self, other: DirectionBase) -> bool:
+#         return not (self == other)
 
-        if matrix is not None:
-            self._matrix = np.array(matrix)
+#     def __matmul__(self, other: np.ndarray):
+#         return self.dot(other)
 
-        elif vector is not None:
-            self._matrix = get_orthogonal_basis(vector)
+#     @property
+#     def T(self) -> DirectionBase:
+#         # Transpose
+#         selfcopy = copy.deepcopy(self)
+#         selfcopy._matrix = selfcopy._matrix.T
+#         return selfcopy
 
-        elif direction_base is not None:
-            self._matrix = np.array(direction_base.null_matrix)
+#     @property
+#     def null_matrix(self) -> DirectionBase:
+#         return self._matrix
 
-        else:
-            raise ValueError("No input argument as a base of the space.")
+#     def dot(self, other: np.ndarray):
+#         # Dot product
+#         return self._matrix.dot(other)
 
-    def __getitem__(self, arg: int) -> np.ndarrary:
-        return self._matrix[:, arg]
+#     def invert_normal(self):
+#         """Invert the normal / first vector."""
+#         selfcopy = copy.deepcopy(self)
+#         selfcopy._matrix[:, 0] = (-1) * selfcopy._matrix[:, 0]
+#         return selfcopy
 
-    def __repr__(self):
-        # return f"DirectionBase({str(self._matrix)})"
-        return f"DirectionBase({np.array2string(self._matrix, separator=', ')})"
-
-    def __eq__(self, other: DirectionBase) -> bool:
-        return np.allclose(self.null_matrix, other.null_matrix)
-
-    def __ne__(self, other: DirectionBase) -> bool:
-        return not (self == other)
-
-    def __matmul__(self, other: np.ndarray):
-        return self.dot(other)
-
-    @property
-    def T(self) -> DirectionBase:
-        # Transpose
-        selfcopy = copy.deepcopy(self)
-        selfcopy._matrix = selfcopy._matrix.T
-        return selfcopy
-
-    @property
-    def null_matrix(self) -> DirectionBase:
-        return self._matrix
-
-    def dot(self, other: np.ndarray):
-        # Dot product
-        return self._matrix.dot(other)
-
-    def invert_normal(self):
-        """Invert the normal / first vector."""
-        selfcopy = copy.deepcopy(self)
-        selfcopy._matrix[:, 0] = (-1) * selfcopy._matrix[:, 0]
-        return selfcopy
-
-    # @null_matrix.setter
-    # def null_matrix(self, value):
-    # self._matrix = value
+#     # @null_matrix.setter
+#     # def null_matrix(self, value):
+#     # self._matrix = value

@@ -33,23 +33,18 @@ class OrthogonalBasisError(Exception):
     def __str__(self):
         return f"{self._message} -> Orthogonal basis matrix not defined."
 
-
 # @lru_cache(maxsize=10)
 # TODO: expand cache for this [numpy-arrays]
 # TODO: OR make cython
 def get_orthogonal_basis(vector: np.ndarray, normalize: bool = True) -> np.ndarray:
     """Get Orthonormal basis matrxi for an dimensional input vector."""
     # warnings.warn("Basis implementation is not continuous.") (?! problem?)
-    if normalize:
-        v_norm = np.linalg.norm(vector)
-        if v_norm:
-            vector = vector / v_norm
-        else:
-            raise OrthogonalBasisError("vector_norm=0")
+    v_norm = np.linalg.norm(vector)
+    vector = vector / v_norm
 
     dim = vector.shape[0]
     if dim <= 1:
-        raise OrthogonalBasisError(f"dimension={dim}")
+        return vector.reshape((dim, dim))
 
     basis_matrix = np.zeros((dim, dim))
 
@@ -74,7 +69,7 @@ def get_orthogonal_basis(vector: np.ndarray, normalize: bool = True) -> np.ndarr
             basis_matrix[:, 2] = basis_matrix[:, 2] / norm_vec
 
     elif dim > 3:
-        # TODO: ensure smoothness for general basis for d>3 (?!?)
+        # TODO: ensure smoothness for general basis for d > 3 (?!?)
         # if True:
         basis_matrix[:, 0] = vector
         if vector[0]:  # nonzero value

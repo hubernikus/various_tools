@@ -3,7 +3,8 @@ The 'direction_space' module allows representing code as part of the direction s
 """
 # Various Dynamical Systems
 from .unit_direction import get_angle_from_vector, get_vector_from_angle
-from .unit_direction import UnitDirection, DirectionBase
+from .unit_direction import UnitDirection
+# from .unit_direction import DirectionBase
 
 from .directional_space import get_angle_space
 from .directional_space import get_angle_space_inverse
@@ -18,7 +19,7 @@ __all__ = [
     "get_angle_from_vector",
     "get_vector_from_angle",
     "UnitDirection",
-    "DirectionBase",
+    # "DirectionBase",
     "get_angle_space",
     "get_angle_space_inverse",
     "get_directional_weighted_sum",

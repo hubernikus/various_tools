@@ -20,8 +20,9 @@ import numpy as np
 from vartools.linalg import get_orthogonal_basis
 
 # from vartools.directional_space import get_vector_from_angle
-from .unit_direction import get_vector_from_angle
-from .unit_direction import UnitDirection, DirectionBase
+# from .unit_direction import get_vector_from_angle
+from .unit_direction import UnitDirection
+# from .unit_direction import DirectionBase
 
 # from vartools.directional_space import
 # from vartools.dynamical_systems import DynamicalSystem
@@ -161,7 +162,7 @@ def get_angle_space_inverse(
 
 
 def get_directional_weighted_sum_from_unit_directions(
-    base: DirectionBase, weights: np.ndarray, unit_directions: List[UnitDirection]
+    base: np.ndarray, weights: np.ndarray, unit_directions: List[UnitDirection]
 ):
     """Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
 
@@ -255,7 +256,7 @@ def get_directional_weighted_sum(
 
     dim = np.array(null_direction).shape[0]
 
-    base = DirectionBase(vector=null_direction)
+    base = get_orthogonal_basis(vector=null_direction)
     if unit_directions is None:
         unit_directions = [
             UnitDirection(base).from_vector(directions[:, ii])

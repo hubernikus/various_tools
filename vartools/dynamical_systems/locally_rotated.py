@@ -133,8 +133,8 @@ class LocallyRotated(DynamicalSystem):
             weight_rot = 1 - (weight_rot / self.influence_descent_factor)
 
         # Evalaute center weight [inverse of 1]
-        rel_pos = self.get_relative_position_to_attractor(position)
-        dist_center = np.linalg.norm(rel_pos)
+        # rel_pos = self.get_relative_position_to_attractor(position)
+        dist_center = np.linalg.norm(position)
 
         if dist_center <= 0:
             # dist_center = infinity -> give normalization
@@ -151,11 +151,9 @@ class LocallyRotated(DynamicalSystem):
         vec_attr_pose = (-1) * self.get_relative_position_to_attractor(
             self.influence_pose.position
         )
-
         dot_prod = np.dot(vec_attr_pose, position) / (
             LA.norm(vec_attr_pose) * LA.norm(position)
         )
-
         if dot_prod > 0:
             # in [0, 1]
             weight_rot = weight_rot * (1 - dot_prod)
