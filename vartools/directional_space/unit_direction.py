@@ -135,13 +135,10 @@ def get_vector_from_angle(
     """
     norm_angle = LA.norm(angle)
     if norm_angle:
-        # vector = base.null_matrix.dot(
         vector = base.dot(
-            # vector = base.T.dot(
             np.hstack((np.cos(norm_angle), np.sin(norm_angle) * angle / norm_angle))
         )
     else:
-        # vector = base.null_matrix[:, 0]
         vector = base[:, 0]
     return vector
 
@@ -278,6 +275,7 @@ class UnitDirection(object):
         null_matrix = self.null_matrix
         
         if not LA.norm(new_base_angle):
+            # Same base vector -> no transformation needed
             return copy.deepcopy(self)
 
         if not (LA.norm(new_base_angle) - np.pi) % (2*np.pi):
@@ -287,10 +285,12 @@ class UnitDirection(object):
         directional_basis = get_orthogonal_basis(new_base_angle)
 
         new_null_matrix = np.zeros((self.dimension, self.dimension))
-        new_null_matrix[:, 0] = get_vector_from_angle(new_base_angle, null_matrix)
-        for ii in range(1, dimension-1):
+        new_null_matrix[:, 0] = get_vector_from_angle(
+            angle=new_base_angle, base=null_matrix,
+        )
+        for ii in range(1, self.dimension - 1):
             new_null_matrix[:, ii] = get_vector_from_angle(
-                np.pi*new_base_angle, null_matrix
+                np.pi*directional_basis[ii, :], null_matrix
             )
 
         # Get last tangent
@@ -298,13 +298,13 @@ class UnitDirection(object):
         # proj_newbase_vector = new_null_matrix[:, 0] * dot_prod * np.copysign(1, dot_prod)
         proj_base_vector = new_null_matrix[:, 0] * np.abs(dot_prod)
         tangent = null_matrix[:, 0]*np.copysign(1, dot_prod) - proj_base_vector
-        new_null_matrix[:, -1] = tang / LA.norm(tang)
+        new_null_matrix[:, -1] = tangent / LA.norm(tangent)
 
         # Rebase the angle to new angle-space
-        new_angle = self.as_angle() - new_base_angle
+        new_angle = new_base_angle - self.as_angle()
         new_angle = directional_basis.T @ new_angle
 
-        return new_null_matrix, new_angle
+        return UnitDirection(new_null_matrix).from_angle(new_angle)
     
     def project_onto_sphere(
         self, reference_vector: UnitDirection, radius=pi / 2

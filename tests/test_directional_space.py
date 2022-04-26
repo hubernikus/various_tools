@@ -425,7 +425,6 @@ class TestDirectionalSpace(unittest.TestCase):
 
         plt.ion()
         plt.show()
-        # breakpoint()
 
     def visualization_direction_space(self):
         null_matrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -507,26 +506,33 @@ class TestDirectionalSpace(unittest.TestCase):
 
         plt.ion()
         plt.show()
-        # breakpoint()
 
     # def test_directional_convergence_forcing(self):
     # """ Based on Reference direction & normal decomposition force the convergence. """
 
 
-def test_base_transform():
+def test_base_transform_2d():
+    """ Transform initial vector. """
+    # Test for two dimensions
     base = get_orthogonal_basis(np.array([1, 0]))
-    dir0 = UnitDirection(base).from_angle([np.pi / 4])
+    dir_0 = UnitDirection(base).from_angle([np.pi / 4])
+    
+    dir_new = dir_0._get_new_directional_base(
+        new_base_angle=np.array([-np.pi/4])
+    )
 
-    # new_hull_matrix = dir0._get_new_directional_base(new_base_angle=[-np.pi/4])
-    # breakpoint()
+    assert np.allclose(dir_0.as_vector(), dir_new.as_vector())
+
+
+    
 
 
 if (__name__) == "__main__":
-    Tester = TestDirectionalSpace()
+    # Tester = TestDirectionalSpace()
     # Tester.test_special_angle_displacement()
-    Tester.test_check_bijection()
+    # Tester.test_check_bijection()
 
-    # test_base_transform()
+    test_base_transform()
 
     # test_base_transform()
     # unittest.main(argv=["first-arg-is-ignored"], exit=False)
