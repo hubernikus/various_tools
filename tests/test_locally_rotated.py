@@ -11,6 +11,7 @@ from numpy import linalg as LA
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
+
 # from matplotlib.colors import LinearSegmentedColormap
 
 from vartools.states import ObjectPose
@@ -122,15 +123,12 @@ def test_weight_close_point(visualize=False):
     if visualize:
         x_lim = [-20, 20]
         y_lim = [-20, 20]
-        
-        fig, ax = visualize_weight(
-            dynamical_system,
-            n_resolution=100,
-            x_lim=x_lim, y_lim=y_lim,
-            )
 
-        my_plotter = VectorfieldPlotter(
-            fig=fig, ax=ax, x_lim=x_lim, y_lim=y_lim)
+        fig, ax = visualize_weight(
+            dynamical_system, n_resolution=100, x_lim=x_lim, y_lim=y_lim
+        )
+
+        my_plotter = VectorfieldPlotter(fig=fig, ax=ax, x_lim=x_lim, y_lim=y_lim)
 
         my_plotter.vector_color = "black"
         my_plotter.plot(dynamical_system.evaluate, n_resolution=20)
@@ -191,9 +189,12 @@ def plot_critical_ds():
 
 def visualize_weight(
     dynamical_system=None,
-    x_lim=[-10, 10], y_lim=[-10, 10], dim=2,
+    x_lim=[-10, 10],
+    y_lim=[-10, 10],
+    dim=2,
     n_resolution=100,
-    fig=None, ax=None,
+    fig=None,
+    ax=None,
 ):
     if dynamical_system is None:
         dynamical_system = LocallyRotated(
@@ -220,13 +221,13 @@ def visualize_weight(
     n_split = 128
     # newcolors = cm.get_cmap('Reds_r', n_split)
     # newcolors = cm.get_cmap('YlOrBr', n_split)
-    newcolors = cm.get_cmap('Oranges', n_split)
+    newcolors = cm.get_cmap("Oranges", n_split)
     # bottom = cm.get_cmap('rBlues', 128)
     newcolors = newcolors(np.linspace(0, 0.6, n_split))
 
     # newcolors = np.vstack((top(np.linspace(0, 1, 128)),
-                           # bottom(np.linspace(0, 1, 128))))
-    newcmp = ListedColormap(newcolors, name='OrangeBlue')
+    # bottom(np.linspace(0, 1, 128))))
+    newcmp = ListedColormap(newcolors, name="OrangeBlue")
 
     cs = plt.contourf(
         positions[0, :, :],
@@ -256,9 +257,7 @@ def visualize_weight(
     )
 
     ax.axis("equal")
-    fig.colorbar(
-        cs, ticks=np.linspace(0, 1, 11)
-    )
+    fig.colorbar(cs, ticks=np.linspace(0, 1, 11))
 
     return fig, ax
 

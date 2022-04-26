@@ -95,7 +95,7 @@ class TestDirectionalSpace(unittest.TestCase):
     #     # Done
 
     def test_repetitive_nonnorm_influence(self):
-        base =  np.eye(3)
+        base = np.eye(3)
 
         dir1 = UnitDirection(base).from_angle(np.array([1.88495559, 1.25663706]))
         dir2 = UnitDirection(base).from_angle(np.array([-5.02654825, -4.39822972]))
@@ -267,16 +267,13 @@ class TestDirectionalSpace(unittest.TestCase):
 
     def test_check_bijection(self):
         from scipy.spatial.transform import Rotation
-        base = np.array(
-            [[ 0., -1.,  0.],
-             [ 1.,  0.,  0.],
-             [ 0.,  0.,  1.]]
-        )
-        initial_vector = np.array([0., 1., 0.])
-        
+
+        base = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+        initial_vector = np.array([0.0, 1.0, 0.0])
+
         angle = get_angle_from_vector(initial_vector, base)
         reconst_vector = get_vector_from_angle(angle, base)
-        
+
         self.assertTrue(np.allclose(initial_vector, reconst_vector))
 
     def test_check_bijection_rebasing(self):
@@ -518,11 +515,11 @@ class TestDirectionalSpace(unittest.TestCase):
 
 def test_base_transform():
     base = get_orthogonal_basis(np.array([1, 0]))
-    dir0 = UnitDirection(base).from_angle([np.pi/4])
+    dir0 = UnitDirection(base).from_angle([np.pi / 4])
 
     # new_hull_matrix = dir0._get_new_directional_base(new_base_angle=[-np.pi/4])
     # breakpoint()
-    
+
 
 if (__name__) == "__main__":
     Tester = TestDirectionalSpace()
@@ -530,34 +527,31 @@ if (__name__) == "__main__":
     Tester.test_check_bijection()
 
     # test_base_transform()
-    
+
     # test_base_transform()
     # unittest.main(argv=["first-arg-is-ignored"], exit=False)
 
     # user_test = False
     # if user_test:
-        # Tester = TestDirectionalSpace()
-        # Tester.test_base_transform_same_normal()
-        # Tester.test_special_angle_displacement()
+    # Tester = TestDirectionalSpace()
+    # Tester.test_base_transform_same_normal()
+    # Tester.test_special_angle_displacement()
 
-        # Tester.test_repetitive_nonnorm_influence()
-        # Tester.test_base_transform()
+    # Tester.test_repetitive_nonnorm_influence()
+    # Tester.test_base_transform()
 
-    
-        # Tester.visualization_direction_space()
-        # Tester.test_90_degree_rotation(visualize=False)
+    # Tester.visualization_direction_space()
+    # Tester.test_90_degree_rotation(visualize=False)
 
-        # Tester.test_check_bijection()
-        # Tester.test_check_bijection_rebasing()
-        # Tester.test_inversion_and_bijectiveness_3d()
+    # Tester.test_check_bijection()
+    # Tester.test_check_bijection_rebasing()
+    # Tester.test_inversion_and_bijectiveness_3d()
 
-        # Tester.test_comparison_operator_direction_base()
-        # Tester.test_mult_operators()
-        # Tester.test_comparison_operator_direction_base()
+    # Tester.test_comparison_operator_direction_base()
+    # Tester.test_mult_operators()
+    # Tester.test_comparison_operator_direction_base()
 
-        # Tester.test_inversion_examples()
+    # Tester.test_inversion_examples()
 
-        # Tester.test_angle_space_distance()
+    # Tester.test_angle_space_distance()
     # print("Done")
-
-    
