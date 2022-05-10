@@ -249,7 +249,7 @@ def visualize_weight(
     else:
         attractor = dynamical_system.attractor_position
 
-    ax.plot(attractor[0], attractor[1], "k*")
+    ax.plot(attractor[0], attractor[1], "k*", markersize=14)
     ax.plot(
         dynamical_system.influence_pose.position[0],
         dynamical_system.influence_pose.position[1],
@@ -263,6 +263,7 @@ def visualize_weight(
 
 
 if (__name__) == "__main__":
+    plt.ion()
     plt.close("all")
     # test_initialize_zero_max_rotation(visualize=False)
     # test_pi_half_rotation(visualize=False)

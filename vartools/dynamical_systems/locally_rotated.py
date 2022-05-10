@@ -45,8 +45,6 @@ class LocallyRotated(DynamicalSystem):
         *args,
         **kargs,
     ):
-        # TODO: change 'Obstacle' to general 'State' (or similar) & make
-        # 'Obstacle' a subclass of the former
         self.max_rotation = np.array(max_rotation)
         self.dimension = self.max_rotation.shape[0] + 1
 
@@ -64,15 +62,21 @@ class LocallyRotated(DynamicalSystem):
 
         # Additional influence for center such that stirctly smallre than pi/2
         self.attractor_influence_radius = attractor_influence_radius
-        # self.delta_influence_center = delta_influence_center
         self.influence_descent_factor = influence_descent_factor
+        
+    @property
+    def influence_pose(self) -> ObjectPose:
+        return self._influence_pose
+    
+    @influence_pose.setter
+    def influence_pose(self, value: ObjectPose):
+        """ Ensure that the influence pose differs from the local center"""
+        # TODO: special pose which can be placed at the center while ensuring stability
+        if not LA.norm(value.position):
+            raise ValueError("Influence pose cannot be placed at the center.")
+        self._influence_pose = value
 
-    # def from_ellipse(self, ellipse: Ellipse) -> LocallyRotated:
-    # self.influence_pose = ellipse.pose
-    # self.influence_axes_length = ellipse.axes_length
-    # return self
-
-    def get_scaled_dist_to_ellipse(self, position):
+    def _get_scaled_distance(self, position):
         """Transform to ellipse frame"""
         if self.influence_pose is not None:
             position = self.influence_pose.transform_position_from_reference_to_local(
@@ -97,7 +101,8 @@ class LocallyRotated(DynamicalSystem):
 
             # TODO: why (-1) ?! change?
             velocity = get_angle_space_inverse(
-                dir_angle_space=(-1) * rot_final, null_direction=(-1) * rel_position
+                dir_angle_space=(-1) * rot_final,
+                null_direction=(-1) * rel_position
             )
             
         else:
@@ -109,16 +114,11 @@ class LocallyRotated(DynamicalSystem):
 
         return velocity
 
-    def get_weight(self, position: np.ndarray) -> float:
-        """Get weight of local rotation. Decreasign weight -> less rotated DS.
-        Based on RELATIVE position."""
-        # position = np.array(position)
-        # position = self.pose.transform_position_from_reference_to_local(position)
-
-        # Direction towards 'attractor' (at origin)
-        scaled_dist_ellipse = self.get_scaled_dist_to_ellipse(position)
-        # pose.transform_direction_from_reference_to_local(dir_rot)
-
+    def _get_weight(self, position: np.ndarray) -> float:
+        """Returns weight of local rotation based on RELATIVE to the ObjectPose position.
+        Decreasing weight -> less rotated DS. """
+        scaled_dist_ellipse = self._get_scaled_distance(position)
+        
         if scaled_dist_ellipse >= 1 + self.influence_descent_factor:
             # No influence far-away
             return 0
@@ -159,7 +159,7 @@ class LocallyRotated(DynamicalSystem):
             weight_rot = weight_rot * (1 - dot_prod)
 
         return weight_rot
-    
+
 
 class MultiLocalRotation(DynamicalSystem):
     """ A collection of locally rotated DS"""
@@ -167,6 +167,7 @@ class MultiLocalRotation(DynamicalSystem):
         self._dynamicsal_systems = []
 
     def evaluate(self):
+        self._dynamicsal_systems
         pass
 
     @property
@@ -178,3 +179,5 @@ class MultiLocalRotation(DynamicalSystem):
 
     def delete(self, it):
         del self._dynamics_list[it]
+
+    # def 

@@ -269,9 +269,8 @@ class UnitDirection(object):
 
         return UnitDirection(base=new_base).from_angle(new_angle)
 
-    def _get_new_directional_base(self, new_base_angle):
+    def _get_unitdirection_relative_to_angle(self, new_base_angle):
         """ Evaluate  a new 'basis' that allows rotational transferring."""
-        # DO tests (!)
         null_matrix = self.null_matrix
         
         if not LA.norm(new_base_angle):
@@ -288,14 +287,14 @@ class UnitDirection(object):
         new_null_matrix[:, 0] = get_vector_from_angle(
             angle=new_base_angle, base=null_matrix,
         )
+        # Get the directions of the tangents
         for ii in range(1, self.dimension - 1):
             new_null_matrix[:, ii] = get_vector_from_angle(
-                np.pi*directional_basis[ii, :], null_matrix
+                np.pi*0.5*directional_basis[ii, :], null_matrix
             )
-
+            
         # Get last tangent
         dot_prod = np.dot(new_null_matrix[:, 0], null_matrix[:, 0])
-        # proj_newbase_vector = new_null_matrix[:, 0] * dot_prod * np.copysign(1, dot_prod)
         proj_base_vector = new_null_matrix[:, 0] * np.abs(dot_prod)
         tangent = null_matrix[:, 0]*np.copysign(1, dot_prod) - proj_base_vector
         new_null_matrix[:, -1] = tangent / LA.norm(tangent)
@@ -310,8 +309,6 @@ class UnitDirection(object):
         self, reference_vector: UnitDirection, radius=pi / 2
     ) -> UnitDirection:
         """Project onto sphere"""
-        if self.base != other.base:
-            raise NonEqualBaseError()
         raise NotImplementedError()
 
     def get_shortest_angle(self, other):
