@@ -11,7 +11,7 @@ import numpy as np
 from pynput import mouse
 
 
-class MouseDataRecorder():
+class MouseDataRecorder:
     def __init__(self, filename=None, sampling_time=0.01):
         self.sampling_time = sampling_time
         
@@ -40,10 +40,6 @@ class MouseDataRecorder():
 
     def on_click(self, x, y, button, pressed):
         """ Start stop recording toggle. """
-        print("pressed", pressed)
-        if not pressed:
-            # Only activate on press
-            return True
             
         logging.info("Click event detected.")
         self.simulation_stopped = not(self.simulation_stopped)
