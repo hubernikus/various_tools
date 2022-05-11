@@ -131,3 +131,6 @@ dmypy.json
 # Save-files
 *.save
 *.save.1
+
+# Don't store data files
+*.csv
