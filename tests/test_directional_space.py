@@ -512,42 +512,43 @@ class TestDirectionalSpace(unittest.TestCase):
 
 
 def test_base_transform_2d():
-    """ Transform initial vector. """
+    """Transform initial vector."""
     # Test for two dimensions
     base = get_orthogonal_basis(np.array([1, 0]))
     dir_0 = UnitDirection(base).from_angle([np.pi / 4])
-    
+
     dir_new = dir_0._get_unitdirection_relative_to_angle(
-        new_base_angle=np.array([-np.pi/4])
+        new_base_angle=np.array([-np.pi / 4])
     )
 
     assert np.allclose(dir_0.as_vector(), dir_new.as_vector())
-    assert LA.matrix_rank(dir_new.null_matrix) == len(base), \
-      "Matrix does not have full rank."
+    assert LA.matrix_rank(dir_new.null_matrix) == len(
+        base
+    ), "Matrix does not have full rank."
 
     # No Trafo -> same vector
     base = get_orthogonal_basis(np.array([1, 0]))
     dir_0 = UnitDirection(base).from_angle([np.pi / 4])
-    
-    dir_new = dir_0._get_unitdirection_relative_to_angle(
-        new_base_angle=np.array([0])
-    )
+
+    dir_new = dir_0._get_unitdirection_relative_to_angle(new_base_angle=np.array([0]))
 
     assert np.allclose(dir_0.as_vector(), dir_new.as_vector())
     assert np.allclose(LA.norm(dir_0.as_angle()), LA.norm(dir_new.as_angle()))
-    assert LA.matrix_rank(dir_new.null_matrix) == len(base), \
-      "Matrix does not have full rank."
+    assert LA.matrix_rank(dir_new.null_matrix) == len(
+        base
+    ), "Matrix does not have full rank."
 
     # Same Direction
     base = get_orthogonal_basis(np.array([1, 0]))
     dir_0 = UnitDirection(base).from_angle([np.pi / 2])
-    
+
     dir_new = dir_0._get_unitdirection_relative_to_angle(
         new_base_angle=np.array([np.pi / 4])
     )
     assert np.allclose(dir_0.as_vector(), dir_new.as_vector())
-    assert LA.matrix_rank(dir_new.null_matrix) == len(base), \
-      "Matrix does not have full rank."
+    assert LA.matrix_rank(dir_new.null_matrix) == len(
+        base
+    ), "Matrix does not have full rank."
 
 
 def test_base_transform_3d():
@@ -556,14 +557,13 @@ def test_base_transform_3d():
     dir_0 = UnitDirection(base).from_vector(np.array([0, 1, 0]))
 
     angle = dir_0.as_angle()
-    angle = np.array([(-1)*angle[1], angle[0]])
-    
-    dir_new = dir_0._get_unitdirection_relative_to_angle(
-        new_base_angle=angle
-    )
+    angle = np.array([(-1) * angle[1], angle[0]])
 
-    assert LA.matrix_rank(dir_new.null_matrix) == len(base), \
-      "Matrix does not have full rank."
+    dir_new = dir_0._get_unitdirection_relative_to_angle(new_base_angle=angle)
+
+    assert LA.matrix_rank(dir_new.null_matrix) == len(
+        base
+    ), "Matrix does not have full rank."
 
     # Test random
     print("Closer to home")
@@ -571,30 +571,28 @@ def test_base_transform_3d():
     dir_0 = UnitDirection(base).from_vector(np.array([0.6, 0.3, 0]))
 
     angle = dir_0.as_angle()
-    angle = np.array([(-1)*angle[1], angle[0]])
-    
-    dir_new = dir_0._get_unitdirection_relative_to_angle(
-        new_base_angle=angle
-    )
-    
-    assert LA.matrix_rank(dir_new.null_matrix) == len(base), \
-      "Matrix does not have full rank."
-    breakpoint()
+    angle = np.array([(-1) * angle[1], angle[0]])
 
+    dir_new = dir_0._get_unitdirection_relative_to_angle(new_base_angle=angle)
+
+    assert LA.matrix_rank(dir_new.null_matrix) == len(
+        base
+    ), "Matrix does not have full rank."
+    # breakpoint()
 
     # Test opposite direction
     base = get_orthogonal_basis(np.array([1, 0, 0]))
     dir_0 = UnitDirection(base).from_vector(np.array([0, 1, 0]))
 
     dir_new = dir_0._get_unitdirection_relative_to_angle(
-        new_base_angle=(-1)*dir_0.as_angle()
+        new_base_angle=(-1) * dir_0.as_angle()
     )
 
     assert np.allclose(dir_0.as_vector(), dir_new.as_vector())
-    assert LA.matrix_rank(dir_new.null_matrix) == len(base), \
-      "Matrix does not have full rank."
+    assert LA.matrix_rank(dir_new.null_matrix) == len(
+        base
+    ), "Matrix does not have full rank."
 
-    
 
 if (__name__) == "__main__":
     # Tester = TestDirectionalSpace()

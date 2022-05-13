@@ -63,14 +63,14 @@ class LocallyRotated(DynamicalSystem):
         # Additional influence for center such that stirctly smallre than pi/2
         self.attractor_influence_radius = attractor_influence_radius
         self.influence_descent_factor = influence_descent_factor
-        
+
     @property
     def influence_pose(self) -> ObjectPose:
         return self._influence_pose
-    
+
     @influence_pose.setter
     def influence_pose(self, value: ObjectPose):
-        """ Ensure that the influence pose differs from the local center"""
+        """Ensure that the influence pose differs from the local center"""
         # TODO: special pose which can be placed at the center while ensuring stability
         if not LA.norm(value.position):
             raise ValueError("Influence pose cannot be placed at the center.")
@@ -93,7 +93,7 @@ class LocallyRotated(DynamicalSystem):
         if not mag_pos:  # Zero velocity
             return np.zeros(position.shape)
 
-        weight_rot = self.get_weight(position)
+        weight_rot = self._get_weight(position)
 
         if weight_rot > 0:
             # Angle space is not defined opposite (where weight is zero)
@@ -101,10 +101,9 @@ class LocallyRotated(DynamicalSystem):
 
             # TODO: why (-1) ?! change?
             velocity = get_angle_space_inverse(
-                dir_angle_space=(-1) * rot_final,
-                null_direction=(-1) * rel_position
+                dir_angle_space=(-1) * rot_final, null_direction=(-1) * rel_position
             )
-            
+
         else:
             velocity = (-1) * rel_position
 
@@ -116,9 +115,9 @@ class LocallyRotated(DynamicalSystem):
 
     def _get_weight(self, position: np.ndarray) -> float:
         """Returns weight of local rotation based on RELATIVE to the ObjectPose position.
-        Decreasing weight -> less rotated DS. """
+        Decreasing weight -> less rotated DS."""
         scaled_dist_ellipse = self._get_scaled_distance(position)
-        
+
         if scaled_dist_ellipse >= 1 + self.influence_descent_factor:
             # No influence far-away
             return 0
@@ -162,7 +161,8 @@ class LocallyRotated(DynamicalSystem):
 
 
 class MultiLocalRotation(DynamicalSystem):
-    """ A collection of locally rotated DS"""
+    """A collection of locally rotated DS"""
+
     def __init__(self, _dynamicsal_systems, *args, **kwargs):
         self._dynamicsal_systems = []
 
@@ -180,4 +180,4 @@ class MultiLocalRotation(DynamicalSystem):
     def delete(self, it):
         del self._dynamics_list[it]
 
-    # def 
+    # def
