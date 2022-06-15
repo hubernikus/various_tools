@@ -578,7 +578,6 @@ def test_base_transform_3d():
     assert LA.matrix_rank(dir_new.null_matrix) == len(
         base
     ), "Matrix does not have full rank."
-    breakpoint()
 
     # Test opposite direction
     base = get_orthogonal_basis(np.array([1, 0, 0]))

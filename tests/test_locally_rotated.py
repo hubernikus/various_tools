@@ -81,15 +81,15 @@ def test_weight_far_away(visualize=False):
         visualize_weight(dynamical_system)
 
     position = np.array([0, 0])
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 0)
 
     position = np.array([0, 1e-5])
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 0)
 
     position = dynamical_system.influence_pose.position
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 1)
 
 
@@ -106,11 +106,11 @@ def test_ellipse_with_axes(visualize=False):
         visualize_weight(dynamical_system)
 
     position = np.array([0, 0])
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 0)
 
     position = dynamical_system.influence_pose.position
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 1)
 
 
@@ -134,20 +134,20 @@ def test_weight_close_point(visualize=False):
         my_plotter.plot(dynamical_system.evaluate, n_resolution=20)
 
     position = np.array([0, 0])
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 0)
 
     position = np.array([0, 1e-8])
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 0)
 
     position = dynamical_system.influence_pose.position
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 1)
 
     # Zero effect 'behind' attractor
     position = np.array([-0.1, -0.1])
-    weight = dynamical_system.get_weight(position=position)
+    weight = dynamical_system._get_weight(position=position)
     assert np.isclose(weight, 0)
 
 
@@ -216,7 +216,7 @@ def visualize_weight(
         for iy in range(n_resolution):
             positions[:, ix, iy] = [x_vals[ix], y_vals[iy]]
 
-            gamma_values[ix, iy] = dynamical_system.get_weight(positions[:, ix, iy])
+            gamma_values[ix, iy] = dynamical_system._get_weight(positions[:, ix, iy])
 
     n_split = 128
     # newcolors = cm.get_cmap('Reds_r', n_split)

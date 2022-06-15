@@ -2,3 +2,5 @@
 pytest
 pre-commit
 mypy
+
+lark

@@ -93,7 +93,7 @@ class LocallyRotated(DynamicalSystem):
         if not mag_pos:  # Zero velocity
             return np.zeros(position.shape)
 
-        weight_rot = self.get_weight(position)
+        weight_rot = self._get_weight(position)
 
         if weight_rot > 0:
             # Angle space is not defined opposite (where weight is zero)
