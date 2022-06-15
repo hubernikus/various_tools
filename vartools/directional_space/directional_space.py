@@ -22,6 +22,7 @@ from vartools.linalg import get_orthogonal_basis
 # from vartools.directional_space import get_vector_from_angle
 # from .unit_direction import get_vector_from_angle
 from .unit_direction import UnitDirection
+
 # from .unit_direction import DirectionBase
 
 # from vartools.directional_space import

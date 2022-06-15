@@ -143,7 +143,11 @@ class ObjectPose:
             # Not implemented
             self.angular = position + twist.agnular * delta_time
 
-    def transform_position_from_reference_to_local(
+    def transform_position_from_reference_to_local(self, *args, **kwargs):
+        # TODO: is being renamed -> remove original]
+        return self.transform_position_from_local_to_global(*args, **kwargs)
+
+    def transform_position_from_local_to_global(
         self, position: np.ndarray
     ) -> np.ndarray:
         """Transform a position from the global frame of reference

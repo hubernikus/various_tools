@@ -41,7 +41,6 @@ class InversionError(UnitDirectionError):
         )
 
 
-
 class ZeroVectorError(Exception):
     def __str__(self):
         return f"Zero vector is passed. No angle-space transformation possible."
@@ -71,7 +70,7 @@ def get_angle_from_vector(
     direction: np.ndarray,
     # base: DirectionBase,
     base: np.ndarray,
-    cos_margin: float = 1e-8
+    cos_margin: float = 1e-8,
 ) -> np.ndarray:
     """
     Returns a angle evalauted from the direciton & null_matrix
@@ -120,7 +119,7 @@ def get_vector_from_angle(
     angle: np.ndarray,
     base: np.ndarray
     # base: DirectionBase
-    ) -> np.ndarray:
+) -> np.ndarray:
     """
     Returns a unit vector transformed back from the angle/direction-space.
 
@@ -214,9 +213,8 @@ class UnitDirection(object):
         return f"UnitDirection({str(self.as_angle())}) \n" f"{str(self.base)}"
 
     def __eq__(self, other: UnitDirection) -> float:
-        return (
-            np.allclose(self.base, other.base)
-            and np.allclose(self.as_angle(), other.as_angle())
+        return np.allclose(self.base, other.base) and np.allclose(
+            self.as_angle(), other.as_angle()
         )
 
     def __neq__(self, other: UnitDirection) -> float:
@@ -244,7 +242,7 @@ class UnitDirection(object):
 
     # def __rdiv__(self, other: float) -> UnitDirection:
     #     return self * other
-    
+
     def norm(self) -> float:
         """Return norm of angle."""
         return LA.norm(self.as_angle())
@@ -265,19 +263,19 @@ class UnitDirection(object):
         else:
             new_angle = self.as_angle() / angle_norm * (pi - angle_norm)
 
-        new_base = (-1)*self.base
+        new_base = (-1) * self.base
 
         return UnitDirection(base=new_base).from_angle(new_angle)
 
     def _get_unitdirection_relative_to_angle(self, new_base_angle):
-        """ Evaluate  a new 'basis' that allows rotational transferring."""
+        """Evaluate  a new 'basis' that allows rotational transferring."""
         null_matrix = self.null_matrix
-        
+
         if not LA.norm(new_base_angle):
             # Same base vector -> no transformation needed
             return copy.deepcopy(self)
 
-        if not (LA.norm(new_base_angle) - np.pi) % (2*np.pi):
+        if not (LA.norm(new_base_angle) - np.pi) % (2 * np.pi):
             raise ValueError("Normal transform is not defined for an angle of 'pi'.")
 
         # Create basis in the directional space (without base-vector)
@@ -285,18 +283,19 @@ class UnitDirection(object):
 
         new_null_matrix = np.zeros((self.dimension, self.dimension))
         new_null_matrix[:, 0] = get_vector_from_angle(
-            angle=new_base_angle, base=null_matrix,
+            angle=new_base_angle,
+            base=null_matrix,
         )
         # Get the directions of the tangents
         for ii in range(1, self.dimension - 1):
             new_null_matrix[:, ii] = get_vector_from_angle(
-                np.pi*0.5*directional_basis[ii, :], null_matrix
+                np.pi * 0.5 * directional_basis[ii, :], null_matrix
             )
-            
+
         # Get last tangent
         dot_prod = np.dot(new_null_matrix[:, 0], null_matrix[:, 0])
         proj_base_vector = new_null_matrix[:, 0] * np.abs(dot_prod)
-        tangent = null_matrix[:, 0]*np.copysign(1, dot_prod) - proj_base_vector
+        tangent = null_matrix[:, 0] * np.copysign(1, dot_prod) - proj_base_vector
         new_null_matrix[:, -1] = tangent / LA.norm(tangent)
 
         # Rebase the angle to new angle-space
@@ -304,7 +303,7 @@ class UnitDirection(object):
         new_angle = directional_basis.T @ new_angle
 
         return UnitDirection(new_null_matrix).from_angle(new_angle)
-    
+
     def project_onto_sphere(
         self, reference_vector: UnitDirection, radius=pi / 2
     ) -> UnitDirection:

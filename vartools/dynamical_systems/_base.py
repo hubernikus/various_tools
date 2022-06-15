@@ -112,7 +112,7 @@ class DynamicalSystem(ABC):
         return velocity_array
 
     def has_converged(self, position, convergence_margin=1e-1):
-        if not hasattr(self, 'attractor_position'):
+        if not hasattr(self, "attractor_position"):
             raise NotImplementedError("Convergence does not exist without attractor.")
         return LA.norm(position - self.attractor_position) < convergence_margin
 

@@ -60,7 +60,7 @@ class VectorfieldPlotter:
         # Integration Parameters
         self.it_max = 1000
         self.dt_step = 0.1
-        
+
         # Obstacle Plotting Parameters
         self.obstacle_color = np.array([176, 124, 124]) / 255.0
 
@@ -178,7 +178,7 @@ class VectorfieldPlotter:
                 color=self.vector_color,
                 zorder=self.vector_zorder,
             )
-            
+
         else:
             raise ValueError(f"Unknown plottype '{plottype}'.")
 
@@ -196,7 +196,7 @@ class VectorfieldPlotter:
     ):
         # traj_list = []
         for it_traj in range(positions.shape[1]):
-            trajetory = np.zeros((positions.shape[0], self.it_max+1))
+            trajetory = np.zeros((positions.shape[0], self.it_max + 1))
 
             trajetory[:, 0] = positions[:, it_traj]
             for it_step in range(self.it_max):
@@ -210,15 +210,15 @@ class VectorfieldPlotter:
                     # it_step -= 1
                     break
 
-                trajetory[:, it_step+1] = (
-                        trajetory[:, it_step]
-                        + self.dt_step * vector_functor(trajetory[:, it_step])
-                    )
+                trajetory[:, it_step + 1] = trajetory[
+                    :, it_step
+                ] + self.dt_step * vector_functor(trajetory[:, it_step])
 
             self.ax.plot(
-                trajetory[0, :it_step+1], trajetory[1, :it_step+1],
-                color=self.vector_color
-                )
+                trajetory[0, : it_step + 1],
+                trajetory[1, : it_step + 1],
+                color=self.vector_color,
+            )
             # traj_list.append(trajetory[:, :(it_step+1)])
 
         # Do a few things
@@ -367,7 +367,7 @@ class VectorfieldPlotter:
                 )
 
     def evaluate_system(self, levelfunctor, n_resolution=100, obstacle_list=None):
-        """ Adds a very generic colorplot -> for more advanced features update."""
+        """Adds a very generic colorplot -> for more advanced features update."""
         nx = n_resolution
         ny = n_resolution
         x_vals, y_vals = np.meshgrid(

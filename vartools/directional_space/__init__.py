@@ -4,6 +4,7 @@ The 'direction_space' module allows representing code as part of the direction s
 # Various Dynamical Systems
 from .unit_direction import get_angle_from_vector, get_vector_from_angle
 from .unit_direction import UnitDirection
+
 # from .unit_direction import DirectionBase
 
 from .directional_space import get_angle_space

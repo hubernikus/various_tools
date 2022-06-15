@@ -33,6 +33,7 @@ class OrthogonalBasisError(Exception):
     def __str__(self):
         return f"{self._message} -> Orthogonal basis matrix not defined."
 
+
 # @lru_cache(maxsize=10)
 # TODO: expand cache for this [numpy-arrays]
 # TODO: OR make cython

@@ -122,3 +122,45 @@ def get_scaled_orthogonal_projection(vector):
     return LA.norm(vector) * np.eye(vector.shape[0]) - vector.reshape(
         -1, 1
     ) @ vector.reshape(1, -1)
+
+
+def get_intersection_with_circle(
+    start_position: np.ndarray,
+    direction: np.ndarray,
+    radius: float,
+    only_positive: bool = True,
+) -> np.ndarray:
+    """Returns intersection with circle with center at 0
+    of of radius 'radius' and the line defined as 'start_position + x * direction'
+
+    If 'only_positive=True', then only intersection at furthest distance
+    to start_point is returned.
+    """
+    if not radius:  # Zero radius
+        return None
+
+    # Binomial Formula to solve for x in:
+    # || dir_reference + x * (delta_dir_conv) || = radius
+    AA = np.sum(direction**2)
+    BB = 2 * np.dot(direction, start_position)
+    CC = np.sum(start_position**2) - radius**2
+    DD = BB**2 - 4 * AA * CC
+
+    if DD < 0:
+        # No intersection with circle
+        return None
+
+    if only_positive:
+        # Only negative direction due to expected negative A (?!) [returns max-direciton]..
+        fac_direction = (-BB + np.sqrt(DD)) / (2 * AA)
+        point = start_position + fac_direction * direction
+        return point
+
+    else:
+        factors = (-BB + np.array([-1, 1]) * np.sqrt(DD)) / (2 * AA)
+        points = (
+            np.tile(start_position, (2, 1)).T
+            + np.tile(factors, (start_position.shape[0], 1))
+            * np.tile(direction, (2, 1)).T
+        )
+        return points
