@@ -226,7 +226,7 @@ def get_directional_weighted_sum(
     total_weight: float = 1,
     normalize: bool = True,
     normalize_reference: bool = True,
-):
+) -> np.ndarray:
     """Weighted directional mean for inputs vector ]-pi, pi[ with respect to the null_direction
 
     Parameters

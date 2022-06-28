@@ -168,17 +168,43 @@ class UnitDirection(object):
         unit_direction = UnitDirection [base is copied]
         """
         if base is not None:
-            self.base = base
+            if len(base.shape) == 1:
+                # Vector needs to be transformed into base
+                self.base = get_orthogonal_basis(base)
+            else:
+                self.base = base
 
         elif unit_direction is not None:
             # self.base = copy.deepcopy(self.unit_direction.base)
             self.base = self.unit_direction.base
-
+            # TODO: depreciated
         else:
             raise ValueError("No direction argument is given.")
 
         self._angle = None
         self._vector = None
+
+    @staticmethod
+    def from_unit_direction(cls, unit_direction: UnitDirection) -> None:
+        self = cls(base=unit_direction.base).from_angle(unit_direction.angle)
+        return self
+
+    def from_angle(self, value: (np.ndarray, list)) -> np.ndarray:
+        """Update angle and reset 'equivalent' vector."""
+        self._angle = np.array(value)
+        self._vector = None
+        return self
+
+    def from_vector(self, value: (np.ndarray, list)) -> None:
+        """Update (and normalize) vector and reset angle."""
+        value = np.array(value)
+        value_norm = LA.norm(value)
+        if not value_norm:  # zero value
+            raise ZeroVectorError()
+
+        self._vector = value / value_norm
+        self._angle = None
+        return self
 
     @property
     def dimension(self) -> int:
@@ -313,23 +339,6 @@ class UnitDirection(object):
     def get_shortest_angle(self, other):
         """Get shortesst angle distance between points."""
         pass
-
-    def from_angle(self, value: (np.ndarray, list)) -> np.ndarray:
-        """Update angle and reset 'equivalent' vector."""
-        self._angle = np.array(value)
-        self._vector = None
-        return self
-
-    def from_vector(self, value: (np.ndarray, list)) -> None:
-        """Update (and normalize) vector and reset angle."""
-        value = np.array(value)
-        value_norm = LA.norm(value)
-        if not value_norm:  # zero value
-            raise ZeroVectorError()
-
-        self._vector = value / value_norm
-        self._angle = None
-        return self
 
     def as_angle(self, cos_margin: float = 1e-5) -> np.ndarray:
         if self._angle is not None:
