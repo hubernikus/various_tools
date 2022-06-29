@@ -1,5 +1,6 @@
 # Requirement
 # python=3.9
+wheel
 numpy
 setuptools
 
@@ -8,4 +9,4 @@ ipython   # For testing pusposes only | remove later
 matplotlib    # For testing pusposes only | remove later
 scipy   # For testing pusposes only | remove later
 
-pynput
+# pynput # -> gives an error (?!)
