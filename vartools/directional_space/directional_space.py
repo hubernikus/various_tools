@@ -16,6 +16,7 @@ from typing import Callable
 from math import pi
 
 import numpy as np
+import numpy.linalg as LA
 
 from vartools.linalg import get_orthogonal_basis
 
@@ -242,7 +243,9 @@ def get_directional_weighted_sum(
     ------
     summed_velocity: The weighted sum transformed back to the initial space
     """
-    ind_nonzero = weights > 0  # non-negative
+    ind_nonzero = np.logical_and(
+        weights > 0, LA.norm(directions, axis=0)
+    )  # non-negative
 
     null_direction = np.copy(null_direction)
     directions = directions[:, ind_nonzero]
