@@ -145,11 +145,41 @@ class ObjectPose:
 
     def transform_position_from_reference_to_local(self, *args, **kwargs):
         # TODO: is being renamed -> remove original]
-        return self.transform_position_from_local_to_global(*args, **kwargs)
+        return self.transform_position_from_relative(*args, **kwargs)
 
-    def transform_position_from_local_to_global(
-        self, position: np.ndarray
-    ) -> np.ndarray:
+    def transform_pose_to_relative(self, pose: ObjectPose) -> ObjectPose:
+        pose.position = self.transform_position_to_relative(pose.position)
+
+        if self.orientation is None:
+            return pose
+
+        if pose.orientation is None:
+            pose.orientation = self.orientation
+            return pose
+
+        if self.dimension != 2:
+            raise NotImplementedError()
+
+        pose.orientation += self.orientation
+
+    def transform_pose_from_relative(self, pose: ObjectPose) -> ObjectPose:
+        pose.position = self.transform_position_from_relative(pose.position)
+
+        if self.orientation is None:
+            return pose
+
+        if pose.orientation is None:
+            pose.orientation = (-1) * self.orientation
+            return pose
+
+        if self.dimension != 2:
+            raise NotImplementedError()
+
+        pose.orientation -= self.orientation
+
+        return pose
+
+    def transform_position_from_relative(self, position: np.ndarray) -> np.ndarray:
         """Transform a position from the global frame of reference
         to the obstacle frame of reference"""
         if not self.position is None:
@@ -160,11 +190,14 @@ class ObjectPose:
     def transform_position_from_local_to_reference(
         self, position: np.ndarray
     ) -> np.ndarray:
+        return self.transform_position_to_relative(position)
+
+    def transform_position_to_relative(self, position: np.ndarray) -> np.ndarray:
         """Transform a position from the obstacle frame of reference
         to the global frame of reference"""
         position = self.apply_rotation_local_to_reference(direction=position)
 
-        if not self.position is None:
+        if self.position is not None:
             position = position + self.position
 
         return position
@@ -172,7 +205,7 @@ class ObjectPose:
     def transform_direction_from_reference_to_local(
         self, direction: np.ndarray
     ) -> np.ndarray:
-        """Transform a direction, velocity or relative position to the global-frame"""
+        """Transform a direction, velocity or relative position to the global-frame."""
         return self.apply_rotation_reference_to_local(direction)
 
     def apply_rotation_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
