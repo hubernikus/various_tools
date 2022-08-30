@@ -1,14 +1,13 @@
 """ Various tools to help / and speed up."""
+from .linalg import get_orthogonal_basis
+
 from typing import Callable
 
 import numpy as np
 from numpy import linalg as LA
+import numpy.typing as npt
 
-
-# def get_numerical_derivative(
-# value: float, function: Callable(float),
-# delta_magnitude: float = 1e-6) -> float:
-# return
+Vector = npt.ArrayLike
 
 
 def get_numerical_gradient_of_vectorfield(
@@ -164,3 +163,18 @@ def get_intersection_with_circle(
             * np.tile(direction, (2, 1)).T
         )
         return points
+
+
+def find_intersection_between_line_and_plane(
+    line_position: Vector,
+    line_direction: Vector,
+    plane_position: Vector,
+    plane_normal: Vector,
+) -> Vector:
+    """Returns the intersection position of a plane and a point."""
+    basis = get_orthogonal_basis(plane_normal)
+    basis[:, 0] = (-1) * line_direction
+
+    factors = LA.pinv(basis) @ (line_position - plane_position)
+
+    return line_position + line_direction * factors[0]

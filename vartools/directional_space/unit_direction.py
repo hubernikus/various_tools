@@ -11,7 +11,8 @@ from __future__ import annotations  # Not needed from python 3.10 onwards
 
 import warnings
 import copy
-from typing import Callable
+
+# from typing import Callable
 from math import pi
 
 import numpy as np

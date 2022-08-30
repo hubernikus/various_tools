@@ -5,9 +5,7 @@ Different linear algebraig helper function (mainly) based on numpy
 # Created: 2019-11-15
 # Email: lukas.huber@epfl.ch
 
-import warnings
-from functools import lru_cache
-
+# from functools import lru_cache
 import numpy as np
 
 
@@ -40,8 +38,7 @@ class OrthogonalBasisError(Exception):
 def get_orthogonal_basis(vector: np.ndarray, normalize: bool = True) -> np.ndarray:
     """Get Orthonormal basis matrxi for an dimensional input vector."""
     # warnings.warn("Basis implementation is not continuous.") (?! problem?)
-    v_norm = np.linalg.norm(vector)
-    vector = vector / v_norm
+    vector = vector / np.linalg.norm(vector)
 
     dim = vector.shape[0]
     if dim <= 1:
