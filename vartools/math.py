@@ -165,7 +165,7 @@ def get_intersection_with_circle(
         return points
 
 
-def find_intersection_between_line_and_plane(
+def get_intersection_between_line_and_plane(
     line_position: Vector,
     line_direction: Vector,
     plane_position: Vector,
