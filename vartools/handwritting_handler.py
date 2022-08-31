@@ -6,7 +6,13 @@
 import os
 import logging
 
+import numpy as np
+
+import scipy
 from scipy.io import loadmat
+
+from vartools.directional_space import get_angle_space_of_array
+from vartools.dynamical_systems import LinearSystem
 
 
 class HandwrittingDataHandler:
@@ -125,20 +131,6 @@ class HandwrittingHandler:
                     + self.dataset["data"][0, it_set][:2, -1].T
                     / self.dataset["data"].shape[1]
                 )
-                # print("pos_attractor", self.dataset["data"][0, it_set][:2, -1].T)
-
-            print(f"Obstained attractor position [x, y] = {self.attractor}.")
-
-            self.null_ds = LinearSystem(attractor_position=self.attractor)
-
-        elif attractor is False:
-            # Does not have attractor
-            self.attractor = False
-            self.null_ds = attracting_circle
-        else:
-            self.position_attractor = np.array(attractor)
-
-            self.null_ds = LinearSystem(attractor_position=self.attractor)
 
         # Normalize dataset
         normalize_dataset = False
@@ -146,7 +138,6 @@ class HandwrittingHandler:
             self.meanX = np.mean(self.X, axis=0)
 
             self.meanX = np.zeros(4)
-            # X = X - np.tile(meanX , (X.shape[0],1))
             self.varX = np.var(self.X, axis=0)
 
             # All distances should have same variance
