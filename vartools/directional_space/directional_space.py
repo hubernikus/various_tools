@@ -218,7 +218,6 @@ def get_directional_weighted_sum_from_unit_directions(
     return summed_dir.as_vector()
 
 
-# def get_directional_weighted_sum(
 def get_directional_weighted_sum(
     null_direction: np.ndarray,
     weights: np.ndarray,
