@@ -20,14 +20,7 @@ import numpy.linalg as LA
 
 from vartools.linalg import get_orthogonal_basis
 
-# from vartools.directional_space import get_vector_from_angle
-# from .unit_direction import get_vector_from_angle
 from .unit_direction import UnitDirection
-
-# from .unit_direction import DirectionBase
-
-# from vartools.directional_space import
-# from vartools.dynamical_systems import DynamicalSystem
 
 
 def get_angle_space_of_array(
@@ -106,7 +99,6 @@ def get_angle_space(
     direction_directionSpace = direction_directionSpace * np.arccos(cos_direction)
 
     if any(np.isnan(direction_directionSpace)):
-        # breakpoint() # TODO: remove after debugging
         raise Exception("Direction-space is 'nan'.")
 
     return direction_directionSpace
@@ -116,14 +108,12 @@ def get_angle_space_inverse_of_array(
     vecs_angle_space: np.ndarray, positions: np.ndarray, default_system: DynamicalSystem
 ):
     """Get the angle space for a whole array."""
-    # breakpoint()
     dim = positions.shape[0]
     num_samples = positions.shape[1]
 
     directions = np.zeros((dim, num_samples))
 
     for ii in range(num_samples):
-        # vel_default = func_vel_default(positions[:, ii])
         vel_default = default_system.evaluate(positions[:, ii])
         directions[:, ii] = get_angle_space_inverse(
             vecs_angle_space[:, ii], null_direction=vel_default
@@ -189,20 +179,11 @@ def get_directional_weighted_sum_from_unit_directions(
     if total_weight > 1:
         weights = weights / np.sum(weights) * total_weight
 
-    # print('uni dir', unit_directions[0].as_vector())
     unit_directions = [
         u_dir.transform_to_base(base)
         for ii, u_dir in enumerate(unit_directions)
         if ind_nonzero[ii]
     ]
-    # print('uni dir', unit_directions[0].as_vector())
-
-    # if unit_directions is None:
-    # unit_directions = [
-    # UnitDirection(base).from_vector(directions[:, ii])
-    # for ii in range(directions.shape[1])
-    # ]
-    # else:
     for ii, u_dir in enumerate(unit_directions):
         u_dir.transform_to_base(base)
 
@@ -211,9 +192,6 @@ def get_directional_weighted_sum_from_unit_directions(
     )
     for ii, u_dir in enumerate(unit_directions):
         summed_dir = summed_dir + u_dir * weights[ii]
-
-    # print('dirdir', summed_dir.as_vector())
-    # breakpoint()
 
     return summed_dir.as_vector()
 
