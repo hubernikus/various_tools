@@ -2,6 +2,7 @@
 from .linalg import get_orthogonal_basis
 
 from typing import Callable
+import warnings
 
 import numpy as np
 from numpy import linalg as LA
@@ -173,8 +174,13 @@ def get_intersection_between_line_and_plane(
 ) -> Vector:
     """Returns the intersection position of a plane and a point."""
     basis = get_orthogonal_basis(plane_normal)
-    basis[:, 0] = (-1) * line_direction
+    if not np.dot(line_direction, basis[:, 0]):
+        warnings.warn("Plan is parallel to line.")
+        position = np.empty(line_position)
+        position[:] = np.nan
+        return np.nan()
 
+    basis[:, 0] = line_direction
     factors = LA.pinv(basis) @ (line_position - plane_position)
 
-    return line_position + line_direction * factors[0]
+    return line_position - line_direction * factors[0]
