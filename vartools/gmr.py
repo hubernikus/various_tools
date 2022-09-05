@@ -1,8 +1,6 @@
 """ Gaussian Mixture Regression"""
 
-import warnings
 from math import pi
-from dataclasses import dataclass
 
 import numpy as np
 from numpy import linalg as LA
