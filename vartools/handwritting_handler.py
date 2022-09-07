@@ -8,11 +8,52 @@ import logging
 
 import numpy as np
 
+from dataclasses import dataclass
+
 import scipy
 from scipy.io import loadmat
 
 from vartools.directional_space import get_angle_space_of_array
 from vartools.dynamical_systems import LinearSystem
+
+Vector = np.ndarray
+VectorArray = np.ndarray
+
+
+@dataclass
+class MotionDataHandler:
+    """Stores (and imports) data for evaluation with the various learners.
+
+    Attributes
+    ----------
+    positions: numpy-VectorArray of shape [n_datapoints x dimension]
+    velocities: numpy-VectorArray of shape [n_datapoints x dimension]
+    directions: numpy-VectorArray of shape [n_datapoints - 1 x dimension]
+    time: numpy-Array of shape[n_datapoints]
+    """
+
+    position: VectorArray = np.empty(0)
+    velocity: VectorArray = np.empty(0)
+    sequence_value: VectorArray = np.empty(0)
+
+    direction: VectorArray = np.empty(0)
+
+    attractor: Vector = np.empty(0)
+
+    @property
+    def dimension(self) -> int:
+        return self.position.shape[1]
+
+    # def normalize(self):
+    #     self.mean_positions = np.mean(self.positions)
+    #     self.var_positions = np.variance(self.positions)
+    #     self.positions = (seplf.positions - self.mean_positions) / self.var_positions
+
+    @property
+    def X(self) -> VectorArray:
+        return np.hstack(
+            (self.position, self.velocity, self.sequence_value.reshape(-1, 1))
+        )
 
 
 class HandwrittingDataHandler:
@@ -90,8 +131,11 @@ class HandwrittingHandler:
         ].T
 
         self.sequence_value = np.linspace(0, 1, self.dataset["data"][0, ii].shape[1])
+        self.start_positions = []
 
         for it_set in range(1, self.dataset["data"].shape[1]):
+            self.start_positions.append(self.dataset["data"][0, it_set][:2, 0])
+
             self.position = np.vstack(
                 (self.position, self.dataset["data"][0, it_set][:2, :].T)
             )
@@ -106,6 +150,8 @@ class HandwrittingHandler:
                     np.linspace(0, 1, self.dataset["data"][0, it_set].shape[1]),
                 )
             )
+
+        self.start_positions = np.array(self.start_positions).T
 
         direction = get_angle_space_of_array(
             directions=self.velocity.T,
