@@ -171,16 +171,22 @@ def get_intersection_between_line_and_plane(
     line_direction: Vector,
     plane_position: Vector,
     plane_normal: Vector,
+    positive_only: bool = False,
 ) -> Vector:
     """Returns the intersection position of a plane and a point."""
     basis = get_orthogonal_basis(plane_normal)
+
     if not np.dot(line_direction, basis[:, 0]):
         warnings.warn("Plan is parallel to line.")
-        position = np.empty(line_position)
-        position[:] = np.nan
-        return np.nan()
+        if np.dot((line_position - plane_position), plane_normal):
+            raise ValueError("No intersection possible.")
 
-    basis[:, 0] = line_direction
+        return line_position
+
+    basis[:, 0] = (-1) * line_direction
     factors = LA.pinv(basis) @ (line_position - plane_position)
 
-    return line_position - line_direction * factors[0]
+    if positive_only and factors[0] < 0:
+        return None
+
+    return line_position + line_direction * factors[0]

@@ -102,10 +102,14 @@ class HandwrittingDataHandler:
 class HandwrittingHandler:
     def __init__(self, file_name, directory_name: str = None, dimension: int = 2):
         if directory_name is None:
-            # self.directory_name = "default/directory"
+            self.directory_name = "default/directory"
             self.directory_name = os.path.join(
                 "/home", "lukas", "Code", "motion_learning_direction_space", "dataset"
             )
+            # self.directory_name = os.path.join(
+            #     "/home", "lukas", "Code", "lasahandwritingdataset", "DataSet"
+            # )
+
         else:
             self.directory_name = directory_name
         self.file_name = file_name
