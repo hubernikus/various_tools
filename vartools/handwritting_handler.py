@@ -41,6 +41,10 @@ class MotionDataHandler:
     attractor: Vector = np.empty(0)
 
     @property
+    def num_samples(self) -> int:
+        return self.position.shape[0]
+
+    @property
     def dimension(self) -> int:
         return self.position.shape[1]
 
@@ -116,7 +120,16 @@ class HandwrittingHandler:
 
         self.dimension = dimension
 
+        self.sequence_weight = 10
+        self.direction_weight = 5
+
         self.load_data_from_mat()
+
+    # def X(self):
+    # pass
+
+    def get_X_normalized(self):
+        pass
 
     def load_data_from_mat(self, feat_in=None, attractor=None):
         """Load data from file mat-file & evaluate specific parameters"""
@@ -135,7 +148,7 @@ class HandwrittingHandler:
         ].T
 
         self.sequence_value = np.linspace(0, 1, self.dataset["data"][0, ii].shape[1])
-        self.start_positions = []
+        self.start_positions = [self.dataset["data"][0, 0][:2, 0]]
 
         for it_set in range(1, self.dataset["data"].shape[1]):
             self.start_positions.append(self.dataset["data"][0, it_set][:2, 0])
@@ -157,13 +170,22 @@ class HandwrittingHandler:
 
         self.start_positions = np.array(self.start_positions).T
 
+        self.sequence_value = self.sequence_value * self.sequence_weight
+
         direction = get_angle_space_of_array(
             directions=self.velocity.T,
             positions=self.position.T,
             func_vel_default=LinearSystem(dimension=self.dimension).evaluate,
         )
 
-        self.X = np.hstack((self.position, self.velocity, direction.T))
+        self.X = np.hstack(
+            (
+                self.position,
+                self.velocity,
+                direction.T * self.direction_weight,
+                self.sequence_value.reshape(-1, 1),
+            )
+        )
 
         # self.X = self.normalize_velocity(self.X)
 
