@@ -7,6 +7,7 @@ import os
 import logging
 
 import numpy as np
+from numpy import linalg as LA
 
 from dataclasses import dataclass
 
@@ -120,20 +121,39 @@ class HandwrittingHandler:
 
         self.dimension = dimension
 
+        # Define weights
+        self.position_weight = 1
         self.sequence_weight = 10
         self.direction_weight = 5
 
         self.load_data_from_mat()
 
-    # def X(self):
-    # pass
+    @property
+    def attractor(self) -> np.ndarray:
+        return self.attractor_position
 
-    def get_X_normalized(self):
-        pass
+    @property
+    def X(self) -> np.ndarray:
+        return np.hstack(
+            (
+                self.position,
+                self.velocity,
+                self.direction.T * self.direction_weight,
+                self.sequence_value.reshape(-1, 1) * self.sequence_weight,
+            )
+        )
+
+    def get_normalized_data(self) -> np.ndarray:
+        return np.hstack(
+            (
+                self.normalized_position * self.position_weight,
+                self.normalized_velocity * self.direction_weight,
+                self.sequence_value * self.sequence_weight,
+            )
+        )
 
     def load_data_from_mat(self, feat_in=None, attractor=None):
         """Load data from file mat-file & evaluate specific parameters"""
-
         self.dataset = scipy.io.loadmat(
             os.path.join(self.directory_name, self.file_name)
         )
@@ -142,7 +162,10 @@ class HandwrittingHandler:
             self.feat_in = [0, 1]
 
         ii = 0  # Only take the first fold.
+
+        # Normalize with std
         self.position = self.dataset["data"][0, ii][: self.dimension, :].T
+
         self.velocity = self.dataset["data"][0, ii][
             self.dimension : self.dimension * 2, :
         ].T
@@ -168,65 +191,41 @@ class HandwrittingHandler:
                 )
             )
 
+        self.n_samples = self.position.shape[0]
+
         self.start_positions = np.array(self.start_positions).T
+        self.sequence_value = self.sequence_value
 
-        self.sequence_value = self.sequence_value * self.sequence_weight
-
-        direction = get_angle_space_of_array(
+        self.direction = get_angle_space_of_array(
             directions=self.velocity.T,
             positions=self.position.T,
             func_vel_default=LinearSystem(dimension=self.dimension).evaluate,
         )
 
-        self.X = np.hstack(
-            (
-                self.position,
-                self.velocity,
-                direction.T * self.direction_weight,
-                self.sequence_value.reshape(-1, 1),
+        # Evaluate attractor position
+        self.attractor_position = np.zeros((self.dimension))
+
+        for it_set in range(0, self.dataset["data"].shape[1]):
+            self.attractor_position = (
+                self.attractor_position
+                + self.dataset["data"][0, it_set][:2, -1].T
+                / self.dataset["data"].shape[1]
             )
+
+        # Normalize
+        self.n_points = self.position.shape[1]
+
+        self.mean_position = np.mean(self.position, axis=0)
+        self.std_position = np.std(self.position, axis=0)
+
+        self.normalized_position = (
+            self.position - np.tile(self.mean_position, (self.n_samples, 1))
+        ) / np.tile(self.std_position, (self.n_samples, 1))
+
+        # We only care about the 'direction' of the velocity
+        velocity_norm = LA.norm(self.velocity, axis=1)
+        inds = velocity_norm > 0
+        self.normalized_velocity = np.zeros_like(self.velocity)
+        self.normalized_velocity[inds, :] = (
+            self.velocity[inds, :] / np.tile(velocity_norm[inds], (self.dimension, 1)).T
         )
-
-        # self.X = self.normalize_velocity(self.X)
-
-        self.num_samples = self.X.shape[0]
-        self.dim_gmm = self.X.shape[1]
-
-        weightDir = 4
-
-        if attractor is None:
-            self.attractor = np.zeros((self.dimension))
-
-            for it_set in range(0, self.dataset["data"].shape[1]):
-                self.attractor = (
-                    self.attractor
-                    + self.dataset["data"][0, it_set][:2, -1].T
-                    / self.dataset["data"].shape[1]
-                )
-
-        # Normalize dataset
-        normalize_dataset = False
-        if normalize_dataset:
-            self.meanX = np.mean(self.X, axis=0)
-
-            self.meanX = np.zeros(4)
-            self.varX = np.var(self.X, axis=0)
-
-            # All distances should have same variance
-            self.varX[: self.dim] = np.mean(self.varX[: self.dim])
-
-            # All directions should have same variance
-            self.varX[self.dim : 2 * self.dim - 1] = np.mean(
-                self.varX[self.dim : 2 * self.dim - 1]
-            )
-
-            # Stronger weight on directions!
-            self.varX[self.dim : 2 * self.dim - 1] = (
-                self.varX[self.dim : 2 * self.dim - 1] * 1 / weightDir
-            )
-
-            self.X = self.X / np.tile(self.varX, (self.X.shape[0], 1))
-
-        else:
-            self.meanX = None
-            self.varX = None
