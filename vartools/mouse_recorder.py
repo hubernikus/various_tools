@@ -14,7 +14,14 @@ import matplotlib.pyplot as plt
 
 
 class BaseRecorder():
-    
+    def on_click(self, x, y, button, pressed):
+        """Start stop recording toggle."""
+
+        logging.info("Click event detected.")
+        self.simulation_stopped = not (self.simulation_stopped)
+
+        time.sleep(0.05)
+
 
 
 class MouseDataRecorder:
@@ -38,8 +45,8 @@ class MouseDataRecorder:
         # Mouse controller to access directly the position
         self._controller = mouse.Controller()
 
-    def __del__(self):
-        self.listener.stop()
+    # def __del__(self):
+    #     self.listener.stop()
 
     def on_click(self, x, y, button, pressed):
         """Start stop recording toggle."""
@@ -107,6 +114,8 @@ class MouseDataRecorder:
                 + "acceleration_x, acceleration_y"
             ),
         )
+
+        
 
 
 if (__name__) == "__main__":
