@@ -170,7 +170,7 @@ def get_intersection_between_line_and_plane(
     line_position: Vector,
     line_direction: Vector,
     plane_position: Vector,
-    plane_normal: Vector,
+    plane_normal: np.ndarray,
     positive_only: bool = False,
 ) -> Vector:
     """Returns the intersection position of a plane and a point."""

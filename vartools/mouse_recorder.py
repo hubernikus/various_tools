@@ -8,7 +8,13 @@ import time
 import datetime
 
 import numpy as np
+
 from pynput import mouse
+import matplotlib.pyplot as plt
+
+
+class BaseRecorder():
+    
 
 
 class MouseDataRecorder:
@@ -33,10 +39,7 @@ class MouseDataRecorder:
         self._controller = mouse.Controller()
 
     def __del__(self):
-        # try:
         self.listener.stop()
-        # except:
-        # raise
 
     def on_click(self, x, y, button, pressed):
         """Start stop recording toggle."""
@@ -46,12 +49,9 @@ class MouseDataRecorder:
 
         time.sleep(0.05)
 
-        # if not self.simulation_stopped:
-        # self.run()
-
     def run(self, max_it=10000):
-        dimension = 2
-        positions = np.zeros((dimension, max_it + 2))
+        self.dimension = 2
+        positions = np.zeros((self.dimension, max_it + 2))
 
         self.listener.start()
         it = 0
