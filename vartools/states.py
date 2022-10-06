@@ -31,6 +31,9 @@ class Stamp:
 
 
 class ObjectTwist:
+    def __repr__(self):
+        return f"Linear {self.linear} \n" + f"Angular: {self.angular}"
+
     def __init__(
         self,
         linear: np.ndarray = None,

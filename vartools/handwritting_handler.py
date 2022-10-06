@@ -46,6 +46,10 @@ class MotionDataHandler:
         return self.position.shape[0]
 
     @property
+    def n_samples(self) -> int:
+        return self.position.shape[0]
+
+    @property
     def dimension(self) -> int:
         return self.position.shape[1]
 
@@ -123,8 +127,8 @@ class HandwrittingHandler:
 
         # Define weights
         self.position_weight = 1
-        self.sequence_weight = 10
-        self.direction_weight = 5
+        self.direction_weight = 2
+        self.sequence_weight = 3
 
         self.load_data_from_mat()
 
