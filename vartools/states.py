@@ -70,6 +70,14 @@ class ObjectPose:
 
     """
 
+    def __repr__(self):
+        return (
+            super().__repr__()
+            + " with \n"
+            + f"position {repr(self.position)} \n"
+            + f"orientation: {self.orientation}"
+        )
+
     def __init__(
         self,
         position: np.ndarray = None,
@@ -185,25 +193,48 @@ class ObjectPose:
     def transform_position_from_relative(self, position: np.ndarray) -> np.ndarray:
         """Transform a position from the global frame of reference
         to the obstacle frame of reference"""
+        position = self.apply_rotation_reference_to_local(direction=position)
         if not self.position is None:
-            position = position - self.position
+            position = position + self.position
 
-        return self.apply_rotation_reference_to_local(direction=position)
+        return position
+
+    def transfrom_positions_from_relative(self, positions: np.ndarray) -> np.ndarray:
+        positions = self.apply_rotation_reference_to_local(direction=positions)
+
+        if not self.position is None:
+            positions = positions + np.tile(self.position, (positions.shape[1], 1)).T
+
+        return positions
 
     def transform_position_from_local_to_reference(
         self, position: np.ndarray
     ) -> np.ndarray:
         return self.transform_position_to_relative(position)
 
+    def transform_direction_from_relative(self, direction: np.ndarray) -> np.ndarray:
+        return self.apply_rotation_reference_to_local(direction=direction)
+
+    def transform_direction_to_relative(self, direction: np.ndarray) -> np.ndarray:
+        return self.apply_rotation_local_to_reference(direction=direction)
+
     def transform_position_to_relative(self, position: np.ndarray) -> np.ndarray:
         """Transform a position from the obstacle frame of reference
         to the global frame of reference"""
+        if self.position is not None:
+            position = position - self.position
+
         position = self.apply_rotation_local_to_reference(direction=position)
 
-        if self.position is not None:
-            position = position + self.position
-
         return position
+
+    def transform_positions_to_relative(self, positions: np.ndarray) -> np.ndarray:
+        if not self.position is None:
+            positions = positions - np.tile(self.position, (positions.shape[1], 1)).T
+
+        positions = self.apply_rotation_local_to_reference(direction=positions)
+
+        return positions
 
     def transform_direction_from_reference_to_local(
         self, direction: np.ndarray
