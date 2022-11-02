@@ -225,7 +225,12 @@ class ObjectPose:
             position = position - self.position
 
         position = self.apply_rotation_local_to_reference(direction=position)
+        return position
 
+    def transform_direction_to_relative(self, position: np.ndarray) -> np.ndarray:
+        """Transform a direction from the obstacle frame of reference
+        to the global frame of reference"""
+        position = self.apply_rotation_local_to_reference(direction=position)
         return position
 
     def transform_positions_to_relative(self, positions: np.ndarray) -> np.ndarray:
@@ -233,7 +238,6 @@ class ObjectPose:
             positions = positions - np.tile(self.position, (positions.shape[1], 1)).T
 
         positions = self.apply_rotation_local_to_reference(direction=positions)
-
         return positions
 
     def transform_direction_from_reference_to_local(
