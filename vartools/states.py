@@ -200,8 +200,11 @@ class ObjectPose:
         return position
 
     def transfrom_positions_from_relative(self, positions: np.ndarray) -> np.ndarray:
-        positions = self.apply_rotation_reference_to_local(direction=positions)
+        # TODO: remove
+        raise NotImplementedError("renamed to 'transform_positions_from_relative'")
 
+    def transform_positions_from_relative(self, positions: np.ndarray) -> np.ndarray:
+        positions = self.apply_rotation_reference_to_local(direction=positions)
         if not self.position is None:
             positions = positions + np.tile(self.position, (positions.shape[1], 1)).T
 
