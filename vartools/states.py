@@ -138,6 +138,7 @@ class ObjectPose:
         if self.dimension != 2:
             warnings.warn("Orientation matrix only used for useful for 2-D rotations.")
             return
+
         if self.orientation is None:
             return np.eye(self.dimension)
 
@@ -165,7 +166,7 @@ class ObjectPose:
             return pose
 
         if pose.orientation is None:
-            pose.orientation = self.orientation
+            pose.orientation = pose.orientation - self.orientation
             return pose
 
         if self.dimension != 2:
@@ -180,7 +181,7 @@ class ObjectPose:
             return pose
 
         if pose.orientation is None:
-            pose.orientation = (-1) * self.orientation
+            pose.orientation = pose.orientation + self.orientation
             return pose
 
         if self.dimension != 2:
@@ -193,18 +194,15 @@ class ObjectPose:
     def transform_position_from_relative(self, position: np.ndarray) -> np.ndarray:
         """Transform a position from the global frame of reference
         to the obstacle frame of reference"""
-        position = self.apply_rotation_reference_to_local(direction=position)
+        position = self.transform_direction_from_relative(direction=position)
+
         if not self.position is None:
             position = position + self.position
 
         return position
 
-    def transfrom_positions_from_relative(self, positions: np.ndarray) -> np.ndarray:
-        # TODO: remove
-        raise NotImplementedError("renamed to 'transform_positions_from_relative'")
-
     def transform_positions_from_relative(self, positions: np.ndarray) -> np.ndarray:
-        positions = self.apply_rotation_reference_to_local(direction=positions)
+        positions = self.transform_directions_from_relative(direction=positions)
         if not self.position is None:
             positions = positions + np.tile(self.position, (positions.shape[1], 1)).T
 
@@ -215,39 +213,67 @@ class ObjectPose:
     ) -> np.ndarray:
         return self.transform_position_to_relative(position)
 
-    def transform_direction_from_relative(self, direction: np.ndarray) -> np.ndarray:
-        return self.apply_rotation_reference_to_local(direction=direction)
-
-    def transform_direction_to_relative(self, direction: np.ndarray) -> np.ndarray:
-        return self.apply_rotation_local_to_reference(direction=direction)
-
     def transform_position_to_relative(self, position: np.ndarray) -> np.ndarray:
         """Transform a position from the obstacle frame of reference
         to the global frame of reference"""
         if self.position is not None:
             position = position - self.position
 
-        position = self.apply_rotation_local_to_reference(direction=position)
-        return position
-
-    def transform_direction_to_relative(self, position: np.ndarray) -> np.ndarray:
-        """Transform a direction from the obstacle frame of reference
-        to the global frame of reference"""
-        position = self.apply_rotation_local_to_reference(direction=position)
+        position = self.transform_direction_to_relative(direction=position)
         return position
 
     def transform_positions_to_relative(self, positions: np.ndarray) -> np.ndarray:
         if not self.position is None:
             positions = positions - np.tile(self.position, (positions.shape[1], 1)).T
 
-        positions = self.apply_rotation_local_to_reference(direction=positions)
+        positions = self.transform_directions_to_relative(directions=positions)
         return positions
 
     def transform_direction_from_reference_to_local(
         self, direction: np.ndarray
     ) -> np.ndarray:
         """Transform a direction, velocity or relative position to the global-frame."""
-        return self.apply_rotation_reference_to_local(direction)
+        raise
+        # return self.apply_rotation_reference_to_local(direction)
+
+    def transform_direction_from_local_to_reference(
+        self, direction: np.ndarray
+    ) -> np.ndarray:
+        """Transform a direction, velocity or relative position to the obstacle-frame"""
+        raise
+        # return self.apply_rotation_local_to_reference(direction)
+
+    def transform_direction_from_relative(self, direction: np.ndarray) -> np.ndarray:
+        if self._orientation is None:
+            return direction
+
+        if self.dimension == 2:
+            return self.rotation_matrix.dot(direction)
+
+        elif self.dimension == 3:
+            return self._orientation.apply(direction.T).T
+        else:
+            warnings.warn("Not implemented for higer dimensions")
+            return direction
+
+    def transform_directions_from_relative(self, directions: np.ndarray) -> np.ndarray:
+        return self.transform_direction_from_relative(directions)
+
+    def transform_direction_to_relative(self, direction: np.ndarray) -> np.ndarray:
+        if self._orientation is None:
+            return direction
+
+        if self.dimension == 2:
+            return self.rotation_matrix.T.dot(direction)
+
+        elif self.dimension == 3:
+            return self._orientation.inv.apply(direction.T).T
+        else:
+            warnings.warn("Not implemented for higer dimensions")
+            return direction
+
+    def transform_directions_to_relative(self, directions: np.ndarray) -> np.ndarray:
+        return self.transform_direction_to_relative(directions)
 
     def apply_rotation_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
         if self._orientation is None:
@@ -261,12 +287,6 @@ class ObjectPose:
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
-
-    def transform_direction_from_local_to_reference(
-        self, direction: np.ndarray
-    ) -> np.ndarray:
-        """Transform a direction, velocity or relative position to the obstacle-frame"""
-        return self.apply_rotation_local_to_reference(direction)
 
     def apply_rotation_local_to_reference(self, direction: np.ndarray) -> np.ndarray:
         if self._orientation is None:
