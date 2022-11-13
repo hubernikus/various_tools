@@ -79,9 +79,7 @@ class LocallyRotated(DynamicalSystem):
     def _get_scaled_distance(self, position):
         """Transform to ellipse frame"""
         if self.influence_pose is not None:
-            position = self.influence_pose.transform_position_from_reference_to_local(
-                position
-            )
+            position = self.influence_pose.transform_position_to_relative(position)
         position = position / self.influence_axes_length
         return np.linalg.norm(position)
 
