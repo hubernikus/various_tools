@@ -39,7 +39,15 @@ class MotionDataHandler:
 
     direction: VectorArray = np.empty(0)
 
-    attractor: Vector = np.empty(0)
+    attractor_position: Vector = np.empty(0)
+
+    @property
+    def attractor(self):
+        return self.attractor_position
+
+    @attractor.setter
+    def attractor(self, value):
+        self.attractor_position = value
 
     @property
     def num_samples(self) -> int:
@@ -131,10 +139,6 @@ class HandwrittingHandler:
         self.sequence_weight = 3
 
         self.load_data_from_mat()
-
-    @property
-    def attractor(self) -> np.ndarray:
-        return self.attractor_position
 
     @property
     def X(self) -> np.ndarray:

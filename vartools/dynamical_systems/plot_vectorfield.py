@@ -11,13 +11,15 @@ import matplotlib.pyplot as plt
 def plot_dynamical_system_quiver(n_resolution=None, *args, **kwargs):
     if n_resolution is None:
         n_resolution = 15
-    plot_dynamical_system(plottype="quiver", n_resolution=n_resolution, *args, **kwargs)
+    return plot_dynamical_system(
+        plottype="quiver", n_resolution=n_resolution, *args, **kwargs
+    )
 
 
 def plot_dynamical_system_streamplot(n_resolution=None, *args, **kwargs):
     if n_resolution is None:
         n_resolution = 100
-    plot_dynamical_system(
+    return plot_dynamical_system(
         plottype="streamplot", n_resolution=n_resolution, *args, **kwargs
     )
 
@@ -98,3 +100,5 @@ def plot_dynamical_system(
 
     plt.ion()
     plt.show()
+
+    return fig, ax
