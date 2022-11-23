@@ -47,7 +47,7 @@ class AnimatorTest(Animator):
         return ii > 100
 
 
-def _test_animator(it_max=3):
+def test_animator(it_max=3):
     my_animator = AnimatorTest(dt_sleep=0.001, it_max=it_max)
     my_animator.setup()
     my_animator.run()
@@ -64,5 +64,5 @@ def _test_saving():
 
 
 if (__name__) == "__main__":
-    _test_animator(it_max=10000)
+    test_animator(it_max=10000)
     # _test_saving()
