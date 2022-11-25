@@ -10,6 +10,8 @@ import numpy as np
 
 from ._base import DynamicalSystem
 
+from vartools.states import ObjectPose
+
 
 class CircularStable(DynamicalSystem):
     """Dynamical system with Circular Motion x-axis."""
@@ -17,15 +19,15 @@ class CircularStable(DynamicalSystem):
     def __init__(
         self,
         radius,
-        factor_controler=1,
-        direction=1,
-        main_axis=None,
-        center_position=None,
-        maximum_velocity=None,
-        dimension=2,
+        factor_controler: float = 1,
+        direction: bool = 1,
+        # main_axis=None,
+        pose: ObjectPose = None,
+        maximum_velocity: float = None,
+        dimension: int = 2,
     ):
         super().__init__(
-            center_position=center_position,
+            pose=pose,
             maximum_velocity=maximum_velocity,
             dimension=dimension,
         )
@@ -33,29 +35,30 @@ class CircularStable(DynamicalSystem):
         self.radius = radius
         self.factor_controler = 1
 
-        if abs(direction) != 1:
-            warnings.warn("Direction not of magnitude 1. It is automatically reduced.")
-            self.direction = np.copysign(1, self.direction)
+        self.direction = np.copysign(1, direction)
 
-        if main_axis is not None:
-            # TODO
-            raise NotImplementedError()
+        # if main_axis is not None:
+        #     # TODO
+        #     raise NotImplementedError()
 
     def evaluate(self, position, maximum_velocity=None):
         if len(position.shape) != 1 or position.shape[0] != 2:
             raise ValueError("Position input allowed only of shape (2,)")
 
-        position = position - self.center_position
+        # position = position - self.center_position
+        position = self.pose.transform_position_to_relative(position)
 
         pos_norm = np.linalg.norm(position)
         if not pos_norm:
             # Saddle point at center
             return np.zeros(position.shape)
 
-        velocity_linear = self.radius - pos_norm
         if pos_norm < self.radius:
-            velocity_linear = 1 - 1.0 / velocity_linear
-        velocity_linear = position / pos_norm * velocity_linear
+            velocity_norm = self.radius / (pos_norm) - 1
+        else:
+            velocity_norm = self.radius - pos_norm
+
+        velocity_linear = position / pos_norm * velocity_norm
 
         velocity_circular = self.direction * np.array([-position[1], position[0]])
         velocity_circular = velocity_circular / np.linalg.norm(velocity_circular)
@@ -64,4 +67,7 @@ class CircularStable(DynamicalSystem):
 
         radius = 1
         velocity = self.limit_velocity(velocity, maximum_velocity)
+
+        velocity = self.pose.transform_direction_from_relative(velocity)
+
         return velocity
