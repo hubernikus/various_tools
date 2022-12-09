@@ -89,23 +89,23 @@ class DynamicalSystem(ABC):
         return velocity
 
     @abstractmethod
-    def evaluate(self, position: np.array) -> np.array:
+    def evaluate(self, position: np.ndarray) -> np.ndarray:
         """Returns velocity of the evaluated the dynamical system at 'position'."""
         pass
 
-    def get_relative_position_to_attractor(self, position: np.array) -> np.array:
+    def get_relative_position_to_attractor(self, position: np.ndarray) -> np.ndarray:
         if self.attractor_position is None:
             return position
         else:
             return position - self.attractor_position
 
-    def compute_dynamics(self, position: np.array) -> np.array:
+    def compute_dynamics(self, position: np.ndarray) -> np.ndarray:
         # This or 'evaluate' / to be or not to be?!
         # Could allow for additional cropping
         pass
 
-    def evaluate_array(self, position_array: np.array) -> np.array:
-        """Return an array of positions evluated."""
+    def evaluate_array(self, position_array: np.ndarray) -> np.ndarray:
+        """Return an array of positions evaluated."""
         velocity_array = np.zeros(position_array.shape)
         for ii in range(position_array.shape[1]):
             velocity_array[:, ii] = self.evaluate_array(position_array[:, ii])
