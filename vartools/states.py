@@ -87,11 +87,15 @@ class ObjectPose:
     ):
         # Assign values
         self.position = position
-        self.orientation = orientation
         self.stamp = stamp
 
+        if orientation is None and self.dimension == 3:
+            self.orientation = Rotation.from_euler("x", [0])
+        else:
+            self.orientation = orientation
+
     @property
-    def dimension(self):
+    def dimension(self) -> int:
         if self.position is None:
             return None
         return self.position.shape[0]
@@ -196,7 +200,7 @@ class ObjectPose:
         to the obstacle frame of reference"""
         position = self.transform_direction_from_relative(direction=position)
 
-        if not self.position is None:
+        if self.position is not None:
             position = position + self.position
 
         return position

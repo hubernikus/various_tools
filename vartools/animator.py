@@ -123,6 +123,9 @@ class Animator(ABC):
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
 
         if save_animation:
+            plt.rcParams["figure.autolayout"] = True
+            plt.rcParams["animation.ffmpeg_path"] = "/usr/bin/ffmpeg"
+
             if self.animation_name is None:
                 now = datetime.datetime.now()
                 animation_name = f"animation_{now:%Y-%m-%d_%H-%M-%S}" + self.file_type
@@ -141,19 +144,23 @@ class Animator(ABC):
             )
 
             # FFmpeg for
-            writervideo = animation.FFMpegWriter(
-                fps=10,
+            FFwriter = animation.FFMpegWriter(
+                fps=30,
                 # extra_args=['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2'],
                 # extra_args=['-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2'],
                 # extra_args=['-vf', 'crop=1600:800']
             )
 
+            FFwriter = animation.FFMpegWriter(fps=30, extra_args=["-vcodec", "h264"])
+            # FFwriter = animation.FFMpegWriter(fps=30, extra_args=["-vcodec", "libx264"])
+
             anim.save(
                 os.path.join("figures", animation_name),
                 # metadata={"artist": "Lukas Huber"},
                 # We chose default 'pillow', beacuse 'ffmpeg' often gives errors
-                writer=writervideo,
-                # animation.PillowWriter()
+                # writer=writervideo,
+                # writer=FFwriter,
+                animation.PillowWriter(),
             )
             print("Animation saving finished.")
 
