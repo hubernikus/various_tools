@@ -255,7 +255,7 @@ class ObjectPose:
             return self.rotation_matrix.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.apply(direction.T).T
+            return self._orientation.apply(direction.T).flatten()
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
@@ -271,7 +271,7 @@ class ObjectPose:
             return self.rotation_matrix.T.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.inv.apply(direction.T).T
+            return self._orientation.inv.apply(direction.T).flatten()
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
@@ -300,7 +300,7 @@ class ObjectPose:
             return self.rotation_matrix.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.apply(direction.T).T
+            return self._orientation.apply(direction.T).flatten()
 
         else:
             warnings.warn("Not implemented for higer dimensions")
