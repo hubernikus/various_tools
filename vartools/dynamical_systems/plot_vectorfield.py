@@ -7,6 +7,8 @@ Plot Dynamical System
 import numpy as np
 import matplotlib.pyplot as plt
 
+from ._base import DynamicalSystem
+
 
 def plot_dynamical_system_quiver(n_resolution=None, *args, **kwargs):
     if n_resolution is None:
@@ -25,7 +27,7 @@ def plot_dynamical_system_streamplot(n_resolution=None, *args, **kwargs):
 
 
 def plot_dynamical_system(
-    dynamical_system=None,
+    dynamical_system: DynamicalSystem = None,
     x_lim=None,
     y_lim=None,
     n_resolution=15,
