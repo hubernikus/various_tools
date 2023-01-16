@@ -8,7 +8,7 @@ from .circle_stable import CircularStable
 from .circular_and_linear import CircularLinear
 from .spiral_motion import SpiralStable
 from .locally_rotated import LocallyRotated
-from .quadratic_axis_convergence import QuadraticAxisConvergence
+from .quadratic_axis_convergence import QuadraticAxisConvergence, AxesFollowingDynamics
 from .multiattractor_dynamics import (
     PendulumDynamics,
     DuffingOscillator,
@@ -33,6 +33,7 @@ __all__ = [
     "CircularStable" "SpiralStable",
     "LocallyRotated",
     "QuadraticAxisConvergence",
+    "AxesFollowingDynamics",
     "PendulumDynamics",
     "DuffingOscillator",
     "BifurcationSpiral",

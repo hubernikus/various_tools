@@ -199,7 +199,7 @@ def get_directional_weighted_sum_from_unit_directions(
 def get_directional_weighted_sum(
     null_direction: np.ndarray,
     weights: np.ndarray,
-    directions: np.ndarray = None,
+    directions: np.ndarray,
     unit_directions: List[UnitDirection] = None,
     total_weight: float = 1,
     normalize: bool = True,
@@ -232,7 +232,7 @@ def get_directional_weighted_sum(
         weights = weights / np.sum(weights) * total_weight
 
     n_directions = weights.shape[0]
-    if (n_directions == 1) and total_weight >= 1:
+    if (n_directions == 1) and np.sum(weights) >= 1:
         return directions[:, 0]
 
     dim = np.array(null_direction).shape[0]

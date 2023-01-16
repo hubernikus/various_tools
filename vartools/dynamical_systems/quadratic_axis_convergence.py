@@ -127,7 +127,7 @@ def _test_quadratic_axes_following():
     )
 
 
-def _test_axes_following_dynamics(visualize=True):
+def test_axes_following_dynamics(visualize=True):
     global_ds = AxesFollowingDynamics(
         center_position=np.array([0, 1]),
         maximum_velocity=1.0,
@@ -169,4 +169,4 @@ if (__name__) == "__main__":
     from vartools.dynamical_systems import plot_dynamical_system_quiver
 
     # _test_quadratic_axes_following()
-    _test_axes_following_dynamics()
+    test_axes_following_dynamics()
