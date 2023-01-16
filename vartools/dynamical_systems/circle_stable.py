@@ -8,7 +8,8 @@ Dynamical Systems with a closed-form description.
 import warnings
 import numpy as np
 
-from ._base import DynamicalSystem
+# Absolute import (currently) allows to define tests
+from vartools.dynamical_systems import DynamicalSystem
 
 from vartools.states import ObjectPose
 
@@ -71,3 +72,40 @@ class CircularStable(DynamicalSystem):
         velocity = self.pose.transform_direction_from_relative(velocity)
 
         return velocity
+
+
+def test_circular_dynamics(visualize=False):
+
+    circular_ds = CircularStable(radius=1.0, maximum_velocity=1.0)
+
+    if visualize:
+        x_lim = [-2, 2]
+        y_lim = [-2, 2]
+
+        figsize = (8, 6)
+
+        fig, ax = plt.subplots(figsize=figsize)
+        plot_dynamical_system(
+            dynamical_system=circular_ds,
+            x_lim=x_lim,
+            y_lim=y_lim,
+            ax=ax,
+        )
+
+    # No velocity at center
+    position = np.zeros(2)
+    velocity = circular_ds.evaluate(position)
+    assert np.allclose(velocity, np.zeros(2))
+
+    # Pointing away far away (and additionally slight rotation; always)
+    position = np.array([1e-3, 0])
+    velocity = circular_ds.evaluate(position)
+    assert velocity[1] > 0
+
+
+if (__name__) == "__main__":
+    # Import visualization libraries here
+    import matplotlib.pyplot as plt  # For debugging only (!)
+    from vartools.dynamical_systems import plot_dynamical_system
+
+    test_circular_dynamics(visualize=False)
