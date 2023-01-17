@@ -11,6 +11,8 @@ from __future__ import annotations  # Not needed from python 3.10 onwards
 import warnings
 
 import numpy as np
+import numpy.typing as npt
+
 from scipy.spatial.transform import Rotation  # scipy rotation
 
 
@@ -24,9 +26,9 @@ class Time:
 
 
 class Stamp:
-    def __init__(self, seq: int = None, stamp: Time = None, frame_id: str = None):
+    def __init__(self, seq: int = None, timestamp: Time = None, frame_id: str = None):
         self.seq = seq
-        self.time = time
+        self.timestamp = timestamp
         self.frame_id = frame_id
 
 
@@ -101,11 +103,11 @@ class ObjectPose:
         return self.position.shape[0]
 
     @property
-    def position(self):
+    def position(self) -> np.ndarray:
         return self._position
 
     @position.setter
-    def position(self, value):
+    def position(self, value: npt.ArrayLike):
         if value is None:
             self._position = value
             return

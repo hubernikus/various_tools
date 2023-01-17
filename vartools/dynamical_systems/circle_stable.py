@@ -7,6 +7,7 @@ Dynamical Systems with a closed-form description.
 
 import warnings
 import numpy as np
+from typing import Optional
 
 # Absolute import (currently) allows to define tests
 from vartools.dynamical_systems import DynamicalSystem
@@ -21,14 +22,20 @@ class CircularStable(DynamicalSystem):
         self,
         radius,
         factor_controler: float = 1,
-        direction: bool = 1,
+        direction: int = 1,
         # main_axis=None,
-        pose: ObjectPose = None,
+        pose: Optional[ObjectPose] = None,
         maximum_velocity: float = None,
         dimension: int = 2,
     ):
+        if pose is None:
+            center_pose = ObjectPose(position=np.zeros(dimension))
+        else:
+            center_pose = pose
+            dimension = pose.position.shape[0]
+
         super().__init__(
-            pose=pose,
+            pose=center_pose,
             maximum_velocity=maximum_velocity,
             dimension=dimension,
         )
@@ -67,7 +74,9 @@ class CircularStable(DynamicalSystem):
         velocity = velocity_linear * self.factor_controler + velocity_circular
 
         radius = 1
-        velocity = self.limit_velocity(velocity, maximum_velocity)
+        # Exactly put it to 'maximum velocity' - this makes it not constant at 0..
+        # velocity = self.limit_velocity(velocity, maximum_velocity)
+        velocity = velocity / np.linalg.norm(velocity) * self.maximum_velocity
 
         velocity = self.pose.transform_direction_from_relative(velocity)
 
@@ -76,7 +85,7 @@ class CircularStable(DynamicalSystem):
 
 def test_circular_dynamics(visualize=False):
 
-    circular_ds = CircularStable(radius=1.0, maximum_velocity=1.0)
+    circular_ds = CircularStable(radius=1.0, maximum_velocity=2.0)
 
     if visualize:
         x_lim = [-2, 2]
@@ -108,4 +117,5 @@ if (__name__) == "__main__":
     import matplotlib.pyplot as plt  # For debugging only (!)
     from vartools.dynamical_systems import plot_dynamical_system
 
+    # test_circular_dynamics(visualize=False)
     test_circular_dynamics(visualize=False)

@@ -17,6 +17,7 @@ from math import pi
 
 import numpy as np
 import numpy.linalg as LA
+import numpy.typing as npt
 
 from vartools.linalg import get_orthogonal_basis
 
@@ -198,7 +199,7 @@ def get_directional_weighted_sum_from_unit_directions(
 
 def get_directional_weighted_sum(
     null_direction: np.ndarray,
-    weights: np.ndarray,
+    weights: npt.ArrayLike,
     directions: np.ndarray,
     unit_directions: List[UnitDirection] = None,
     total_weight: float = 1,
@@ -220,6 +221,8 @@ def get_directional_weighted_sum(
     ------
     summed_velocity: The weighted sum transformed back to the initial space
     """
+    weights = np.array(weights)
+
     ind_nonzero = np.logical_and(
         weights > 0, LA.norm(directions, axis=0)
     )  # non-negative
@@ -233,7 +236,7 @@ def get_directional_weighted_sum(
 
     n_directions = weights.shape[0]
     if (n_directions == 1) and np.sum(weights) >= 1:
-        return directions[:, 0]
+        return directions[:, 0] / LA.norm(directions[:, 0])
 
     dim = np.array(null_direction).shape[0]
 
