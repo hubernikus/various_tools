@@ -6,6 +6,7 @@ Dynamical Systems with a closed-form description.
 # License: BSD (c) 2021
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import numpy as np
 from numpy import linalg as LA
@@ -35,9 +36,9 @@ class DynamicalSystem(ABC):
 
     def __init__(
         self,
-        pose: ObjectPose = None,
+        pose: Optional[ObjectPose] = None,
         maximum_velocity: float = None,
-        dimension: int = None,
+        dimension: Optional[int] = None,
         attractor_position: np.ndarray = None,
     ):
 
@@ -61,9 +62,9 @@ class DynamicalSystem(ABC):
 
         if pose is None:
             # Null pose
-            self.pose = ObjectPose()
+            self.pose = ObjectPose(position=np.zeros(dimension))
         else:
-            self.pose = pose
+            self.pose: ObjectPose = pose
 
         self.attractor_position = attractor_position
 
