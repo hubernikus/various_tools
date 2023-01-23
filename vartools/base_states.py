@@ -57,7 +57,7 @@ class State(object):
     @property
     def center_position(self):
         return self._center_position
-
+o
     @center_position.setter
     def center_position(self, value):
         if isinstance(value, list):

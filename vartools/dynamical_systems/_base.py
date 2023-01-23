@@ -62,7 +62,7 @@ class DynamicalSystem(ABC):
 
         if pose is None:
             # Null pose
-            self.pose = ObjectPose(position=np.zeros(dimension))
+            self.pose = ObjectPose(position=np.zeros(self.dimension))
         else:
             self.pose: ObjectPose = pose
 
