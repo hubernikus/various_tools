@@ -9,7 +9,7 @@ import logging
 import numpy as np
 from numpy import linalg as LA
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import scipy
 from scipy.io import loadmat
@@ -33,13 +33,13 @@ class MotionDataHandler:
     time: numpy-Array of shape[n_datapoints]
     """
 
-    position: VectorArray = np.empty(0)
-    velocity: VectorArray = np.empty(0)
-    sequence_value: VectorArray = np.empty(0)
+    position: VectorArray = field(default_factory=lambda: np.empty(0))
+    velocity: VectorArray = field(default_factory=lambda: np.empty(0))
+    sequence_value: VectorArray = field(default_factory=lambda: np.empty(0))
 
-    direction: VectorArray = np.empty(0)
+    direction: VectorArray = field(default_factory=lambda: np.empty(0))
 
-    attractor_position: Vector = np.empty(0)
+    attractor_position: Vector = field(default_factory=lambda: np.empty(0))
 
     @property
     def attractor(self):
