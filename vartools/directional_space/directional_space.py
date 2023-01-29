@@ -9,7 +9,7 @@ Helper function for directional & angle evaluations
 
 # Use python 3.10 [annotations / typematching]
 from __future__ import annotations  # Not needed from python 3.10 onwards
-from typing import List
+from typing import List, Optional
 
 import warnings
 from typing import Callable
@@ -26,9 +26,9 @@ from .unit_direction import UnitDirection
 
 def get_angle_space_of_array(
     directions: np.ndarray,
-    positions: np.ndarray = None,
-    func_vel_default: Callable[[np.ndarray], np.ndarray] = None,
-    null_direction_abs: np.ndarray = None,
+    positions: Optional[np.ndarray] = None,
+    func_vel_default: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+    null_direction_abs: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """Get the angle space for a whole array."""
     dim = directions.shape[0]
@@ -50,10 +50,10 @@ def get_angle_space_of_array(
 
 def get_angle_space(
     direction: np.ndarray,
-    null_direction: np.ndarray = None,
-    null_matrix: np.ndarray = None,
-    normalize: bool = None,
-    OrthogonalBasisMatrix: np.ndarray = None,
+    null_direction: Optional[np.ndarray] = None,
+    null_matrix: Optional[np.ndarray] = None,
+    normalize: Optional[bool] = None,
+    OrthogonalBasisMatrix: Optional[np.ndarray] = None,
 ):
     """Get the direction transformed to the angle space with respect to the 'null' direction."""
     if OrthogonalBasisMatrix is not None:

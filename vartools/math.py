@@ -1,7 +1,9 @@
 """ Various tools to help / and speed up."""
 from .linalg import get_orthogonal_basis
 
-from typing import Callable
+from enum import Enum, auto
+
+from typing import Callable, Optional
 import warnings
 
 import numpy as np
@@ -13,7 +15,7 @@ Vector = npt.ArrayLike
 
 def get_numerical_gradient_of_vectorfield(
     position: np.ndarray,
-    function: Callable[[np.ndarray], float],
+    function: Callable[[np.ndarray], np.ndarray],
     delta_magnitude: float = 1e-6,
 ) -> np.ndarray:
     dimension = position.shape[0]
@@ -124,12 +126,19 @@ def get_scaled_orthogonal_projection(vector):
     ) @ vector.reshape(1, -1)
 
 
+class CircleIntersectionType(Enum):
+    CLOSE = auto()
+    FAR = auto()
+    BOTH = auto()
+
+
 def get_intersection_with_circle(
     start_position: np.ndarray,
     direction: np.ndarray,
     radius: float,
-    only_positive: bool = True,
-) -> np.ndarray:
+    only_positive: bool = None,
+    intersection_type: CircleIntersectionType = CircleIntersectionType.FAR,
+) -> Optional[np.ndarray]:
     """Returns intersection with circle with center at 0
     of of radius 'radius' and the line defined as 'start_position + x * direction'
 
@@ -138,6 +147,14 @@ def get_intersection_with_circle(
     """
     if not radius:  # Zero radius
         return None
+
+    if only_positive is not None:
+        warnings.warn("Remove only_positive")
+        # Make depreciated argument work
+        if only_positive:
+            intersection_type = CircleIntersectionType.FAR
+        else:
+            intersection_type = CircleIntersectionType.BOTH
 
     # Binomial Formula to solve for x in:
     # || dir_reference + x * (delta_dir_conv) || = radius
@@ -150,13 +167,19 @@ def get_intersection_with_circle(
         # No intersection with circle
         return None
 
-    if only_positive:
-        # Only negative direction due to expected negative A (?!) [returns max-direciton]..
+    if intersection_type == CircleIntersectionType.FAR:
+        # Only negative direction due to expected negative A (?!) [returns max-direction]..
         fac_direction = (-BB + np.sqrt(DD)) / (2 * AA)
         point = start_position + fac_direction * direction
         return point
 
-    else:
+    elif intersection_type == CircleIntersectionType.CLOSE:
+        # Only negative direction due to expected negative A (?!) [returns max-direction]..
+        fac_direction = (-BB - np.sqrt(DD)) / (2 * AA)
+        point = start_position + fac_direction * direction
+        return point
+
+    elif intersection_type == CircleIntersectionType.BOTH:
         factors = (-BB + np.array([-1, 1]) * np.sqrt(DD)) / (2 * AA)
         points = (
             np.tile(start_position, (2, 1)).T
@@ -164,6 +187,9 @@ def get_intersection_with_circle(
             * np.tile(direction, (2, 1)).T
         )
         return points
+
+    else:
+        raise ValueError()
 
 
 def get_intersection_between_line_and_plane(
