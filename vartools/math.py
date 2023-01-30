@@ -136,7 +136,7 @@ def get_intersection_with_circle(
     start_position: np.ndarray,
     direction: np.ndarray,
     radius: float,
-    only_positive: bool = None,
+    only_positive: Optional[bool] = None,
     intersection_type: CircleIntersectionType = CircleIntersectionType.FAR,
 ) -> Optional[np.ndarray]:
     """Returns intersection with circle with center at 0

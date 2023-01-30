@@ -85,8 +85,13 @@ def get_angle_from_vector(
     ------
     angle : angle-space value of dimension (dim-1,)
     """
-    if not np.isclose(LA.norm(direction), 1):  # Normalize
-        raise ValueError("Not unit vector.")
+    # if not np.isclose(LA.norm(direction), 1):  # Normalize
+    #     raise ValueError("Not unit vector.")
+
+    if not (norm_dir := LA.norm(direction)):  # Normalize
+        raise ValueError("Undefined vector.")
+
+    direction = direction / norm_dir
 
     # direction_referenceSpace = base.null_matrix.T.dot(direction)
     direction_referenceSpace = base.T.dot(direction)
