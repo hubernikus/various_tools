@@ -9,6 +9,7 @@ Basic state to base anything on.
 from __future__ import annotations  # Not needed from python 3.10 onwards
 
 import warnings
+from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -82,17 +83,25 @@ class ObjectPose:
 
     def __init__(
         self,
-        position: np.ndarray = None,
-        orientation: np.ndarray = None,
-        stamp: Stamp = None,
-        dimension: int = None,
+        position: npt.ArrayLike,
+        orientation: Optional[np.ndarray] = None,
+        stamp: Optional[Stamp] = None,
+        dimension: Optional[int] = None,
     ):
         # Assign values
-        self.position = position
+        self.position = np.array(position)
         self.stamp = stamp
 
-        if orientation is None and self.dimension == 3:
-            self.orientation = Rotation.from_euler("x", [0])
+        if orientation is None:
+            if self.dimension == 2:
+                self.orientation = 0
+
+            elif self.dimension == 3:
+                self.orientation = Rotation.from_euler("x", [0])
+
+            else:
+                # Keep none
+                self.orientation = orientation
         else:
             self.orientation = orientation
 

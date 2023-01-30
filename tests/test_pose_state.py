@@ -15,7 +15,8 @@ from vartools.states import ObjectPose
 
 class TestObjectPose(unittest.TestCase):
     def test_null_pose(self):
-        pose = ObjectPose()
+        dimension = np.zeros(3)
+        pose = ObjectPose(position=dimension)
 
         position = np.array([1, 0, 0])
         # position_trafo = pose.transform_position_from_reference_to_local(position)
