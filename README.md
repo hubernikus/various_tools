@@ -1,7 +1,8 @@
 # Various Tools Library
 ---
+[Badge License]: https://img.shields.io/badge/License-MPL_2.0-FF7139.svg?style=for-the-badge
+
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
 
 Various tools from linear algebra to vector spaces to simplify and speed up computation.
