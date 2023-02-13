@@ -14,7 +14,7 @@ setup(
     maintainer="Lukas Huber",
     maintainer_email="lukas.huber@epfl.ch",
     description="Various Mathematical Tools",
-    license_file=LICENSE,
+    # license_file=LICENSE,
     # package_dir={'': 'src'},
     tests_require=["pytest"],
     # entry_points={
