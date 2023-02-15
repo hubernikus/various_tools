@@ -126,10 +126,13 @@ def get_scaled_orthogonal_projection(vector):
     ) @ vector.reshape(1, -1)
 
 
-class CircleIntersectionType(Enum):
+class IntersectionType(Enum):
     CLOSE = auto()
     FAR = auto()
     BOTH = auto()
+
+
+CircleIntersectionType = IntersectionType
 
 
 def get_intersection_with_circle(

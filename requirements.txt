@@ -3,6 +3,7 @@
 wheel
 numpy
 setuptools
+filterpy
 
 # For testing / development 
 ipython   # For testing pusposes only | remove later
