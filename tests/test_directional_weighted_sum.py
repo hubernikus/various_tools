@@ -21,7 +21,7 @@ from vartools.directional_space import get_angle_from_vector, get_vector_from_an
 
 from vartools.directional_space import UnitDirection
 
-# from vartools.directional_space import get_directional_weighted_sum
+from vartools.directional_space import get_directional_weighted_sum
 from vartools.directional_space import get_directional_weighted_sum_from_unit_directions
 
 
@@ -125,11 +125,52 @@ class TestDirecionalSum(unittest.TestCase):
         self.assertTrue(np.allclose(summed_dir, correct_angle))
 
 
-if (__name__) == "__main__":
-    unittest.main(argv=["first-arg-is-ignored"], exit=False)
+def test_joint_space_directional_summing():
+    normal = np.array([-0.0, -0.0, -0.0, -0.17615591, -0.0, -0.0, 0.98436228])
 
-    # user_test = True
-    user_test = False
-    if user_test:
-        Tester = TestDirecionalSum()
-        Tester.test_directional_weighting()
+    weights = np.array([0.2056619, 0.06801348])
+    directions = np.array(
+        [
+            [4.42613182e-02, -6.00956722e-01],
+            [-4.03690722e-01, -1.12331011e-02],
+            [9.85653410e-03, 7.66615553e-01],
+            [-7.81781096e-01, -3.69418457e-04],
+            [-1.26130889e-02, -2.08493040e-01],
+            [4.55483752e-01, 1.17848462e-03],
+            [1.27166679e-01, 8.69169465e-02],
+        ]
+    )
+
+    rotated_velocity = get_directional_weighted_sum(
+        null_direction=normal,
+        weights=weights,
+        directions=directions,
+    )
+
+    assert not np.any(np.isnan(rotated_velocity))
+
+
+def test_orthogonal_basis():
+    normal = np.array([-0.0, -0.0, -0.0, -0.17615591, -0.0, -0.0, 0.98436228])
+    basis = get_orthogonal_basis(normal)
+    assert not np.any(np.isnan(basis))
+
+    for ii in range(normal.shape[0]):
+        assert np.isclose(np.linalg.norm(basis[:, ii]), 1)
+
+        for jj in range(ii + 1, normal.shape[0]):
+            assert np.isclose(basis[:, ii] @ basis[:, jj], 0)
+
+
+if (__name__) == "__main__":
+    test_joint_space_directional_summing()
+    # test_orthogonal_basis()
+    # unittest.main(argv=["first-arg-is-ignored"], exit=False)
+
+    # # user_test = True
+    # user_test = False
+    # if user_test:
+    #     Tester = TestDirecionalSum()
+    #     Tester.test_directional_weighting()
+
+    print("Done")
