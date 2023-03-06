@@ -50,6 +50,12 @@ class Animator(ABC):
     MOUSE_CLICK / SPACE: Pause-play-toggle on click
     LEFT / 'a': One step back
     RIGHT / '': One step forward
+
+    Trouble-Shooting
+    ----------------
+    When saving the animation, try to use python together with the animation,
+    as in ipython environments the process is slower and has a (background)
+    workspace which can lead to unexpected results.
     """
 
     def __init__(
@@ -123,7 +129,7 @@ class Animator(ABC):
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
 
         if save_animation:
-            plt.rcParams["figure.autolayout"] = True
+            # plt.rcParams["figure.autolayout"] = False
             plt.rcParams["animation.ffmpeg_path"] = "/usr/bin/ffmpeg"
 
             if self.animation_name is None:
@@ -135,32 +141,38 @@ class Animator(ABC):
 
             print(f"Saving animation to: {animation_name}.")
 
-            # breakpoint()
             anim = animation.FuncAnimation(
                 self.fig,
                 self.update_step,
                 frames=self.it_max,
-                interval=self.dt_sleep * 1000,  # Conversion [s] -> [ms]
+                interval=self.dt_simulation * 1000,  # Conversion [s] -> [ms]
+                blit=False,  # No optimization - but no return needed
             )
 
             # FFmpeg for
-            FFwriter = animation.FFMpegWriter(
-                fps=30,
-                # extra_args=['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2'],
-                # extra_args=['-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2'],
-                # extra_args=['-vf', 'crop=1600:800']
-            )
+            # FFwriter = animation.FFMpegWriter(
+            #     fps=30,
+            #     # extra_args=['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2'],
+            #     # extra_args=['-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2'],
+            #     # extra_args=['-vf', 'crop=1600:800']
+            # )
 
-            FFwriter = animation.FFMpegWriter(fps=30, extra_args=["-vcodec", "h264"])
+            # FFwriter = animation.FFMpegWriter(fps=30, extra_args=["-vcodec", "h264"])
             # FFwriter = animation.FFMpegWriter(fps=30, extra_args=["-vcodec", "libx264"])
+
+            # video_writer = animation.FFMpegWriter(
+            #     fps=30,
+            #     #     # extra_args=["-vcodec", "libx264"],
+            #     #     # extra_args=["-vcodec", "h264"],
+            # )
+            video_writer = animation.PillowWriter(fps=1.0 / self.dt_simulation)
 
             anim.save(
                 os.path.join("figures", animation_name),
+                writer=video_writer,
                 # metadata={"artist": "Lukas Huber"},
                 # We chose default 'pillow', beacuse 'ffmpeg' often gives errors
-                # writer=writervideo,
                 # writer=FFwriter,
-                animation.PillowWriter(),
             )
             print("Animation saving finished.")
 
@@ -204,7 +216,7 @@ class Animator(ABC):
         simulation)."""
         return False
 
-    def _restore_figsize(self):
+    def restore_figsize(self):
         """Reset to correct figure size before saving.
         Somehow three times fixes the size -> I'm really not sure why this hast
         to be done. but it overcomes the 'ffmpeg'-saving error.
