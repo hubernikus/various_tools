@@ -70,20 +70,25 @@ def get_orthogonal_basis(vector: np.ndarray, normalize: bool = True) -> np.ndarr
         # TODO: ensure smoothness for general basis for d > 3 (?!?)
         # if True:
         basis_matrix[:, 0] = vector
-        if vector[0]:  # nonzero value
-            it_start = 1
-        else:
-            basis_matrix[0, 1] = 1
-            it_start = 2
 
-        for ii in range(it_start, dim):
-            if vector[ii]:  # nonzero
-                basis_matrix[:ii, ii] = vector[:ii]
-                basis_matrix[ii, ii] = -np.sum(vector[:ii] ** 2) / vector[ii]
-                basis_matrix[: ii + 1, ii] = basis_matrix[
-                    : ii + 1, ii
-                ] / np.linalg.norm(basis_matrix[: ii + 1, ii])
-            else:
-                basis_matrix[ii, ii] = 1
+        ind_zeros = np.isclose(vector, 0.0)
+        n_zeros = sum(ind_zeros)
+        ind_nonzero = np.logical_not(ind_zeros)
 
+        n_nonzeros = sum(ind_nonzero)
+        sub_vector = vector[ind_nonzero]
+        sub_matrix = np.zeros((n_nonzeros, n_nonzeros))
+        sub_matrix[:, 0] = sub_vector
+
+        for ii, jj in enumerate(np.arange(ind_zeros.shape[0])[ind_zeros]):
+            basis_matrix[jj, ii + 1] = 1.0
+
+        for ii in range(1, n_nonzeros):
+            sub_matrix[:ii, ii] = sub_vector[:ii]
+            sub_matrix[ii, ii] = -np.sum(sub_vector[:ii] ** 2) / sub_vector[ii]
+            sub_matrix[: ii + 1, ii] = sub_matrix[: ii + 1, ii] / np.linalg.norm(
+                sub_matrix[: ii + 1, ii]
+            )
+
+            basis_matrix[ind_nonzero, n_zeros + ii] = sub_matrix[:, ii]
     return basis_matrix

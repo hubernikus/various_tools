@@ -201,7 +201,7 @@ def get_directional_weighted_sum(
     null_direction: np.ndarray,
     weights: npt.ArrayLike,
     directions: np.ndarray,
-    unit_directions: List[UnitDirection] = None,
+    unit_directions: list[np.ndarray] = None,
     total_weight: float = 1,
     normalize: bool = True,
     normalize_reference: bool = True,
@@ -221,6 +221,7 @@ def get_directional_weighted_sum(
     ------
     summed_velocity: The weighted sum transformed back to the initial space
     """
+    # TODO: this can be vastly speed up by removing the 'unit directions'
     weights = np.array(weights)
 
     ind_nonzero = np.logical_and(
