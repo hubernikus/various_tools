@@ -2,6 +2,8 @@
 Test linear dynamical system.
 """
 
+import numpy as np
+
 from vartools.dynamical_systems import LinearSystem
 from vartools.dynamical_systems import plot_dynamical_system_quiver
 
