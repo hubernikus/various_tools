@@ -39,12 +39,12 @@ class TwistStamped:
 @dataclass(slots=True)
 class Twist:
     linear: npt.ArrayLike
-    angular: npt.ArrayLike | float
+    angular: Optional[npt.ArrayLike | float]
 
     def __post_init__(self):
         self.linear = np.array(self.linear)
 
-        if self.dimension == 3:
+        if self.dimension == 3 and self.angular is not None:
             self.angular = np.array(self.angular)
 
     @property
@@ -53,7 +53,13 @@ class Twist:
 
     @classmethod
     def create_trivial(cls, dimension: int) -> Self:
-        return cls(np.zeros(dimension), np.zeros(dimension))
+        if dimension == 2:
+            angular = 0.0
+        elif dimension == 3:
+            angular = np.zeros(dimension)
+        else:
+            angular = None
+        return cls(np.zeros(dimension), angular)
 
 
 class ObjectTwist(Twist):
