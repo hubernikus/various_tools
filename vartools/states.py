@@ -4,10 +4,11 @@ Basic state to base anything on.
 # Author: Lukas Huber
 # Mail: lukas.huber@epfl.ch
 # License: BSD (c) 2021
-# import time
-# Use python 3.10 [annotations / typematching]
-from __future__ import annotations  # Not needed from python 3.10 onwards
 
+# Not needed from python 3.11 onwards
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 import warnings
 from typing import Optional
 
@@ -22,131 +23,67 @@ class BaseState:
         pass
 
 
-class Time:
-    pass
-
-
+@dataclass(slots=True)
 class Stamp:
-    def __init__(self, seq: int = None, timestamp: Time = None, frame_id: str = None):
-        self.seq = seq
-        self.timestamp = timestamp
-        self.frame_id = frame_id
+    seq: int = 0
+    timestamp: int = 0
+    frame_id: str = ""
 
 
-class ObjectTwist:
-    def __repr__(self):
-        return f"Linear {self.linear} \n" + f"Angular: {self.angular}"
-
-    def __init__(
-        self,
-        linear: np.ndarray = None,
-        angular: np.ndarray = None,
-        dimension: float = None,
-    ):
-
-        if dimension is None:
-            if linear is None:
-                self.dimension = 2
-            else:
-                self.dimension = dimension
-
-        self.linear = linear
-        self.angular = angular
-
-    @property
-    def linear(self):
-        return self._linear
-
-    @linear.setter
-    def linear(self, value):
-        if value is None:
-            self._linear = np.zeros(self.dimension)
-        else:
-            self._linear = np.array(value)
+@dataclass(slots=True)
+class TwistStamped:
+    stamp: Stamp
+    pose: Pose
 
 
-class ObjectPose:
-    """(ROS)-inspired pose of an object of dimension
-    Attributes
-    ----------
-    Position
+@dataclass(slots=True)
+class Twist:
+    linear: npt.ArrayLike
+    angular: npt.ArrayLike | float
 
-    """
+    def __post_init__(self):
+        self.linear = np.array(self.linear)
 
-    def __repr__(self):
-        return (
-            super().__repr__()
-            + " with \n"
-            + f"position {repr(self.position)} \n"
-            + f"orientation: {self.orientation}"
-        )
-
-    def __init__(
-        self,
-        position: npt.ArrayLike,
-        orientation: Optional[np.ndarray] = None,
-        stamp: Optional[Stamp] = None,
-        dimension: Optional[int] = None,
-    ):
-        # Assign values
-        self.position = np.array(position)
-        self.stamp = stamp
-
-        if orientation is None:
-            if self.dimension == 2:
-                self.orientation = 0
-
-            elif self.dimension == 3:
-                self.orientation = Rotation.from_euler("x", [0])
-
-            else:
-                # Keep none
-                self.orientation = orientation
-        else:
-            self.orientation = orientation
+        if self.dimension == 3:
+            self.angular = np.array(self.angular)
 
     @property
     def dimension(self) -> int:
-        if self.position is None:
-            return None
-        return self.position.shape[0]
+        return self.linear.shape[0]
 
-    @property
-    def position(self) -> np.ndarray:
-        return self._position
+    @classmethod
+    def create_trivial(cls, dimension: int) -> Self:
+        return cls(np.zeros(dimension), np.zeros(dimension))
 
-    @position.setter
-    def position(self, value: npt.ArrayLike):
-        if value is None:
-            self._position = value
-            return
-        self._position = np.array(value)
 
-    @property
-    def orientation(self):
-        return self._orientation
+class ObjectTwist(Twist):
+    # TODO remove in the future
+    pass
 
-    @orientation.setter
-    def orientation(self, value):
-        """Value is of type 'float' for 2D
-        or `numpy.array`/`scipy.spatial.transform.Rotation` for 3D and higher."""
-        if value is None:
-            self._orientation = value
-            return
 
-        if self.dimension == 2:
-            self._orientation = value
-            # self.rotation_matrix = get_rotation_matrix(self.orientation)
+@dataclass
+class Pose:
+    position: npt.ArrayLike
+    # 2D or 3D
+    orientation: Optional[float | Rotation] = None
 
-        elif self.dimension == 3:
-            if not isinstance(value, Rotation):
-                raise TypeError("Use 'scipy - Rotation' type for 3D orientation.")
-            self._orientation = value
+    def __post_init__(self):
+        self.position = np.array(self.position)
 
+    @classmethod
+    def create_trivial(cls, dimension: int) -> Self:
+        if dimension == 2:
+            orientation = 0.0
+        elif dimension == 3:
+            orientation = Rotation.from_euler(0, "x")
         else:
-            if value is not None and np.sum(np.abs(value)):  # nonzero value
-                warnings.warn("Rotation for dimensions > 3 not defined.")
-            self._orientation = value
+            orientation = None
+
+        return cls(np.zeros(dimension), orientation)
+
+    @property
+    def dimension(self) -> int:
+        return self.position.shape[0]
 
     @property
     def rotation_matrix(self):
@@ -259,14 +196,14 @@ class ObjectPose:
         # return self.apply_rotation_local_to_reference(direction)
 
     def transform_direction_from_relative(self, direction: np.ndarray) -> np.ndarray:
-        if self._orientation is None:
+        if self.orientation is None:
             return direction
 
         if self.dimension == 2:
             return self.rotation_matrix.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.apply(direction.T).flatten()
+            return self.orientation.apply(direction.T).flatten()
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
@@ -275,14 +212,14 @@ class ObjectPose:
         return self.transform_direction_from_relative(directions)
 
     def transform_direction_to_relative(self, direction: np.ndarray) -> np.ndarray:
-        if self._orientation is None:
+        if self.orientation is None:
             return direction
 
         if self.dimension == 2:
             return self.rotation_matrix.T.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.inv().apply(direction.T).flatten()
+            return self.orientation.inv().apply(direction.T).flatten()
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
@@ -291,33 +228,55 @@ class ObjectPose:
         return self.transform_direction_to_relative(directions)
 
     def apply_rotation_reference_to_local(self, direction: np.ndarray) -> np.ndarray:
-        if self._orientation is None:
+        if self.orientation is None:
             return direction
 
         if self.dimension == 2:
             return self.rotation_matrix.T.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.inv().apply(direction.T).T
+            return self.orientation.inv().apply(direction.T).T
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
 
     def apply_rotation_local_to_reference(self, direction: np.ndarray) -> np.ndarray:
-        if self._orientation is None:
+        if self.orientation is None:
             return direction
 
         if self.dimension == 2:
             return self.rotation_matrix.dot(direction)
 
         elif self.dimension == 3:
-            return self._orientation.apply(direction.T).flatten()
+            return self.orientation.apply(direction.T).flatten()
 
         else:
             warnings.warn("Not implemented for higer dimensions")
             return direction
 
 
+class ObjectPose(Pose):
+    # TODO: remove in the future
+    pass
+
+
+@dataclass(slots=True)
+class PoseStamped:
+    pose: Pose
+    stamp: Stamp
+
+
+@dataclass(slots=True)
 class Wrench:
-    def __init__(self, linear, angular):
-        pass
+    linear: np.ndarray
+    angular: np.ndarray
+
+    @classmethod
+    def create_trivial(cls, dimension: int) -> Self:
+        return cls(np.zeros(dimension), np.zeros(dimension))
+
+
+@dataclass(slots=True)
+class WrenchStamped:
+    Wrench: Wrench
+    stamp: Stamp

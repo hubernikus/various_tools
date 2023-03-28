@@ -16,6 +16,7 @@ from vartools.states import ObjectPose
 
 def allow_max_velocity(original_function=None):
     """Decorator to allow to limit the velocity to a maximum."""
+
     # Reintroduce (?)
     def wrapper(*args, max_vel=None, **kwargs):
         if max_vel is None:
@@ -37,11 +38,10 @@ class DynamicalSystem(ABC):
     def __init__(
         self,
         pose: Optional[ObjectPose] = None,
-        maximum_velocity: float = None,
+        maximum_velocity: Optional[float] = None,
         dimension: Optional[int] = None,
-        attractor_position: np.ndarray = None,
+        attractor_position: Optional[np.ndarray] = None,
     ):
-
         if pose is not None:
             self.dimension = pose.position.shape[0]
 

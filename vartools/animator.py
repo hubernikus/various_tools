@@ -23,7 +23,7 @@ class Animator(ABC):
     dt_sleep: sleep time
 
     animation_name: The name the animation should be saved to.
-    filetype: File type where animation is saved. Only used when no is given.
+    file_type: File type where animation is saved. Only used when no is given.
 
     fig: The figure object. Need for click etc. events
 
@@ -165,11 +165,13 @@ class Animator(ABC):
             #     #     # extra_args=["-vcodec", "libx264"],
             #     #     # extra_args=["-vcodec", "h264"],
             # )
-            video_writer = animation.PillowWriter(fps=1.0 / self.dt_simulation)
+
+            video_writer = animation.PillowWriter(fps=round(1.0 / self.dt_simulation))
 
             anim.save(
                 os.path.join("figures", animation_name),
                 writer=video_writer,
+                # fps=int(1.0 / self.dt_simulation),
                 # metadata={"artist": "Lukas Huber"},
                 # We chose default 'pillow', beacuse 'ffmpeg' often gives errors
                 # writer=FFwriter,
