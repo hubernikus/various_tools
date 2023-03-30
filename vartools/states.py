@@ -8,9 +8,10 @@ Basic state to base anything on.
 # Not needed from python 3.11 onwards
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import copy
 import warnings
 from typing import Optional
+from dataclasses import dataclass, field
 
 import numpy as np
 import numpy.typing as npt
@@ -67,7 +68,7 @@ class ObjectTwist(Twist):
     pass
 
 
-@dataclass
+@dataclass(slots=True)
 class Pose:
     position: npt.ArrayLike
     # 2D or 3D
@@ -118,6 +119,7 @@ class Pose:
         return self.transform_position_from_relative(*args, **kwargs)
 
     def transform_pose_to_relative(self, pose: ObjectPose) -> ObjectPose:
+        pose = copy.deepcopy(pose)
         pose.position = self.transform_position_to_relative(pose.position)
 
         if self.orientation is None:
@@ -131,8 +133,10 @@ class Pose:
             raise NotImplementedError()
 
         pose.orientation += self.orientation
+        return pose
 
     def transform_pose_from_relative(self, pose: ObjectPose) -> ObjectPose:
+        pose = copy.deepcopy(pose)
         pose.position = self.transform_position_from_relative(pose.position)
 
         if self.orientation is None:
