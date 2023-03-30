@@ -38,6 +38,7 @@ class TwistStamped:
 
 
 @dataclass(slots=True)
+# @dataclass
 class Twist:
     linear: npt.ArrayLike
     angular: Optional[npt.ArrayLike | float]
@@ -60,9 +61,14 @@ class Twist:
             angular = np.zeros(dimension)
         else:
             angular = None
-        return cls(np.zeros(dimension), angular)
+        # return cls(np.zeros(dimension), angular)
+        # This has been breaking once when python was running for too long
+        # restarting fixed it... But where did the bug come from?
+        return Twist(np.zeros(dimension), angular)
 
 
+# @dataclass
+@dataclass(slots=True)
 class ObjectTwist(Twist):
     # TODO remove in the future
     pass
@@ -119,13 +125,13 @@ class Pose:
         return self.transform_position_from_relative(*args, **kwargs)
 
     def transform_pose_to_relative(self, pose: ObjectPose) -> ObjectPose:
-        pose = copy.deepcopy(pose)
+        pose = copy.deepcopy()
         pose.position = self.transform_position_to_relative(pose.position)
 
         if self.orientation is None:
             return pose
 
-        if pose.orientation is None:
+        if pose.orientation is not None:
             pose.orientation = pose.orientation - self.orientation
             return pose
 
@@ -142,7 +148,7 @@ class Pose:
         if self.orientation is None:
             return pose
 
-        if pose.orientation is None:
+        if pose.orientation is not None:
             pose.orientation = pose.orientation + self.orientation
             return pose
 
@@ -265,6 +271,7 @@ class Pose:
             return direction
 
 
+@dataclass(slots=True)
 class ObjectPose(Pose):
     # TODO: remove in the future
     pass
