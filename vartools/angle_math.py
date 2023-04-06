@@ -6,8 +6,9 @@ Helper function for directional & angle evaluations
 # Created: 2019-11-15
 # Email: lukas.huber@epfl.ch
 
+import math
 import warnings
-from math import pi
+
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -22,19 +23,20 @@ def get_orientation_from_direction(
 
     Assumes normalized null vector  (!)."""
     if not (dir_norm := np.linalg.norm(direction)):
-        return Rotation.from_quat([1.0, 0, 0, 0.0])
+        return Rotation.from_euler("z", 0)
+    dir_normalized = direction / dir_norm
 
-    rot_vec = np.cross(null_vector, direction / dir_norm)
+    rot_vec = np.cross(null_vector, dir_normalized)
     if not (rotvec_norm := np.linalg.norm(rot_vec)):
-        return Rotation.from_quat([1.0, 0, 0, 0.0])
+        return Rotation.from_euler("z", 0)
 
-    rot_vec = rot_vec / rotvec_norm
+    rot_vec_normalized = rot_vec / rotvec_norm
     # theta = np.arcsin(rotvec_norm)
     # quat = np.hstack((rot_vec * np.cos(theta / 2.0), [np.sin(theta / 2.0)]))
     # return Rotation.from_quat(quat)
 
-    theta = np.arccos(np.dot(null_vector, direction))
-    return Rotation.from_rotvec(rot_vec / rotvec_norm * theta)
+    theta = math.acos(np.dot(null_vector, dir_normalized))
+    return Rotation.from_rotvec(rot_vec_normalized * theta)
 
 
 def angle_is_between(angle_test, angle_low, angle_high):
@@ -59,15 +61,15 @@ def angle_is_in_between(angle_test, angle_low, angle_high, margin=1e-9):
 
 def angle_modulo(angle):
     """Get angle in [-pi, pi["""
-    return ((angle + pi) % (2 * pi)) - pi
+    return ((angle + math.pi) % (2 * math.pi)) - math.pi
 
 
 def angle_difference_directional_2pi(angle1, angle2):
     angle_diff = angle1 - angle2
-    while angle_diff > 2 * pi:
-        angle_diff -= 2 * pi
+    while angle_diff > 2 * math.pi:
+        angle_diff -= 2 * math.pi
     while angle_diff < 0:
-        angle_diff += 2 * pi
+        angle_diff += 2 * math.pi
     return angle_diff
 
 
@@ -77,10 +79,10 @@ def angle_difference_directional(angle1, angle2):
     Note: angle1-angle2 (non-commutative)
     """
     angle_diff = angle1 - angle2
-    while angle_diff > pi:
-        angle_diff = angle_diff - 2 * pi
-    while angle_diff <= -pi:
-        angle_diff = angle_diff + 2 * pi
+    while angle_diff > math.pi:
+        angle_diff = angle_diff - 2 * math.pi
+    while angle_diff <= -math.pi:
+        angle_diff = angle_diff + 2 * math.pi
     return angle_diff
 
 
@@ -94,8 +96,8 @@ def angle_difference_abs(angle1, angle2):
     angle1-angle2 = angle2-angle1(commutative)
     """
     angle_diff = np.abs(angle2 - angle1)
-    while angle_diff >= pi:
-        angle_diff = 2 * pi - angle_diff
+    while angle_diff >= math.pi:
+        angle_diff = 2 * math.pi - angle_diff
     return angle_diff
 
 
