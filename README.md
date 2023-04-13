@@ -16,12 +16,12 @@ It consists of three main sub-libraries:
 
 ## Custom Environment
 Choose your favorite python-environment. I recommend to use [virtual environment venv](https://docs.python.org/3/library/venv.html).
-Setup virtual environment (use whatever compatible environment manager that you have with Python >3.7).
+Setup virtual environment (use whatever compatible environment manager that you have with Python >3.10).
 
 ``` bash
 python3.10 -m venv .venv
 ```
-with python -V > 3.7
+with python -V > 3.10
 
 Activate your environment
 ``` sh
