@@ -32,7 +32,7 @@ def allow_max_velocity(original_function=None):
     return wrapper
 
 
-class DynamicalSystem(ABC):
+class Dynamics(ABC):
     """Virtual Class for Base dynamical system"""
 
     def __init__(
@@ -145,3 +145,7 @@ class DynamicalSystem(ABC):
             dataset.append(current_position)
 
         return np.array(dataset).T
+
+class DynamicalSystem(Dynamics):
+    # TODO: remove in the future
+    pass

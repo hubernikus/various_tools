@@ -1,4 +1,4 @@
-"""
+ """
 Angle math for python in 2D
 Helper function for directional & angle evaluations
 """
