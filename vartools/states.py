@@ -113,12 +113,10 @@ class Pose:
 
     def update(self, delta_time: float, twist: ObjectTwist):
         if twist.linear is not None:
-            self.position = position + twist.linear * delta_time
+            self.position = self.position + twist.linear * delta_time
 
         if twist.angular is not None:
-            breakpoint()
-            # Not implemented
-            self.angular = position + twist.agnular * delta_time
+            self.orientation = self.orientation + twist.angular * delta_time
 
     def transform_position_from_reference_to_local(self, *args, **kwargs):
         # TODO: is being renamed -> remove original]
