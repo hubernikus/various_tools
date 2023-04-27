@@ -120,8 +120,7 @@ class VectorfieldPlotter:
         self, vector_functor, obstacle_list=None, check_functor=None, n_resolution=10
     ):
         if self.positions is None:
-            nx = n_resolution
-            ny = n_resolution
+            nx = ny = n_resolution
             x_vals, y_vals = np.meshgrid(
                 np.linspace(self.x_lim[0], self.x_lim[1], nx),
                 np.linspace(self.y_lim[0], self.y_lim[1], ny),
