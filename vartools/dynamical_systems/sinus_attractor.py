@@ -19,6 +19,8 @@ from .velocity_trimmer import BaseTrimmer
 class SinusAttractorSystem(DynamicalSystem):
     """Dynamical System in 2D."""
 
+    # TODO: currently this shows weird behavior - maybe redo?
+
     def __init__(
         self,
         attractor_position: np.ndarray = None,
@@ -33,7 +35,10 @@ class SinusAttractorSystem(DynamicalSystem):
         if pose is not None:
             # Only pose or attractor position can exist
             attractor_position = None
-        super().__init__(attractor_position=attractor_position)
+            dimension = pose.dimension
+        else:
+            dimension = None
+        super().__init__(attractor_position=attractor_position, dimension=dimension)
         self.attractor_position = attractor_position
 
         self.maximum_velocity = maximum_velocity
@@ -47,13 +52,27 @@ class SinusAttractorSystem(DynamicalSystem):
     def evaluate(self, position):
         """Evaluate with included dynamics."""
         # TODO: move to base-dynamical-system-class
-        velocity = self.compute_dynamics(position)
+        if self.pose is not None:
+            relative_position = self.pose.transform_position_to_relative(position)
+        elif self.attractor_position is not None:
+            relative_position = position - self.attractor_position
 
+        velocity = self.evaluate_relative(relative_position)
+
+        if self.pose is not None:
+            velocity = self.pose.transform_direction_from_relative(velocity)
+
+        return velocity
+
+    def evaluate_relative(self, position):
+        """Input is the (relative) position."""
+        velocity = self.compute_dynamics(position)
+        # breakpoint()
         if self.maximum_velocity is None:
             return velocity
 
         # velocity = self.trimmer.limit(position=position, velocity=velocity)
-        dist_attractor = np.linalg.norm(position - self.attractor_position)
+        dist_attractor = np.linalg.norm(position)
         if not (velocity_magnitude := np.linalg.norm(velocity)):
             return velocity
 
@@ -63,6 +82,7 @@ class SinusAttractorSystem(DynamicalSystem):
         new_magnitude = self.maximum_velocity * (
             dist_attractor / self.distance_slowdown
         )
+        # breakpoint()
         return velocity / velocity_magnitude * new_magnitude
 
     def compute_dynamics(self, relative_position: np.ndarray) -> np.ndarray:
@@ -75,7 +95,8 @@ class SinusAttractorSystem(DynamicalSystem):
 
         y_abs = abs(relative_position[1])
         if y_abs > self.fade_factor * amplitude:
-            velocity = relative_position
+            return (-1) * relative_position
+
         else:
             velocity = np.array([1, amplitude * np.cos(x_abs * self.stretch_fact_x)])
             if relative_position[0] > 0:
@@ -90,5 +111,5 @@ class SinusAttractorSystem(DynamicalSystem):
                 velocity = velocity / LA.norm(velocity)
                 velocity_linear = velocity_linear / LA.norm(velocity_linear)
                 velocity = fade_fac * velocity_linear + (1 - fade_fac) * velocity
-
+            # breakpoint()
         return velocity
