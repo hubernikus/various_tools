@@ -10,6 +10,8 @@ from typing import Optional
 import numpy as np
 from numpy import linalg as LA
 
+from vartools.states import Pose
+
 from ._base import DynamicalSystem
 from .velocity_trimmer import BaseTrimmer
 
