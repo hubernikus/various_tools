@@ -152,6 +152,7 @@ def get_intersection_with_circle(
         return None
 
     if only_positive is not None:
+        # raise Exception(" TODO - do the testing.")
         warnings.warn("Remove only_positive")
         # Make depreciated argument work
         if only_positive:
@@ -161,10 +162,10 @@ def get_intersection_with_circle(
 
     # Binomial Formula to solve for x in:
     # || dir_reference + x * (delta_dir_conv) || = radius
-    AA = np.sum(direction**2)
+    AA = np.sum(direction ** 2)
     BB = 2 * np.dot(direction, start_position)
-    CC = np.sum(start_position**2) - radius**2
-    DD = BB**2 - 4 * AA * CC
+    CC = np.sum(start_position ** 2) - radius ** 2
+    DD = BB ** 2 - 4 * AA * CC
 
     if DD < 0:
         # No intersection with circle
@@ -192,6 +193,7 @@ def get_intersection_with_circle(
         return points
 
     else:
+        breakpoint()
         raise ValueError()
 
 

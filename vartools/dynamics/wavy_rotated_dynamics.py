@@ -31,13 +31,7 @@ class WavyRotatedDynamics(DynamicalSystem):
         pose: Optional[Pose] = None,
         dimension: int = 2,
     ):
-        if pose is not None:
-            # Only pose or attractor position can exist
-            attractor_position = None
-            dimension = pose.dimension
-
-        super().__init__(dimension=dimension)
-        self.attractor_position = attractor_position
+        super().__init__(dimension=dimension, pose=pose)
 
         self.maximum_velocity = maximum_velocity
         self.distance_slowdown = distance_slowdown
@@ -55,8 +49,6 @@ class WavyRotatedDynamics(DynamicalSystem):
         # TODO: move to base-dynamical-system-class
         if self.pose is not None:
             relative_position = self.pose.transform_position_to_relative(position)
-        elif self.attractor_position is not None:
-            relative_position = position - self.attractor_position
 
         velocity = self.evaluate_relative(relative_position)
 
