@@ -11,7 +11,7 @@ from typing import Optional
 import numpy as np
 from numpy import linalg as LA
 
-from vartools.states import ObjectPose
+from vartools.states import Pose
 
 
 def allow_max_velocity(original_function=None):
@@ -37,7 +37,7 @@ class Dynamics(ABC):
 
     def __init__(
         self,
-        pose: Optional[ObjectPose] = None,
+        pose: Optional[Pose] = None,
         maximum_velocity: Optional[float] = None,
         dimension: Optional[int] = None,
         attractor_position: Optional[np.ndarray] = None,
@@ -62,9 +62,9 @@ class Dynamics(ABC):
 
         if pose is None:
             # Null pose
-            self.pose = ObjectPose(position=np.zeros(self.dimension))
+            self.pose = Pose.create_trivial(self.dimension)
         else:
-            self.pose: ObjectPose = pose
+            self.pose: Pose = pose
 
         self.attractor_position = attractor_position
 
@@ -145,6 +145,7 @@ class Dynamics(ABC):
             dataset.append(current_position)
 
         return np.array(dataset).T
+
 
 class DynamicalSystem(Dynamics):
     # TODO: remove in the future

@@ -41,7 +41,7 @@ class TwistStamped:
 # @dataclass
 class Twist:
     linear: npt.ArrayLike
-    angular: Optional[npt.ArrayLike | float]
+    angular: Optional[npt.ArrayLike | float] = None
 
     def __post_init__(self):
         self.linear = np.array(self.linear)
@@ -88,7 +88,7 @@ class Pose:
         if dimension == 2:
             orientation = 0.0
         elif dimension == 3:
-            orientation = Rotation.from_euler(0, "x")
+            orientation = Rotation.from_euler("x", 0)
         else:
             orientation = None
 
