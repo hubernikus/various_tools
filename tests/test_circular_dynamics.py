@@ -16,11 +16,7 @@ from numpy import linalg as LA
 
 import matplotlib.pyplot as plt
 
-# from vartools.linalg import get_orthogonal_basis
-# from vartools.dynamical_systems import LinearSystem, ConstantValue
 from vartools.dynamical_systems import CircularStable
-
-# from vartools.directional_space import UnitDirection
 
 # DirectionBase
 from vartools.dynamical_systems import plot_dynamical_system_quiver
@@ -77,8 +73,43 @@ def test_circle_following_rotational_avoidance(visualize=False):
     assert np.cross(position, velocity) > 0
 
 
+def test_circular_dynamics(visualize=False):
+    circular_ds = CircularStable(radius=1.0, maximum_velocity=2.0)
+
+    if visualize:
+        x_lim = [-2, 2]
+        y_lim = [-2, 2]
+
+        figsize = (8, 6)
+
+        fig, ax = plt.subplots(figsize=figsize)
+        plot_dynamical_system(
+            dynamical_system=circular_ds,
+            x_lim=x_lim,
+            y_lim=y_lim,
+            ax=ax,
+        )
+
+    # No velocity at center
+    position = np.zeros(2)
+    velocity = circular_ds.evaluate(position)
+    assert np.allclose(velocity, np.zeros(2))
+
+    # Pointing away far away (and additionally slight rotation; always)
+    position = np.array([1e-3, 0])
+    velocity = circular_ds.evaluate(position)
+    assert velocity[1] > 0
+
+
 if (__name__) == "__main__":
+    # Import visualization libraries here
+    import matplotlib.pyplot as plt  # For debugging only (!)
+    from vartools.dynamical_systems import plot_dynamical_system
+
     figtype = ".png"
+
+    # test_circular_dynamics(visualize=False)
+    test_circular_dynamics(visualize=False)
 
     test_circle_following_rotational_avoidance(visualize=True)
     print("Tests done")
