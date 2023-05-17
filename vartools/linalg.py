@@ -8,6 +8,29 @@ Different linear algebraig helper function (mainly) based on numpy
 # from functools import lru_cache
 import numpy as np
 
+from scipy.spatial.transform import Rotation
+
+
+def get_rotation_between_vectors(vec1: np.ndarray, vec2: np.ndarray) -> Rotation:
+    """Returns rotation / orientation needed to obtain vec2, starting from vec1"""
+    if not (vec1_norm := np.linalg.norm(vec1)):
+        return Rotation.from_quat([0, 0, 0, 1.0])
+    vec1 = np.array(vec1) / vec1_norm
+
+    if not (vec2_norm := np.linalg.norm(vec2)):
+        return Rotation.from_quat([0, 0, 0, 1.0])
+    vec2 = np.array(vec2) / vec2_norm
+
+    rot_vec = np.cross(vec1, vec2)
+    if not (rotvec_norm := np.linalg.norm(rot_vec)):
+        return Rotation.from_quat([0, 0, 0, 1.0])
+
+    theta = np.arccos(np.dot(vec1, vec2))
+    return Rotation.from_rotvec(rot_vec / rotvec_norm * theta)
+
+    # quat = np.hstack((rot_vec * np.cos(theta / 2.0), [np.sin(theta / 2.0)]))
+    # return Rotation.from_quat(quat)
+
 
 def logical_xor(value1: float, value2: float) -> bool:
     return bool(value1) ^ bool(value2)
