@@ -74,11 +74,22 @@ class ObjectTwist(Twist):
     pass
 
 
-@dataclass(slots=True)
+# Sometimes slots gives a weird error (which is resolved on restart) - deactivate for now..
+# @dataclass(slots=True)
+@dataclass
 class Pose:
     position: npt.ArrayLike
     # 2D or 3D
     orientation: Optional[float | Rotation] = None
+
+    # @property
+    # def orientation(self):
+    #     return self._orientation
+
+    # @orientation.setter
+    # def orientation(self):
+    #     breakpoint()
+    #     self._orientation = value
 
     def __post_init__(self):
         self.position = np.array(self.position)
@@ -168,7 +179,7 @@ class Pose:
         return position
 
     def transform_positions_from_relative(self, positions: np.ndarray) -> np.ndarray:
-        positions = self.transform_directions_from_relative(direction=positions)
+        positions = self.transform_directions_from_relative(directions=positions)
         if not self.position is None:
             positions = positions + np.tile(self.position, (positions.shape[1], 1)).T
 
@@ -223,7 +234,17 @@ class Pose:
             return direction
 
     def transform_directions_from_relative(self, directions: np.ndarray) -> np.ndarray:
-        return self.transform_direction_from_relative(directions)
+        if self.orientation is None:
+            return directions
+
+        if self.dimension == 2:
+            return self.rotation_matrix.dot(directions)
+
+        elif self.dimension == 3:
+            return self.orientation.apply(directions.T).T
+
+        warnings.warn(f"Not implemented for dimensions={self.dimension}.")
+        return directions
 
     def transform_direction_to_relative(self, direction: np.ndarray) -> np.ndarray:
         if self.orientation is None:
