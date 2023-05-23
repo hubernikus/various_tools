@@ -157,14 +157,18 @@ class Pose:
         if self.orientation is None:
             return pose
 
-        if pose.orientation is not None:
-            pose.orientation = pose.orientation + self.orientation
+        if pose.orientation is None:
+            pose.orientation -= self.orientation
             return pose
 
-        if self.dimension != 2:
+        if self.dimension == 2:
+            pose.orientation = pose.orientation + self.orientation
+            return pose
+        elif self.dimension == 3:
+            pose.orientation = self.orientation * pose.orientation
+            return pose
+        else:
             raise NotImplementedError()
-
-        pose.orientation -= self.orientation
 
         return pose
 
