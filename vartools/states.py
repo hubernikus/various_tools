@@ -93,6 +93,15 @@ class Pose:
 
     def __post_init__(self):
         self.position = np.array(self.position)
+        if self.orientation is not None:
+            return
+
+        # Create default orientation to ommit the type-check
+        if self.position.shape[0] == 2:
+            self.orientation = 0.0
+
+        elif self.position.shape[0] == 3:
+            self.orientation = Rotation.from_euler("x", 0)
 
     @classmethod
     def create_trivial(cls, dimension: int) -> Self:
