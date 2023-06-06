@@ -31,8 +31,12 @@ class WavyRotatedDynamics(DynamicalSystem):
         pose: Optional[Pose] = None,
         dimension: int = 2,
     ):
+        if pose is None:
+            attractor_position = np.zeros(dimension)
+        else:
+            attractor_position = pose.position
         super().__init__(
-            dimension=dimension, pose=pose, attractor_position=pose.position
+            dimension=dimension, pose=pose, attractor_position=attractor_position
         )
 
         self.maximum_velocity = maximum_velocity
@@ -71,7 +75,7 @@ class WavyRotatedDynamics(DynamicalSystem):
 
         # Rotate velocity
         rotation_angle = (
-            math.sin(dist_attractor**self.rotation_power * self.rotation_frequency)
+            math.sin(dist_attractor ** self.rotation_power * self.rotation_frequency)
             * self.max_rotation
         )
         sin_ = math.sin(rotation_angle)
