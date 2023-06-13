@@ -162,16 +162,16 @@ def get_intersection_with_circle(
 
     # Binomial Formula to solve for x in:
     # || dir_reference + x * (delta_dir_conv) || = radius
-    AA = np.sum(direction ** 2)
+    AA = np.sum(direction**2)
     BB = 2 * np.dot(direction, start_position)
-    CC = np.sum(start_position ** 2) - radius ** 2
-    DD = BB ** 2 - 4 * AA * CC
+    CC = np.sum(start_position**2) - radius**2
+    DD = BB**2 - 4 * AA * CC
 
     if DD < 0:
         # No intersection with circle
         return None
 
-    if intersection_type == CircleIntersectionType.FAR:
+    if intersection_type == IntersectionType.FAR:
         # Only negative direction due to expected negative A (?!) [returns max-direction]..
         fac_direction = (-BB + np.sqrt(DD)) / (2 * AA)
         point = start_position + fac_direction * direction
@@ -193,8 +193,7 @@ def get_intersection_with_circle(
         return points
 
     else:
-        breakpoint()
-        raise ValueError()
+        raise ValueError(f"Unexpected intersection type {intersection_type}")
 
 
 def get_intersection_between_line_and_plane(
