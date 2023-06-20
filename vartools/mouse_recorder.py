@@ -21,7 +21,6 @@ from matplotlib.backend_bases import MouseButton
 
 class BaseRecorder(ABC):
     def __init__(self, filename=None, sampling_time=0.1, max_it=10000):
-
         self.sampling_time = sampling_time
 
         if filename is None:

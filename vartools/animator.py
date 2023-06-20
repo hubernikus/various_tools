@@ -125,7 +125,7 @@ class Animator(ABC):
             raise Exception("Member variable 'fig' is not defined.")
 
         # Initiate keyboard-actions
-        self.fig.canvas.mpl_connect("button_press_event", self.pause_toggle)
+        # self.fig.canvas.mpl_connect("button_press_event", self.pause_toggle)
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
 
         if save_animation:
