@@ -60,8 +60,8 @@ def plot_dynamical_system(
     x_vals, y_vals = np.meshgrid(
         np.linspace(x_lim[0], x_lim[1], nx), np.linspace(y_lim[0], y_lim[1], ny)
     )
-
     positions = np.vstack((x_vals.reshape(1, -1), y_vals.reshape(1, -1)))
+
     velocities = np.zeros(positions.shape)
     for it in range(positions.shape[1]):
         velocities[:, it] = dynamical_system.evaluate(positions[:, it])
